@@ -1,0 +1,24 @@
+\usepackage[a4paper, portrait, margin = 2.5 cm]{geometry}
+\usepackage{titling}
+\usepackage{verbatim}
+\usepackage[pdfusetitle]{hyperref}
+
+\input{./macros.tex}
+
+\renewcommand\descriptionlabel[1]{\qquad $\bullet$ \textbf{#1}}
+
+\theoremstyle{definition} \newtheorem{convention}{Convention}
+                          \numberwithin{convention}{section}
+\theoremstyle{definition} \newtheorem{defn}{Definition}
+                          \numberwithin{defn}{section}
+\theoremstyle{definition} \newtheorem{lemma}{Lemma}
+                          \numberwithin{lemma}{section}
+\theoremstyle{definition} \newtheorem{prop}{Proposition}
+                          \numberwithin{prop}{section}
+\theoremstyle{definition} \newtheorem{property}{Property}
+                          \numberwithin{property}{section}
+\theoremstyle{definition} \newtheorem{examplethm}{Example}
+                          \numberwithin{examplethm}{section}
+\theoremstyle{definition} \newtheorem{corollary}{Corollary}
+                          \numberwithin{corollary}{section}
+

@@ -1,0 +1,216 @@
+\usepackage{fontenc}
+\usepackage{fontspec}
+\usepackage{libertine}
+
+\newfontfamily\fontcomic[NFSSFamily=comic]{Comic Sans MS}
+
+\defaultfontfeatures{Ligatures=TeX}
+
+\usepackage{indentfirst}
+\usepackage{url}
+\usepackage{color}
+\usepackage{xcolor}
+\usepackage{hhline}
+\usepackage{xspace}
+\usepackage{minibox}
+\usepackage{pbox}
+\usepackage{mathtools}
+\usepackage[framemethod=TikZ]{mdframed}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage[nameinlink]{cleveref}
+\usepackage{mathabx}
+\usepackage{graphicx}
+\usepackage{ebproof}
+\usepackage[toc,page]{appendix}
+\usepackage{adjustbox}
+\usepackage{lstautogobble}
+\usepackage{listings}
+\usepackage{syntax}
+\usepackage[normalem]{ulem}
+\usepackage{subfiles}
+\usepackage{csquotes}
+\usepackage[style=alphabetic]{biblatex}
+\usepackage{tikz}
+\usetikzlibrary{fit}
+\usetikzlibrary{external}
+\usetikzlibrary{positioning}
+\tikzset{main node/.style={circle,fill=blue!5,draw,minimum size=1cm,inner sep=0pt},
+            }
+\tikzset{
+    external/system call={%
+    xelatex \tikzexternalcheckshellescape
+    -halt-on-error -interaction=batchmode -shell-escape
+    -jobname "\image" "\texsource"}}
+% \tikzexternalize
+
+% function arrow
+\newcommand\fun{\rightarrow}
+% partial function arrow
+\newcommand\pfun{\mathrel{\ooalign{\hfil$\mapstochar$\hfil\cr$\to$\cr}}}
+
+\newcommand\code[1]{\mbox{\texttt{#1}}}
+\newcommand\cendrow{\vspace{0.4em} \\}
+
+% margin note
+\newcommand\mnote[1]{\marginpar{\scriptsize{ #1 }}}
+% margin note marked fixed
+\newcommand\fixednote[1]{}
+\newcommand\discuss[1]{\note{ #1 \textcolor{red}{discuss}}}
+
+\usepackage{color}
+\definecolor{Bluish}{rgb}{0.39,0.55,0.78}
+\definecolor{exampleness}{HTML}{ebf9d6}
+\definecolor{codeness}{HTML}{fbf1c7}
+\definecolor{commentness}{HTML}{b57614}
+\definecolor{light-gray}{gray}{0.9}
+\definecolor{celadon}{rgb}{0.67, 0.88, 0.69}
+\definecolor{asparagus}{rgb}{0.53, 0.66, 0.42}
+\definecolor{linkness}{rgb}{0.12, 0.43, 0.41}
+
+% fixme note
+\newcommand\fixme[1]{
+    \greenbox{
+        \vspace{1em}
+        \textbf{\textcolor{red}{FIXME:} } #1
+        \vspace{1em}
+    }
+}
+
+% some settings
+\DeclareRobustCommand{\hsout}[1]{\texorpdfstring{\sout{#1}}{#1}}
+
+\renewcommand{\baselinestretch}{1.1}
+\setlength{\emergencystretch}{3em}
+\setlength{\parskip}{5pt}
+\setlength{\parindent}{0pt}
+
+\appto{\bibsetup}{\sloppy}
+\addbibresource{references.bib}
+
+\graphicspath{ {./images/} }
+
+% boxes
+\tikzset{%
+  boxcola/.style={rectangle,rounded corners,fill=asparagus,draw=asparagus,fill opacity=0.02,thick,inner sep=5pt}
+}
+\newcommand\boxtexta{asparagus}
+
+\tikzset{%
+  boxcolb/.style={rectangle,rounded corners,fill=blue,draw=blue,fill opacity=0.02,thick,inner sep=5pt}
+}
+\newcommand\boxtextb{blue}
+
+\newcommand\greenbox[1]{
+    \tikzexternaldisable
+    \begin{samepage}
+        \begin{mdframed}[%
+            backgroundcolor=green!8,
+            linecolor=gray!50!green!60,
+            outerlinewidth=0.5pt,
+            roundcorner=5mm,
+            skipabove=\baselineskip,
+            skipbelow=\baselineskip,
+            leftmargin=1cm,
+            rightmargin=1cm,
+        ]
+            #1
+        \end{mdframed}
+    \end{samepage}
+    \tikzexternalenable
+}
+
+\newenvironment{mexample}
+    {
+        \tikzexternaldisable
+        \begin{mdframed}[%
+            backgroundcolor=exampleness,
+            rightline=false,
+            topline=false,
+            bottomline=false,
+            leftline=false,
+        ]
+            \begin{examplethm}
+    }
+    {
+            \end{examplethm}
+        \end{mdframed}
+        \tikzexternalenable
+    }
+
+\newcommand{\cfigure}[1]{
+    \begin{figure}[htbp!]
+        \centering
+        #1
+    \end{figure}
+}
+\numberwithin{equation}{section}
+\numberwithin{figure}{section}
+\numberwithin{table}{section}
+
+\newenvironment{lstwrap}
+    {
+    }
+    {
+    }
+
+\lstset{
+	backgroundcolor = \color{codeness},
+    autogobble,
+    columns=fixed,
+    showspaces=false,
+    showtabs=false,
+    breaklines=true,
+    showstringspaces=false,
+    breakatwhitespace=true,
+    escapeinside={(*@}{@*)},
+    language=Haskell,
+    commentstyle=\color{commentness},
+    keywordstyle=\color{black},
+    stringstyle=\color{black},
+    numberstyle=\color{black},
+    basicstyle=\ttfamily\footnotesize,
+    frame=lrtb,
+    framesep=12pt,
+    xleftmargin=12pt,
+    xrightmargin=12pt,
+    tabsize=4,
+    captionpos=b,
+    literate={symlambda}{{$\lambda$}}1 {symabstr}{{$\abstr$}}1 {symtot}{{$\tot$}}1
+}
+
+% restriction symbol
+\newcommand\restr[2]{{% we make the whole thing an ordinary symbol
+  \left.\kern-\nulldelimiterspace % automatically resize the bar with \right
+  #1 % the function
+  \vphantom{\big|} % pretend it's a little taller at normal size
+  \right|_{#2} % this is the delimiter
+  }}
+
+\hypersetup{
+    colorlinks=true,
+    linktoc=all,
+    citecolor=linkness,
+    filecolor=linkness,
+    linkcolor=linkness,
+    urlcolor=linkness
+}
+
+\newcommand\printtoc{
+    {
+        \hypersetup{linkcolor=black}
+        \tableofcontents
+    }
+}
+
+\usepackage{tabularx}
+
+
+\renewcommand{\land}{\mathbin{\&}}
+\newcommand{\xor}{\veebar}
+\newcommand{\boolset}{\mathbb{B}}
+
+\newcommand{\latex}{\LaTeX\xspace}
+
+\newcommand{\pika}{\includegraphics[height=15pt]{images/pika.png}}

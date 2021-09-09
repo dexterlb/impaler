@@ -1,0 +1,19 @@
+% !TEX program = xelatex
+% arara: xelatex: {synctex: yes, options: ["-halt-on-error", "-file-line-error-style"]}
+% arara: biber
+% arara: xelatex: {synctex: yes, options: ["-halt-on-error", "-file-line-error-style"]}
+% arara: xelatex: {synctex: yes, options: ["-halt-on-error", "-file-line-error-style"]}
+
+\documentclass[12pt]{extarticle}
+
+\usepackage[bulgarian,english]{babel}
+\input{./macros_a4.tex}
+
+\title{This is a title}
+\author{Angel Pavlov Angelov}
+\newcommand{\theemail}{angelpa1@uni-sofia.bg}
+\date{2021}
+
+\begin{document}
+\input{./scaffold.tex}
+\end{document}
