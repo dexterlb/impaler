@@ -1,6 +1,32 @@
 \documentclass[main.tex]{subfiles}
 \begin{document}
 
+In lisp-like languages, there are usually two phases: first we execute macros,
+then we execute code. With compiled lisp-like languages, macro evaluation is
+usually done during compilation. This creates problems - for example, using
+`runtime' code inside macros is usually not straight-forward.  I wish to
+implement a small lisp-like language to see if these two stages can be merged
+by having macros be simply functions with slightly different semantics -
+essentially, performed during runtime, from the perspective of the programmer.
+
+The examples in this section will have a `lispy' pseudocode notation.
+
+\subsection{Partial evaluation}
+
+In this context, we regard \emph{partial evaluation} to be ...
+
+\begin{lstwrap}\begin{lstlisting}
+(here is some code)
+\end{lstlisting}\end{lstwrap}
+
+\begin{mexample}
+    this shall be an example
+    \begin{lstwrap}\begin{lstlisting}
+    (here is some code inside the example)
+    \end{lstlisting}\end{lstwrap}
+\end{mexample}
+
+\subsection{to be continued}
 still unfinished \pika
 
 \end{document}
