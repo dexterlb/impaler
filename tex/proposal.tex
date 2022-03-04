@@ -1,6 +1,11 @@
 \documentclass[main.tex]{subfiles}
 \begin{document}
 
+\greenbox{ 
+
+\textbf{BULLSHIT ALERT! The assumptions in this paragraph are stupid,
+    uninformed and outright wrong! Do your fact-checking, past me!}
+
 In lisp-like languages, there are usually two phases: first we execute macros,
 then we execute code. With compiled lisp-like languages, macro evaluation is
 usually done during compilation. This creates problems - for example, using
@@ -8,20 +13,67 @@ usually done during compilation. This creates problems - for example, using
 implement a small lisp-like language to see if these two stages can be merged
 by having macros be simply functions with slightly different semantics -
 essentially, performed during runtime, from the perspective of the programmer.
+}
 
-The examples in this section will have a `lispy' pseudocode notation.
+This document is an informal description of the language. The examples will
+have generic `lispy' pseudocode notation.
+
+The language features could be defined in several tiers:
+\begin{itemize}
+    \item Tier 0 (\emph{proof of concept})
+    \item Tier 1 (\emph{toy language})
+    \item Tier 2 (\emph{practically usable})
+\end{itemize}
+
+\subsection{Proposed proof of concept language (Tier 0)}
+
+Here we'll specify a programming language.
+
+Semantically, our language shall have the following classes of internal values:
+\begin{enumerate}
+    \item symbols
+    \item lists
+    \item opaque external values
+    \item function objects
+\end{enumerate}
+
+The only classes of internal values that may be expressed syntactically are
+symbols and lists\footnote{%
+    It would be quite beneficial for our language to
+    support other atoms apart from symbols, namely numbers and strings.
+    However, for a proof of concept they are not needed: consider that numbers
+    and chars are simply symbols, while strings are lists of chars.}.
+External values and function objects are created by the interpreter/compiler as
+results of evaluating complex expressions.
+
+Semantics shall be defined as such:
+
+\begin{itemize}
+    \item abstraction: \code{(lambda (\(a_1 a2 ... a_n\)) \(P\))} - evaluates to
+        a function object which carries the current scope (environment)
+    \item application: \code{(f \(S_1 S_2 ... S_n\))} - evaluates the function
+        object associated with the symbol \code{f} in the current scope,
+        using the results from evaluating \(S_1, S_2, ..., S_n\) as arguments.
+    \item quote: \code{(quote \(S_1 S_2 ... S_n\))} - evaluates to the literal
+        list \code{(\(S_1 S_2 ... S_n\))}
+    \item expansion: \code{(expand \(S\))} - syntactically replace this expression
+        with the result from evaluating \(S\), and then evaluate it
+\end{itemize}
+
+\subsection{Garbage collection}
+foo
 
 \subsection{Partial evaluation}
 
 In this context, we regard \emph{partial evaluation} to be ...
 
-\begin{lstwrap}\begin{lstlisting}
+\begin{lstwrap}\begin{lstlisting}[language=lisp]
 (here is some code)
 \end{lstlisting}\end{lstwrap}
 
 \begin{mexample}
     this shall be an example
-    \begin{lstwrap}\begin{lstlisting}
+    \begin{lstwrap}\begin{lstlisting}[language=lisp]
     (here is some code inside the example)
     \end{lstlisting}\end{lstwrap}
 \end{mexample}
