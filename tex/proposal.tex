@@ -1,7 +1,32 @@
 \documentclass[main.tex]{subfiles}
 \begin{document}
 
-\greenbox{ 
+The goal is to build a programming language with the following properties:
+\begin{enumerate}
+    \item very small and simple
+    \item powerful metaprogramming using lisp-like macros
+    \item completely immutable
+    \item performant
+\end{enumerate}
+
+\reword{I want to do the following things which would normally be slow} and
+leverage partial evaluation to attempt to make performance on-par with
+\reword{SOTA} solutions:
+\begin{itemize}
+    \item full immutability
+    \item runtime function specialisation (or maybe not, this might not be feasible)
+    \item reference-counted garbage collection
+\end{itemize}
+
+Most languages in the wild [citation needed] are either \ref{fixme, simple} or
+\ref{fixme, performant}. This can be addressed with partial evaluation.
+
+Also, most languages [citation needed, erlang] are either immutable or performant.
+This can be addressed by using persistent data structures.
+
+
+
+\greenbox{
 
 \textbf{BULLSHIT ALERT! The assumptions in this paragraph are stupid,
     uninformed and outright wrong! Do your fact-checking, past me!}
