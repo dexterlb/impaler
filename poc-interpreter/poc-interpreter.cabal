@@ -6,22 +6,20 @@ cabal-version: 1.12
 
 name:           poc-interpreter
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/poc-interpreter#readme>
-homepage:       https://github.com/githubuser/poc-interpreter#readme
-bug-reports:    https://github.com/githubuser/poc-interpreter/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2022 Author name here
-license:        BSD3
-license-file:   LICENSE
+description:    Please see the README on GitHub at <https://github.com/impaler>
+homepage:       https://github.com/dexterlb/impaler#readme
+bug-reports:    https://github.com/dexterlb/impaler/issues
+author:         Angel Angelov
+maintainer:     angel@qtrp.org
+copyright:      2022 Angel Angelov
+license:        MIT
 build-type:     Simple
 extra-source-files:
     README.md
-    CHANGELOG.md
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/poc-interpreter
+  location: https://github.com/dexterlb/impaler
 
 library
   exposed-modules:
