@@ -1,13 +1,18 @@
 \documentclass[main.tex]{subfiles}
 \begin{document}
 
-The goal is to build a programming language with the following properties:
+I want to build a programming language with the following properties:
 \begin{enumerate}
     \item very small and simple
     \item powerful metaprogramming using lisp-like macros
     \item completely immutable
     \item performant
+    \item \emph{compiled} (as much as this term may apply to lisp-like languages)
 \end{enumerate}
+
+The main technique I wish to leverage is \emph{partial evaluation}, which is
+inevitably used in any sufficiently mature implementation of a programming
+language compiler/interpreter, but usually not as a first-class concept
 
 \reword{I want to do the following things which would normally be slow} and
 leverage partial evaluation to attempt to make performance on-par with
