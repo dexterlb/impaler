@@ -1,6 +1,55 @@
 \documentclass[main.tex]{subfiles}
 \begin{document}
 
+The subject of this proposal is a programming language (and implementation)
+that is expressive enough for general-purpose usage, but also usable
+in constrained environments like microcontrollers and video games with little
+overhead.
+
+The initial goals for the language are to:
+\begin{menumerate}
+    \item\label{functional} be functional
+    \item\label{immutable} be immutable (i.e. no mutable data structures)
+    \item\label{metaprogramming} have powerful metaprogramming
+    \item\label{allows-async} allow implementation of features like asynchronous
+    execution and message-passing by user libraries instead of requiring
+    extra language features
+    \item\label{simple} have a very small core that makes it trivial to
+    write an interpreter that successfully executes all programs written
+    in the language, and to target different platforms
+    \item\label{performant} have an implementation (i.e. compiler) that
+    focuses on generating performant (low latency more importantly than
+    high throughput) target code
+\end{menumerate}
+
+\menumref{metaprogramming} may be addressed by having LISP-like syntax
+and macros.
+
+\menumref{allows-async} may be addressed by having first-class CPS.
+If arbitrary functions can access their \emph{return} continuation
+and pass it around, asynchronous code may be easily implemented.
+
+\menumref{performant} may be addressed by implementing a compiler that leverages
+aggressive partial evaluation in order to inline the extra calls caused by
+metaprogramming and generic programming.
+
+\subsection{Use Case: Embedded Programming}
+
+Many scenarios for embedded programming may be expressed using
+the following constructs:
+\begin{mitemize}
+    \item State machines, some of whose transitions are influenced
+    by interrupt events
+    \item bla
+\end{mitemize}
+
+Example: a \textbf{sleep} function that is usable within an event loop's body,
+but under the scenes returns a special value (containing the \textbf{sleep}'s callsite
+continuation) from the event loop that causes the loop to be called again
+in response of a specific interrupt, to resume execution from the point after the callsite
+
+\pagebreak
+
 I want to build a programming language with the following properties:
 \begin{enumerate}
     \item very small and simple

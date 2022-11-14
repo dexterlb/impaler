@@ -215,3 +215,23 @@
 \newcommand{\latex}{\LaTeX\xspace}
 
 \newcommand{\pika}{\includegraphics[height=15pt]{images/pika.png}}
+
+\newenvironment{mitemize}
+    {
+        \begin{itemize}
+        \setlength{\itemsep}{0em}
+    }
+    {
+        \end{itemize}
+    }
+
+\newenvironment{menumerate}
+    {
+        \begin{enumerate}
+        \setlength{\itemsep}{0em}
+    }
+    {
+        \end{enumerate}
+    }
+
+\newcommand{\menumref}[1]{(\ref{#1})}
