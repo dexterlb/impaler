@@ -1,5 +1,8 @@
 #lang racket
 
+; ***************************************************
+; * PART 1: simple recursion
+; ***************************************************
 
 ; so we have `let`, allowing us to do things like this:
 (define example-01-let
@@ -112,6 +115,10 @@
 
 ; now, executing `(eval example-07-letrec-single-fact-ast2)` gives 120.
 
+; ***************************************************
+; * PART 2: mutual recursion
+; ***************************************************
+
 ; we can now move on to building a more powerful version of this transformer
 ; that can implement mutual recursion. For this, we need the
 ; polyvariadic fixed point combinator, or "Y* combinator".
@@ -137,8 +144,8 @@
                                    ; argument, we use a fresh symbol
        (arg-getters (generate-element-getters flist args))
        (result-body (cons (list 'lambda args body) arg-getters)))
-    
-    (list (list 'lambda (list flist) result-body) (cons 'polyfix arg-bodies))))
+
+    (list (list 'lambda (list flist) result-body) (cons 'polyfix2 arg-bodies))))
 
 ; helper function that generates a list of accessors for all elements in
 ; the given list
@@ -149,6 +156,9 @@
             (map (lambda (subl) (list (car subl) (cons 'cdr (cdr subl))))
                  (generate-element-getters list-name (cdr l))))))
 
+; and now we define `transform-letrecs-poly`, which is the
+; polyvariadic version of `transform-letrecs-single` and
+; emulates the builtin letrec
 
 (define (transform-letrecs-poly ast)
   (if (pair? ast)
@@ -164,10 +174,99 @@
          (is-odd?  (lambda (x) (if (= x 0) #f (is-even? (- x 1))))))
       (is-even? 42))))
 
-; --> '((lambda (flist810183)
+; --> '((lambda (flist845276)
 ;         ((lambda (is-even? is-odd?) (is-even? 42)) (car flist845276) (car (cdr flist845276))))
 ;       (polyfix
 ;        (lambda (is-even? is-odd?) (lambda (x) (if (= x 0) #t (is-odd? (- x 1)))))
 ;        (lambda (is-even? is-odd?) (lambda (x) (if (= x 0) #f (is-even? (- x 1)))))))
 
 ; so now, if we do `(eval example-08-letrec-poly-even-odd)`, we get #t as expected.
+
+
+; we have now successfully built a transformer with the abillity to convert
+; letrec-ridden code to code that contains no recursion!
+
+
+
+; ***************************************************
+; * PART 3: mutual recursion, take two
+; ***************************************************
+
+; still, `polyfix` seems a bit dirty (it uses functions like `map` and `apply`,
+; which use recursion themselves). We shall now embark on a quest to rid ourselves
+; of all such heresy, lest only the purest form of `fix` remain in the code we generate.
+
+; in order to use the single version of fix for multiple recursion, we will have to emulate something like this:
+(define example-09-even-odd-fix
+  '((lambda (even-odd)
+      ((lambda (is-even? is-odd?) (is-even? 42)) (even-odd car) (even-odd cadr)))
+    (fix
+     (lambda (even-odd)
+       (lambda (accessor)
+         (accessor (list ; we need to delay the evaluation of this list so that it doesn't go into infinite loop
+                      ((lambda (is-even? is-odd?) (lambda (x) (if (= x 0) #t (is-odd? (- x 1))))) (even-odd car) (even-odd cadr))
+                      ((lambda (is-even? is-odd?) (lambda (x) (if (= x 0) #f (is-even? (- x 1))))) (even-odd car) (even-odd cadr)))))))))
+
+; however, the example above will not work due to insufficient laziness: we need `even-odd` to
+; be called *after* x is known, not before. However, everyone knows that
+; the universal solution to any problem is simply adding an extra level of indirection:
+(define example-10-even-odd-fix2
+  '((lambda (even-odd)
+      ((lambda (is-even? is-odd?) (is-even? 43))
+       (lambda (x) ((even-odd car) x))
+       (lambda (x) ((even-odd cadr) x))))
+    (fix
+     (lambda (even-odd)
+       (lambda (accessor)
+         (accessor (list ; we need to delay the evaluation of this list so that it doesn't go into infinite loop
+                      ((lambda (is-even? is-odd?) (lambda (x) (if (= x 0) #t (is-odd? (- x 1)))))
+                       (lambda (x) ((even-odd car) x))
+                       (lambda (x) ((even-odd cadr) x)))
+                      ((lambda (is-even? is-odd?) (lambda (x) (if (= x 0) #f (is-even? (- x 1)))))
+                       (lambda (x) ((even-odd car) x))
+                       (lambda (x) ((even-odd cadr) x))))))))))
+; calling (eval example-10-even-odd-fix2) correctly gives `#f`.
+
+; now, let's try to make a version of `transform-letrecs-poly` that generates code like in
+; the example above - starting with `build-letrec poly`:
+(define (build-letrec-poly2 defs body)
+  (let*
+      ((args (map car defs))
+       (item-bodies (map cadr defs))
+       (arg-bodies (map (lambda (def-body) (list 'lambda args def-body)) item-bodies))
+       (f (gensym "f"))
+       (arg-getters
+        (map (lambda (getter body) (lambdify getter body f))
+        (generate-partial-element-getters args) item-bodies))
+       (result-body (cons (list 'lambda args body) arg-getters))
+       (rec-body 'baba))
+
+    (list (list 'lambda (list f) result-body) (cons 'fix rec-body))))
+
+(define (lambdify getter body f)
+  (if (equal? (car body) 'lambda)
+      (list 'lambda (cadr body) (cons (list f getter) (cadr body)))
+      (list f getter)))
+
+(define (generate-partial-element-getters args)
+  (let*
+      ((flist (gensym "flist"))
+       (partialise
+        (lambda (getter)
+          (list 'lambda (list flist) getter))))
+    (map partialise (generate-element-getters flist args))))
+             
+; now `transform-letrecs-poly2` is absolutely analogous to `transform-letrecs-poly`
+(define (transform-letrecs-poly2 ast)
+  (if (pair? ast)
+      (if (equal? (car ast) 'letrec)
+          (build-letrec-poly2 (cadr ast) (caddr ast))
+          (map transform-letrecs-poly2 ast))
+      ast))
+
+(define example-11-letrec-poly2-even-odd
+  (transform-letrecs-poly2
+   '(letrec
+        ((is-even? (lambda (x) (if (= x 0) #t (is-odd?  (- x 1)))))
+         (is-odd?  (lambda (x) (if (= x 0) #f (is-even? (- x 1))))))
+      (is-even? 42))))
