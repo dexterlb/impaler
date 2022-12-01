@@ -227,6 +227,22 @@
                        (lambda (x) ((even-odd cadr) x))))))))))
 ; calling (eval example-10-even-odd-fix2) correctly gives `#f`.
 
+(define example-11-even-odd-fix3
+  '((lambda (even-odd)
+      ((lambda (is-even? is-odd?) (is-even? 43))
+       (lambda args (apply (even-odd car) args))
+       (lambda args (apply (even-odd cadr) args))))
+    (fix
+     (lambda (even-odd)
+       (lambda (accessor)
+         (accessor (list ; we need to delay the evaluation of this list so that it doesn't go into infinite loop
+                      ((lambda (is-even? is-odd?) (lambda args (if (= x 0) #t (is-odd? (- x 1)))))
+                       (lambda args (apply (even-odd car) args))
+                       (lambda args (apply (even-odd cadr) args)))
+                      ((lambda (is-even? is-odd?) (lambda args (if (= x 0) #f (is-even? (- x 1)))))
+                       (lambda args (apply (even-odd car) args))
+                       (lambda args (apply (even-odd cadr) args))))))))))
+
 ; now, let's try to make a version of `transform-letrecs-poly` that generates code like in
 ; the example above - starting with `build-letrec poly`:
 (define (build-letrec-poly2 defs body)
