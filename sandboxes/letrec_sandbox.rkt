@@ -48,6 +48,16 @@
   (lambda (f)
     (f (lambda (x) ((fix f) x)))))
 
+; this version of the Y combinator is plagiarised from this
+; document: https://gist.github.com/jjwatt/e8e615d115f28db9662a1f3742034478
+; which is a great read.
+
+; fix can also be defined more cleanly, without making use of the
+; builtin recursion in scheme.
+
+(define fix2
+  'left-as-exercise-to-the-reader) ; hint: use the U combinator
+
 ; we can now define a version of `fact` that uses `fix` instead of
 ; making use of a recursion mechanism that is already available
 ; in Scheme:
@@ -126,11 +136,15 @@
 (define (polyfix . l)
   ((lambda (x) (x x))
    (lambda (p)
-     (map (lambda (li) (lambda x (apply (apply li (p p)) x))) l))))
+     (map (lambda (li) (lambda args (apply (apply li (p p)) args))) l))))
 
 ; what `polyfix` does is similar to `fix`, but takes a *list* of
 ; functions (f1 f2 ... fn) and finds the fixed point of
 ; F(l) = f1(l_1 l_2 ... l_n), which is itself a list of functions
+
+; this version of polyfix is plagiarised from this document:
+; https://okmij.org/ftp/Computation/fixed-point-combinators.html#Poly-variadic
+; note the use of variadic lambda and 'apply'.
 
 ; we can now construct `build-letrec-poly` - a function that
 ; builds code equivalent to a `letrec` with multiple definitions,
@@ -145,7 +159,7 @@
        (arg-getters (generate-element-getters flist args))
        (result-body (cons (list 'lambda args body) arg-getters)))
 
-    (list (list 'lambda (list flist) result-body) (cons 'polyfix2 arg-bodies))))
+    (list (list 'lambda (list flist) result-body) (cons 'polyfix arg-bodies))))
 
 ; helper function that generates a list of accessors for all elements in
 ; the given list
@@ -227,6 +241,10 @@
                        (lambda (x) ((even-odd cadr) x))))))))))
 ; calling (eval example-10-even-odd-fix2) correctly gives `#f`.
 
+; however, we make use of the fact that we know that is-even and is-odd
+; take a single argument (x). Instead of taking advantage of this fact
+; (which is cheating), we can make use of variadic-lambda and apply
+; (which is also cheating, but is the same cheat that polyfix uses)
 (define example-11-even-odd-fix3
   '((lambda (even-odd)
       ((lambda (is-even? is-odd?) (is-even? 43))
@@ -236,41 +254,18 @@
      (lambda (even-odd)
        (lambda (accessor)
          (accessor (list ; we need to delay the evaluation of this list so that it doesn't go into infinite loop
-                      ((lambda (is-even? is-odd?) (lambda args (if (= x 0) #t (is-odd? (- x 1)))))
+                      ((lambda (is-even? is-odd?) (lambda (x) (if (= x 0) #t (is-odd? (- x 1)))))
                        (lambda args (apply (even-odd car) args))
                        (lambda args (apply (even-odd cadr) args)))
-                      ((lambda (is-even? is-odd?) (lambda args (if (= x 0) #f (is-even? (- x 1)))))
+                      ((lambda (is-even? is-odd?) (lambda (x) (if (= x 0) #f (is-even? (- x 1)))))
                        (lambda args (apply (even-odd car) args))
                        (lambda args (apply (even-odd cadr) args))))))))))
 
 ; now, let's try to make a version of `transform-letrecs-poly` that generates code like in
 ; the example above - starting with `build-letrec poly`:
 (define (build-letrec-poly2 defs body)
-  (let*
-      ((args (map car defs))
-       (item-bodies (map cadr defs))
-       (arg-bodies (map (lambda (def-body) (list 'lambda args def-body)) item-bodies))
-       (f (gensym "f"))
-       (arg-getters
-        (map (lambda (getter body) (lambdify getter body f))
-        (generate-partial-element-getters args) item-bodies))
-       (result-body (cons (list 'lambda args body) arg-getters))
-       (rec-body 'baba))
+  'left-as-exercise-for-the-reader)
 
-    (list (list 'lambda (list f) result-body) (cons 'fix rec-body))))
-
-(define (lambdify getter body f)
-  (if (equal? (car body) 'lambda)
-      (list 'lambda (cadr body) (cons (list f getter) (cadr body)))
-      (list f getter)))
-
-(define (generate-partial-element-getters args)
-  (let*
-      ((flist (gensym "flist"))
-       (partialise
-        (lambda (getter)
-          (list 'lambda (list flist) getter))))
-    (map partialise (generate-element-getters flist args))))
              
 ; now `transform-letrecs-poly2` is absolutely analogous to `transform-letrecs-poly`
 (define (transform-letrecs-poly2 ast)
@@ -280,7 +275,7 @@
           (map transform-letrecs-poly2 ast))
       ast))
 
-(define example-11-letrec-poly2-even-odd
+(define example-12-letrec-poly2-even-odd
   (transform-letrecs-poly2
    '(letrec
         ((is-even? (lambda (x) (if (= x 0) #t (is-odd?  (- x 1)))))
