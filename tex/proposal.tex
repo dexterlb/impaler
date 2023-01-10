@@ -6,11 +6,52 @@ that is expressive enough for general-purpose usage, but also usable
 in constrained environments like microcontrollers and video games with little
 overhead.
 
+\subsection{Informal introduction}
+
+For a long time, I've wanted to build a (functional) programming language that
+combines the following features that I like in other programming languages:
+
+\begin{mitemize}
+\item LISP-like syntax
+\item Full immutability and reliance on persistent data structures
+\item First-class CPS
+\item Controlled partial evaluation
+\end{mitemize}
+
+While focusing on the features outlined above, I would like to completely
+neglect some aspects that are standard in most serious programming languages:
+
+\begin{mitemize}
+
+\item \note{Stoyan did the same with C(M) and it seems to work}No means of
+constructing cyclic data structures: full immutability means that there is no
+way to construct doubly-linked lists, boxed-element queues, etc - when needed,
+\reword{cyclicism} may be emulated by using indices in persistent arrays
+
+\item No overly-complex garbage-collection mechanism: since there are no
+cyclic data structures, simple reference counting will suffice. While
+optimising GC performance is not a priority, making use of the partial
+evaluator to reduce reference count increment-decrement chains
+(as defined in \cite{ms}) may be worth researching.
+
+\end{mitemize}
+
+A lot of this work is inspired by AnyDSL\cite{anydsl}, namely the Impala
+programming language, which focuses on controlled partial evaluation.
+
+In fact, a minimum working implementation of \reword{my language} may consist
+of a toy interpreter written in Impala, taking care that the partial evaluator
+would specialise the interpreter for a given program (\reword{first Futamura
+projection}), generating efficient target code \reword{stripped from
+abstractions}.
+
+\subsection{More formal exposition}
+
 The initial goals for the language are to:
 \begin{menumerate}
     \item\label{functional} be functional
-    \item\label{immutable} be immutable (i.e. no mutable data structures)
-    \item\label{metaprogramming} have powerful metaprogramming
+    \item\label{immutable} have no mutable data
+    \item\label{metaprogramming} have powerful, LISP-like metaprogramming
     \item\label{allows-async} allow implementation of features like asynchronous
     execution and message-passing by user libraries instead of requiring
     extra language features
@@ -18,35 +59,40 @@ The initial goals for the language are to:
     write an interpreter that successfully executes all programs written
     in the language, and to target different platforms
     \item\label{performant} have an implementation (i.e. compiler) that
-    focuses on generating performant (low latency more importantly than
-    high throughput) target code
+    focuses on generating performant (with higher priority on low latency rather
+    than high throughput) target code
 \end{menumerate}
-
-\menumref{metaprogramming} may be addressed by having LISP-like syntax
-and macros.
 
 \menumref{allows-async} may be addressed by having first-class CPS.
 If arbitrary functions can access their \emph{return} continuation
 and pass it around, asynchronous code may be easily implemented.
+This design decision has been made in the Impala programming
+language\cite{anydsl}, allowing for superior ergonomics.
 
-\menumref{performant} may be addressed by implementing a compiler that leverages
-aggressive partial evaluation in order to inline the extra calls caused by
-metaprogramming and generic programming.
+\menumref{metaprogramming} implies heavy use of abstractions. In order for the
+generated code to be reasonably performant \menumref{performant}, the compiler
+must be able to generate abstraction-free specialised code. Employing PE for
+specialising generic code has proven\cite{anydsl} to be effective. I want to
+explore whether this can be taken a step further, by making macros live in the
+same domain as functions. This way, there is no need for a macro expansion
+phase: instead, macros would be `eaten' by PE, since their arguments are
+constant code expressions.
 
 \subsection{Use Case: Embedded Programming}
 
-Many scenarios for embedded programming may be expressed using
-the following constructs:
-\begin{mitemize}
-    \item State machines, some of whose transitions are influenced
-    by interrupt events
-    \item bla
-\end{mitemize}
+Many scenarios for embedded programming are expressed using
+state machines, whose transitions are influenced by interrupt events.
+
+However, a state machine is difficult to reason about: what we really
+want is to write sequential code that is under-the-scenes converted
+to a state machine. Building such a DSL is trivial with CPS (or other
+similar but weaker constructions like coroutines or async/await).
 
 Example: a \textbf{sleep} function that is usable within an event loop's body,
-but under the scenes returns a special value (containing the \textbf{sleep}'s callsite
-continuation) from the event loop that causes the loop to be called again
-in response of a specific interrupt, to resume execution from the point after the callsite
+but under the scenes causes the body to return a special value (containing the
+\textbf{sleep}'s callsite continuation), so that the event loop logic may call
+said continuation in response to a timer event, to resume execution from the
+point in the code after the callsite
 
 \pagebreak
 

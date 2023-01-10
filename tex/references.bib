@@ -16,3 +16,41 @@
     publisher = {Cambridge University Press},
     address = {New York, NY, USA},
 }
+
+@article{anydsl,
+    author = {Lei\ss{}a, Roland and Boesche, Klaas and Hack, Sebastian and P\'{e}rard-Gayot, Ars\`{e}ne and Membarth, Richard and Slusallek, Philipp and M\"{u}ller, Andr\'{e} and Schmidt, Bertil},
+    title = {AnyDSL: A Partial Evaluation Framework for Programming High-Performance Libraries},
+    year = {2018},
+    issue_date = {November 2018},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    volume = {2},
+    number = {OOPSLA},
+    url = {https://doi.org/10.1145/3276489},
+    doi = {10.1145/3276489},
+    journal = {Proc. ACM Program. Lang.},
+    month = {oct},
+    articleno = {119},
+    numpages = {30},
+    keywords = {partial evaluation, GPU computing, parallelization, vectorization, library design, high-performance}
+}
+
+@inproceedings{ms,
+author = {Reinking, Alex and Xie, Ningning and de Moura, Leonardo and Leijen, Daan},
+title = {Perceus: Garbage Free Reference Counting with Reuse},
+year = {2021},
+isbn = {9781450383912},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3453483.3454032},
+doi = {10.1145/3453483.3454032},
+abstract = {We introduce Perceus, an algorithm for precise reference counting with reuse and specialization. Starting from a functional core language with explicit control-flow, Perceus emits precise reference counting instructions such that (cycle-free) programs are _garbage free_, where only live references are retained. This enables further optimizations, like reuse analysis that allows for guaranteed in-place updates at runtime. This in turn enables a novel programming paradigm that we call _functional but in-place_ (FBIP). Much like tail-call optimization enables writing loops with regular function calls, reuse analysis enables writing in-place mutating algorithms in a purely functional way. We give a novel formalization of reference counting in a linear resource calculus, and prove that Perceus is sound and garbage free. We show evidence that Perceus, as implemented in Koka, has good performance and is competitive with other state-of-the-art memory collectors.},
+booktitle = {Proceedings of the 42nd ACM SIGPLAN International Conference on Programming Language Design and Implementation},
+pages = {96–111},
+numpages = {16},
+keywords = {Handlers, Algebraic Effects, Reference Counting},
+location = {Virtual, Canada},
+series = {PLDI 2021}
+}
+
+  
