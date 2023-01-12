@@ -9,6 +9,9 @@ copyright:           "2022 Angel Angelov"
 extra-source-files:
 - README.md
 
+dependencies:
+  - base >= 4.7 && < 5
+
 # Metadata used when publishing your package
 # synopsis:            Short description of your package
 # category:            Web
@@ -18,14 +21,7 @@ extra-source-files:
 # common to point users to the README.md file.
 description:         Please see the README on GitHub at <https://github.com/impaler>
 
-dependencies:
-- base >= 4.7 && < 5
-- megaparsec
-- parser-combinators
-- text
-
-default-language: GHC2021
-
+language: GHC2021
 default-extensions:
   BlockArguments
   DeriveAnyClass
@@ -52,31 +48,35 @@ ghc-options:
   -Wmissing-export-lists
   -Wpartial-fields
   -Wredundant-constraints
-  -Wunused-packages
   -Wunused-type-patterns
   -Wincomplete-uni-patterns
+  -Wunused-packages
 
 library:
   source-dirs: src
+  dependencies:
+    - megaparsec
+    - parser-combinators
+    - text
 
 executables:
   poc-interpreter-exe:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
     dependencies:
-    - poc-interpreter
+      - poc-interpreter
 
 tests:
   poc-interpreter-test:
     main:                Spec.hs
     source-dirs:         test
     ghc-options:
-    - -threaded
-    - -rtsopts
-    - -with-rtsopts=-N
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
     dependencies:
-    - poc-interpreter
+      - poc-interpreter

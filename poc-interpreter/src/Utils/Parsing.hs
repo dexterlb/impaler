@@ -27,7 +27,7 @@ import qualified Data.Text.IO as TIO
 import Control.Applicative (liftA2)
 import Control.Monad (forM)
 
-data Error = Error deriving (Eq, Ord, Show)
+data Error = Error deriving stock (Eq, Ord, Show)
 
 type Parser = Parsec Error Text
 
