@@ -12,26 +12,45 @@ import qualified Utils.Parsing as P
 import DebugInfo
 
 data AST
-    = Atom DebugInfo Text
-    | SExpr DebugInfo [AST]
+    = Symbol DebugInfo Text
+    | Pair DebugInfo AST AST
+    | Null DebugInfo
     deriving stock (Show)
 
 instance (Parseable AST) where
-    parser = astParser
+    parser = parseAST
 
-astParser :: Parser AST
-astParser = atomParser <|> sexprParser
+parseAST :: Parser AST
+parseAST = parseAtom <|> parseSexpr
 
-atomParser :: Parser AST
-atomParser = do
+parseAtom :: Parser AST
+parseAtom = do
     offBefore <- P.getOffset
     w <- P.identifier
     offAfter <- P.getOffset
-    pure $ Atom (debugOffset offBefore offAfter) w
+    pure $ Symbol (debugOffset offBefore offAfter) w
 
-sexprParser :: Parser AST
-sexprParser = do
+parseSexpr :: Parser AST
+parseSexpr = do
     offBefore <- P.getOffset
-    els <- P.braces $ P.separatedByWhitespace astParser
+    els <- P.braces $ P.separatedByWhitespace parseAST
     offAfter <- P.getOffset
-    pure $ SExpr (debugOffset offBefore offAfter) els
+    pure $ makeSexpr offBefore offAfter els
+
+makeSexpr :: Int -> Int -> [AST] -> AST
+makeSexpr offBefore offAfter [] = Null $ debugOffset offBefore offAfter
+makeSexpr offBefore offAfter (x:xs) = Pair (debugOffset offBefore offAfter)
+    x
+    (makeSexpr (getOffsetAfter x) offAfter xs)
+
+getOffsetAfter :: AST -> Int
+getOffsetAfter ast = unwrapLocation info.location
+    where
+        info = getDebugInfo ast
+        unwrapLocation Nothing = -1
+        unwrapLocation (Just loc) = loc.offsetAfter
+
+getDebugInfo :: AST -> DebugInfo
+getDebugInfo (Symbol info _ ) = info
+getDebugInfo (Pair info _ _) = info
+getDebugInfo (Null info) = info
