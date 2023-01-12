@@ -1,6 +1,6 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.35.0.
+-- This file has been generated from package.yaml by hpack version 0.35.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -23,18 +23,21 @@ source-repository head
 
 library
   exposed-modules:
+      AST
       Utils.Parsing
   other-modules:
       Paths_poc_interpreter
   hs-source-dirs:
       src
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
+  default-extensions:
+      BlockArguments DeriveAnyClass DeriveGeneric DerivingStrategies DerivingVia GeneralisedNewtypeDeriving ImportQualifiedPost InstanceSigs LambdaCase NamedFieldPuns OverloadedStrings ScopedTypeVariables StandaloneDeriving TupleSections TypeApplications KindSignatures
+  ghc-options: -Werror -Wall -Wcompat -Widentities -Wmissing-deriving-strategies -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -Wunused-packages -Wunused-type-patterns -Wincomplete-uni-patterns
   build-depends:
       base >=4.7 && <5
     , megaparsec
     , parser-combinators
     , text
-  default-language: Haskell2010
+  default-language: GHC2021
 
 executable poc-interpreter-exe
   main-is: Main.hs
@@ -42,14 +45,16 @@ executable poc-interpreter-exe
       Paths_poc_interpreter
   hs-source-dirs:
       app
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  default-extensions:
+      BlockArguments DeriveAnyClass DeriveGeneric DerivingStrategies DerivingVia GeneralisedNewtypeDeriving ImportQualifiedPost InstanceSigs LambdaCase NamedFieldPuns OverloadedStrings ScopedTypeVariables StandaloneDeriving TupleSections TypeApplications KindSignatures
+  ghc-options: -Werror -Wall -Wcompat -Widentities -Wmissing-deriving-strategies -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -Wunused-packages -Wunused-type-patterns -Wincomplete-uni-patterns -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
     , megaparsec
     , parser-combinators
     , poc-interpreter
     , text
-  default-language: Haskell2010
+  default-language: GHC2021
 
 test-suite poc-interpreter-test
   type: exitcode-stdio-1.0
@@ -58,11 +63,13 @@ test-suite poc-interpreter-test
       Paths_poc_interpreter
   hs-source-dirs:
       test
-  ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
+  default-extensions:
+      BlockArguments DeriveAnyClass DeriveGeneric DerivingStrategies DerivingVia GeneralisedNewtypeDeriving ImportQualifiedPost InstanceSigs LambdaCase NamedFieldPuns OverloadedStrings ScopedTypeVariables StandaloneDeriving TupleSections TypeApplications KindSignatures
+  ghc-options: -Werror -Wall -Wcompat -Widentities -Wmissing-deriving-strategies -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -Wunused-packages -Wunused-type-patterns -Wincomplete-uni-patterns -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
     , megaparsec
     , parser-combinators
     , poc-interpreter
     , text
-  default-language: Haskell2010
+  default-language: GHC2021

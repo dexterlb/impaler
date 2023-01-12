@@ -24,16 +24,37 @@ dependencies:
 - parser-combinators
 - text
 
+default-language: GHC2021
+
+default-extensions:
+  BlockArguments
+  DeriveAnyClass
+  DeriveGeneric
+  DerivingStrategies
+  DerivingVia
+  GeneralisedNewtypeDeriving
+  ImportQualifiedPost
+  InstanceSigs
+  LambdaCase
+  NamedFieldPuns
+  OverloadedStrings
+  ScopedTypeVariables
+  StandaloneDeriving
+  TupleSections
+  TypeApplications
+  KindSignatures
 ghc-options:
-- -Wall
-- -Wcompat
-- -Widentities
-- -Wincomplete-record-updates
-- -Wincomplete-uni-patterns
-- -Wmissing-export-lists
-- -Wmissing-home-modules
-- -Wpartial-fields
-- -Wredundant-constraints
+  -Werror
+  -Wall
+  -Wcompat
+  -Widentities
+  -Wmissing-deriving-strategies
+  -Wmissing-export-lists
+  -Wpartial-fields
+  -Wredundant-constraints
+  -Wunused-packages
+  -Wunused-type-patterns
+  -Wincomplete-uni-patterns
 
 library:
   source-dirs: src
