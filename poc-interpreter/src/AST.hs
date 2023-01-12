@@ -5,29 +5,15 @@ module AST
 where
 
 import Data.Text (Text)
+
 import Utils.Parsing (Parseable, Parser, (<|>))
 import qualified Utils.Parsing as P
+
+import DebugInfo
 
 data AST
     = Atom DebugInfo Text
     | SExpr DebugInfo [AST]
-    deriving stock (Show)
-
-data DebugInfo = DebugInfo
-    { location :: Maybe LocationInfo
-    }
-    deriving stock (Show)
-
-noDebugInfo :: DebugInfo
-noDebugInfo = DebugInfo
-    { location = Nothing
-    }
-
-data LocationInfo = LocationInfo
-    { lineNumber :: Int
-    , columnNumber :: Int
-    , fileName :: Text
-    }
     deriving stock (Show)
 
 instance (Parseable AST) where
@@ -38,10 +24,14 @@ astParser = atomParser <|> sexprParser
 
 atomParser :: Parser AST
 atomParser = do
+    offBefore <- P.getOffset
     w <- P.identifier
-    pure $ Atom noDebugInfo w
+    offAfter <- P.getOffset
+    pure $ Atom (debugOffset offBefore offAfter) w
 
 sexprParser :: Parser AST
 sexprParser = do
+    offBefore <- P.getOffset
     els <- P.braces $ P.separatedByWhitespace astParser
-    pure $ SExpr noDebugInfo els
+    offAfter <- P.getOffset
+    pure $ SExpr (debugOffset offBefore offAfter) els

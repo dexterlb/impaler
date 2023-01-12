@@ -24,6 +24,7 @@ source-repository head
 library
   exposed-modules:
       AST
+      DebugInfo
       Utils.Parsing
   other-modules:
       Paths_poc_interpreter
