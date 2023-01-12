@@ -7,7 +7,7 @@ module Utils.Parsing
     , Parseable, Parser, parser
     , lexeme, symbol, lambda, braces, curlyBraces, block
     , operator, word, identifier, literal, quotedString
-    , separated
+    , separated, separatedBy, separatedByWhitespace
     , floatNumber
     , ps
     , pss
@@ -62,8 +62,9 @@ forceParseNamed p t name = case parse (p <* eof) name t of
 sc :: Parser ()
 sc = L.space space1 lineCmnt blockCmnt
   where
-    lineCmnt  = L.skipLineComment "//"
-    blockCmnt = L.skipBlockComment "/*" "*/"
+    lineCmnt  = L.skipLineComment ";"
+    -- blockCmnt = L.skipBlockComment "/*" "*/"
+    blockCmnt = fail "block comments not supported"
 
 lexeme :: Parser a -> Parser a
 lexeme = L.lexeme sc
@@ -95,12 +96,18 @@ operator :: Text -> Parser Text
 operator = literal
 
 separated :: Text -> Parser a -> Parser [a]
-separated sep p = (try (multi)) <|> (pure <$> p)
+separated sep = separatedBy $ literal sep
+
+separatedByWhitespace :: Parser a -> Parser [a]
+separatedByWhitespace = separatedBy $ pure ()
+
+separatedBy :: Parser b -> Parser a -> Parser [a]
+separatedBy sep p = (try (multi)) <|> (pure <$> p)
     where
         multi = do
             h <- p
-            _ <- literal sep
-            t <- separated sep p
+            _ <- sep
+            t <- separatedBy sep p
             pure $ h : t
 
 identifier :: Parser Text

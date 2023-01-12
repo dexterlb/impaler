@@ -4,7 +4,7 @@ module AST
     )
 where
 
-import Data.Text.Lazy (Text)
+import Data.Text (Text)
 import Utils.Parsing (Parseable, Parser, (<|>))
 import qualified Utils.Parsing as P
 
@@ -31,10 +31,17 @@ data LocationInfo = LocationInfo
     deriving stock (Show)
 
 instance (Parseable AST) where
-    parser = atomParser <|> sexprParser
+    parser = astParser
+
+astParser :: Parser AST
+astParser = atomParser <|> sexprParser
 
 atomParser :: Parser AST
-atomParser = pure $ Atom noDebugInfo undefined
+atomParser = do
+    w <- P.identifier
+    pure $ Atom noDebugInfo w
 
 sexprParser :: Parser AST
-sexprParser = pure $ SExpr noDebugInfo undefined
+sexprParser = do
+    els <- P.braces $ P.separatedByWhitespace astParser
+    pure $ SExpr noDebugInfo els
