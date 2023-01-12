@@ -39,6 +39,8 @@ default-extensions:
   TupleSections
   TypeApplications
   KindSignatures
+  OverloadedRecordDot
+  DuplicateRecordFields
 ghc-options:
   -Werror
   -Wall
