@@ -255,3 +255,6 @@ TSWLatexianTemp*
 *.sta
 
 *.pdf
+
+# nix
+result
