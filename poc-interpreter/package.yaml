@@ -81,4 +81,5 @@ tests:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - poc-interpreter
+      []
+#      - poc-interpreter

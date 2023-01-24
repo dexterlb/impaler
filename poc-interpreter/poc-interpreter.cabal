@@ -66,5 +66,4 @@ test-suite poc-interpreter-test
   ghc-options: -Werror -Wall -Wcompat -Widentities -Wmissing-deriving-strategies -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -Wunused-type-patterns -Wincomplete-uni-patterns -Wunused-packages -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , poc-interpreter
   default-language: GHC2021
