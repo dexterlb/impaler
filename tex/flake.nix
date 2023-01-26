@@ -36,7 +36,7 @@
       {
         packages.default = pkgs.stdenvNoCC.mkDerivation rec {
           name = "thesis-text";
-          src = "${self}/tex";
+          src = ./.;
           buildInputs = [
             pkgs.coreutils
             pkgs.bash
