@@ -3,6 +3,7 @@ module DebugInfo
     , LocationInfo(..)
     , noDebugInfo
     , debugOffset
+    , builtinDebugInfo
     )
 where
 
@@ -32,6 +33,15 @@ data LocationInfo = LocationInfo
     { offsetBefore :: Int
     , offsetAfter :: Int
     , fileName :: Text
+    }
+
+builtinDebugInfo :: DebugInfo
+builtinDebugInfo = DebugInfo
+    { location = Just $ LocationInfo
+        { offsetBefore = 0
+        , offsetAfter = 0
+        , fileName = "<builtin>"
+        }
     }
 
 instance (Show DebugInfo) where

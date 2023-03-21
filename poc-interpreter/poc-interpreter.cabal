@@ -25,6 +25,8 @@ library
   exposed-modules:
       AST
       DebugInfo
+      Environments
+      Evaluator
       PrimitiveData
       Sandbox
       Utils.Parsing
@@ -38,9 +40,11 @@ library
   ghc-options: -Werror -Wall -Wcompat -Widentities -Wmissing-deriving-strategies -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -Wunused-type-patterns -Wincomplete-uni-patterns -Wunused-packages
   build-depends:
       base >=4.7 && <5
+    , containers
     , megaparsec
     , parser-combinators
     , text
+    , transformers
   default-language: GHC2021
 
 executable poc-interpreter-exe
