@@ -4,15 +4,14 @@ module AST
     )
 where
 
-import Data.Text (Text)
-
 import Utils.Parsing (Parseable, Parser, (<|>))
 import qualified Utils.Parsing as P
 
 import DebugInfo
+import PrimitiveData
 
 data AST
-    = Symbol DebugInfo Text
+    = Symbol DebugInfo Identifier
     | Pair DebugInfo AST AST
     | Null DebugInfo
     deriving stock (Show)
@@ -28,7 +27,7 @@ parseAtom = do
     offBefore <- P.getOffset
     w <- P.identifier
     offAfter <- P.getOffset
-    pure $ Symbol (debugOffset offBefore offAfter) w
+    pure $ Symbol (debugOffset offBefore offAfter) (Identifier w)
 
 parseSexpr :: Parser AST
 parseSexpr = do
