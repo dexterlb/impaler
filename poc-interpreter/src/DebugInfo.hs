@@ -7,11 +7,12 @@ module DebugInfo
 where
 
 import Data.Text (Text)
+import qualified Data.Text as T
+import Data.Maybe (fromMaybe)
 
 data DebugInfo = DebugInfo
     { location :: Maybe LocationInfo
     }
-    deriving stock (Show)
 
 noDebugInfo :: DebugInfo
 noDebugInfo = DebugInfo
@@ -32,4 +33,9 @@ data LocationInfo = LocationInfo
     , offsetAfter :: Int
     , fileName :: Text
     }
-    deriving stock (Show)
+
+instance (Show DebugInfo) where
+    show d = "{" <> (fromMaybe "" $ show <$> d.location) <> "}"
+
+instance (Show LocationInfo) where
+    show l = (T.unpack l.fileName) <> ":" <> (show l.offsetBefore) <> ":" <> (show l.offsetAfter)

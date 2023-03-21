@@ -1,10 +1,6 @@
 module Main (main) where
 
-import Utils.Parsing (ps)
-import AST (AST)
-
-sampleAST :: AST
-sampleAST = ps $ "(foo bar (baz qux))"
+import Sandbox
 
 main :: IO ()
-main = putStrLn $ show sampleAST
+main = demo
