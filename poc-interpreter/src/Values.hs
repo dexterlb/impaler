@@ -1,6 +1,7 @@
 module Values
     ( Value(..)
     , ValueItem(..)
+    , Callback
     , astToVal
     , builtinVal
     )
@@ -31,7 +32,9 @@ data ValueItem m where
     Fail                :: Value m                        -> ValueItem m
 
     -- this is a rather stupid way to allow side effects, but will do for now
-    UnsafeBuiltinFunc   :: (Monad m) => (Value m -> m ()) -> ValueItem m
+    UnsafeBuiltinFunc   :: (Callback m -> Value m -> m ())           -> ValueItem m
+
+type Callback m = (Value m) -> m ()
 
 astToVal :: AST -> Value m
 astToVal (AST.Symbol dinfo name) = Value dinfo $ Symbol name
