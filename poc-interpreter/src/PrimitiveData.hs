@@ -5,6 +5,7 @@ module PrimitiveData
 where
 
 import Data.Text (Text)
+import Data.String (IsString)
 
 newtype Identifier = Identifier Text
-    deriving newtype (Show, Eq, Ord)
+    deriving newtype (Show, Eq, Ord, IsString)

@@ -4,6 +4,9 @@ module Values
     , Callback
     , astToVal
     , builtinVal
+    , makeFail
+    , makeFailList
+    , makeList
     )
 
 where
@@ -43,6 +46,18 @@ astToVal (AST.Null dinfo)        = Value dinfo $ Null
 
 builtinVal :: ValueItem m -> Value m
 builtinVal = Value builtinDebugInfo
+
+
+makeFail :: DebugInfo -> Value m -> Value m
+makeFail dinfo v = Value dinfo $ Fail v
+
+makeFailList :: DebugInfo -> Identifier -> [Value m] -> Value m
+makeFailList dinfo err vals = makeFail dinfo $ makeList dinfo l
+    where
+        l = (Value dinfo $ Symbol err) : vals
+
+makeList :: DebugInfo -> [Value m] -> Value m
+makeList dinfo = foldr (\x xs -> Value dinfo $ Pair x xs) (Value dinfo Null)
 
 instance (Show (ValueItem m)) where
     show (Symbol (Identifier name)) = "sym<" <> T.unpack name <> ">"

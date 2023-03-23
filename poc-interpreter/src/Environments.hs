@@ -23,6 +23,6 @@ envFromList :: [(Identifier, Value m)] -> Env m
 envFromList = Env . Map.fromList
 
 envGet :: DebugInfo -> Identifier -> Env m -> Value m
-envGet dinfo i@(Identifier it) (Env e)
+envGet dinfo i (Env e)
     | (Just v) <- Map.lookup i e = v
-    | otherwise = Value dinfo $ Fail $ Value dinfo $ Str $ "not defined: " <> it
+    | otherwise = makeFailList dinfo "not-defined" [Value dinfo $ Symbol i]
