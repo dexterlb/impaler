@@ -4,6 +4,8 @@ module AST
     )
 where
 
+import Data.Text (Text)
+
 import Utils.Parsing (Parseable, Parser, (<|>))
 import qualified Utils.Parsing as P
 
@@ -14,6 +16,8 @@ data AST
     = Symbol DebugInfo Identifier
     | Pair DebugInfo AST AST
     | Null DebugInfo
+    | Num DebugInfo Float
+    | Str DebugInfo Text
     deriving stock (Show)
 
 instance (Parseable AST) where
@@ -23,9 +27,7 @@ parseAST :: Parser AST
 parseAST = parseAtom <|> parseSexpr
 
 parseAtom :: Parser AST
-parseAtom = parseSection Symbol par
-    where
-        par = Identifier <$> P.identifier
+parseAtom = parseSymbol <|> parseNum <|> parseStr
 
 parseSexpr :: Parser AST
 parseSexpr = do
@@ -33,6 +35,17 @@ parseSexpr = do
     els <- P.braces $ P.separatedByWhitespace parseAST
     offAfter <- P.getOffset
     pure $ makeSexpr offBefore offAfter els
+
+parseSymbol :: Parser AST
+parseSymbol = parseSection Symbol par
+    where
+        par = Identifier <$> P.identifier
+
+parseNum :: Parser AST
+parseNum = parseSection Num $ P.floatNumber
+
+parseStr :: Parser AST
+parseStr = parseSection Str $ P.quotedString '"'
 
 makeSexpr :: Int -> Int -> [AST] -> AST
 makeSexpr offBefore offAfter [] = Null $ debugOffset offBefore offAfter
@@ -59,3 +72,5 @@ getDebugInfo :: AST -> DebugInfo
 getDebugInfo (Symbol info _ ) = info
 getDebugInfo (Pair info _ _) = info
 getDebugInfo (Null info) = info
+getDebugInfo (Num info _) = info
+getDebugInfo (Str info _) = info
