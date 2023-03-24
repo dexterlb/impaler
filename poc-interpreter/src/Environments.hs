@@ -7,14 +7,11 @@ module Environments
 
 where
 
-import Data.Map (Map)
 import qualified Data.Map as Map
 
 import Values
 import PrimitiveData
 import DebugInfo
-
-newtype Env m = Env (Map Identifier (Value m))
 
 envAdd :: Identifier -> Value m -> Env m -> Env m
 envAdd i v (Env e) = Env $ Map.insert i v e

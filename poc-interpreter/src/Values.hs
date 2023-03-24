@@ -2,6 +2,7 @@ module Values
     ( Value(..)
     , ValueItem(..)
     , Callback
+    , Env(..)
     , astToVal
     , builtinVal
     , makeFail
@@ -15,6 +16,7 @@ where
 
 import qualified Data.Text as T
 import Data.Text (Text)
+import Data.Map (Map)
 
 import qualified AST
 import AST (AST)
@@ -39,7 +41,14 @@ data ValueItem m where
     -- this is a rather stupid way to allow side effects, but will do for now
     UnsafeBuiltinFunc   :: (Callback m -> Value m -> m ())           -> ValueItem m
 
+    CLambda             :: Value m          -- ^ body
+                        -> [Identifier]     -- ^ arg names
+                        -> Env m            -- ^ closure
+                        -> ValueItem m
+
 type Callback m = (Value m) -> m ()
+
+newtype Env m = Env (Map Identifier (Value m))
 
 astToVal :: AST -> Value m
 astToVal (AST.Symbol dinfo name) = Value dinfo $ Symbol name
@@ -93,6 +102,7 @@ instance (Show (ValueItem m)) where
     show (Fail err)    = "FAIL<" <> (show err) <> ">"
     show Null          = "null"
     show (UnsafeBuiltinFunc _) = "<unsafe builtin>"
+    show (CLambda _ _ _) = "<lambda>"
 
 instance (Show (Value m)) where
     show (Value dinfo v) = (show v) <> (show dinfo)
