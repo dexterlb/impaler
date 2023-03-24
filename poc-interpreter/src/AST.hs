@@ -23,11 +23,9 @@ parseAST :: Parser AST
 parseAST = parseAtom <|> parseSexpr
 
 parseAtom :: Parser AST
-parseAtom = do
-    offBefore <- P.getOffset
-    w <- P.identifier
-    offAfter <- P.getOffset
-    pure $ Symbol (debugOffset offBefore offAfter) (Identifier w)
+parseAtom = parseSection Symbol par
+    where
+        par = Identifier <$> P.identifier
 
 parseSexpr :: Parser AST
 parseSexpr = do
@@ -48,6 +46,14 @@ getOffsetAfter ast = unwrapLocation info.location
         info = getDebugInfo ast
         unwrapLocation Nothing = -1
         unwrapLocation (Just loc) = loc.offsetAfter
+
+parseSection :: (DebugInfo -> a -> b) -> Parser a -> Parser b
+parseSection f par = do
+    offBefore <- P.getOffset
+    inside <- par
+    offAfter <- P.getOffset
+    let dinfo = debugOffset offBefore offAfter
+    pure $ (f dinfo inside)
 
 getDebugInfo :: AST -> DebugInfo
 getDebugInfo (Symbol info _ ) = info
