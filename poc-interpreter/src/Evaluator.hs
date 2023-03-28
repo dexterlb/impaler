@@ -49,18 +49,21 @@ isSpecialForm "clambda" = True
 isSpecialForm _ = False
 
 evalSpecialForm :: Env m -> Callback m -> Identifier -> Value m -> m ()
-evalSpecialForm env ret "clambda" val@(Value dinfo _)
-    | L _ [ arg, body ] <- toValTree val = ret $ makeClambda dinfo env arg (fromValTree body)
-    | otherwise = ret $ makeFailList dinfo "clambda-malformed" [val]
+evalSpecialForm env ret "clambda" (Value dinfo (Pair arg body))
+    = ret $ makeClambda dinfo env arg body
+evalSpecialForm _   ret "clambda" val@(Value dinfo _)
+    = ret $ makeFailList dinfo "clambda-malformed" [val]
 evalSpecialForm _ _ (Identifier i) _ = error $ "no special form handler defined for '" <> (T.unpack i) <> "' - this is a bug."
 
 makeClambda
     :: DebugInfo
     -> Env m
-    -> ValTree m    -- ^ argument (may be a list of symbols or a single symbol)
+    -> Value m      -- ^ argument (may be a list of symbols or a single symbol)
     -> Value m      -- ^ body
     -> Value m      -- ^ resulting clambda object
 makeClambda dinfo env arg body
-    | (Just argsyms) <- vtsymlist arg = Value dinfo $ CLambda body (LambdaArgNameList argsyms) env
-    | (Just argsym)  <- vtsym arg     = Value dinfo $ CLambda body (LambdaArgNameCombined argsym) env
-    | otherwise = makeFailList dinfo "clambda-args-malformed" [fromValTree arg]
+    | (Just argsyms) <- vtsymlist vtarg = Value dinfo $ CLambda body (LambdaArgNameList argsyms) env
+    | (Just argsym)  <- vtsym vtarg     = Value dinfo $ CLambda body (LambdaArgNameCombined argsym) env
+    | otherwise = makeFailList dinfo "clambda-args-malformed" [arg]
+    where
+        vtarg = toValTree arg
