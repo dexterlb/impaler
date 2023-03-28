@@ -4,9 +4,12 @@ module Evaluator
 
 where
 
+import qualified Data.Text as T
+
 import Values
 import Environments
 import PrimitiveData
+import DebugInfo
 
 -- | eval the given value under the given environment
 eval :: (Monad m) => Env m -> Callback m -> Value m -> m ()
@@ -45,6 +48,19 @@ isSpecialForm :: Identifier -> Bool
 isSpecialForm "clambda" = True
 isSpecialForm _ = False
 
-evalSpecialForm :: (Monad m) => Env m -> Callback m -> Identifier -> Value m -> m ()
-evalSpecialForm env ret "clambda" (Value _ _) = undefined env ret -- need to think of an easier way to transform values
-evalSpecialForm _ _ _ _ = pure ()
+evalSpecialForm :: Env m -> Callback m -> Identifier -> Value m -> m ()
+evalSpecialForm env ret "clambda" val@(Value dinfo _)
+    | L _ [ arg, body ] <- toValTree val = ret $ makeClambda dinfo env arg (fromValTree body)
+    | otherwise = ret $ makeFailList dinfo "clambda-malformed" [val]
+evalSpecialForm _ _ (Identifier i) _ = error $ "no special form handler defined for '" <> (T.unpack i) <> "' - this is a bug."
+
+makeClambda
+    :: DebugInfo
+    -> Env m
+    -> ValTree m    -- ^ argument (may be a list of symbols or a single symbol)
+    -> Value m      -- ^ body
+    -> Value m      -- ^ resulting clambda object
+makeClambda dinfo env arg body
+    | (Just argsyms) <- vtsymlist arg = Value dinfo $ CLambda body (LambdaArgNameList argsyms) env
+    | (Just argsym)  <- vtsym arg     = Value dinfo $ CLambda body (LambdaArgNameCombined argsym) env
+    | otherwise = makeFailList dinfo "clambda-args-malformed" [fromValTree arg]

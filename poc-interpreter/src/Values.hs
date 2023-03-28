@@ -3,6 +3,7 @@ module Values
     , ValueItem(..)
     , Callback
     , Env(..)
+    , LambdaArgName(..)
     , astToVal
     , builtinVal
     , makeFail
@@ -10,6 +11,11 @@ module Values
     , makeList
     , vfoldr
     , vffoldr
+    , toValTree
+    , fromValTree
+    , ValTree(..)
+    , vtsymlist
+    , vtsym
     )
 
 where
@@ -42,13 +48,17 @@ data ValueItem m where
     UnsafeBuiltinFunc   :: (Callback m -> Value m -> m ())           -> ValueItem m
 
     CLambda             :: Value m          -- ^ body
-                        -> [Identifier]     -- ^ arg names
+                        -> LambdaArgName    -- ^ arg name(s)
                         -> Env m            -- ^ closure
                         -> ValueItem m
 
 type Callback m = (Value m) -> m ()
 
 newtype Env m = Env (Map Identifier (Value m))
+
+data LambdaArgName
+    = LambdaArgNameCombined Identifier
+    | LambdaArgNameList [Identifier]
 
 astToVal :: AST -> Value m
 astToVal (AST.Symbol dinfo name) = Value dinfo $ Symbol name
@@ -93,6 +103,28 @@ vffoldr f start (Value _ (Pair x xs))
         fx  = f x fxs
         fxs = vffoldr f start xs
 vffoldr _ _ v@(Value dinfo _) = makeFailList dinfo "not-a-list" [v]
+
+toValTree :: Value m -> ValTree m
+toValTree (Value dinfo Null) = L dinfo []
+toValTree (Value dinfo v@(Pair x xs))
+    | (L _ ys) <- toValTree xs = L dinfo ((toValTree x):ys)
+    | otherwise           = V dinfo v
+toValTree (Value dinfo v) = V dinfo v
+
+fromValTree :: ValTree m -> Value m
+fromValTree = error "not implemented"
+
+vtsymlist :: ValTree m -> Maybe [Identifier]
+vtsymlist (L _ items) = mapM vtsym items
+vtsymlist _ = fail "not a list"
+
+vtsym :: ValTree m -> Maybe Identifier
+vtsym (V _ (Symbol i)) = pure i
+vtsym _ = fail "not a symbol"
+
+data ValTree m
+    = L DebugInfo [ ValTree m ]
+    | V DebugInfo (ValueItem m)
 
 instance (Show (ValueItem m)) where
     show (Symbol (Identifier name)) = "sym<" <> T.unpack name <> ">"
