@@ -41,6 +41,7 @@ default-extensions:
   KindSignatures
   OverloadedRecordDot
   DuplicateRecordFields
+  ScopedTypeVariables
 ghc-options:
   -Werror
   -Wall

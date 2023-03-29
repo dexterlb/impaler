@@ -3,7 +3,7 @@ module Values
     , ValueItem(..)
     , Callback
     , Env(..)
-    , LambdaArgName(..)
+    , ArgSpec(..)
     , astToVal
     , builtinVal
     , makeFail
@@ -16,6 +16,7 @@ module Values
     , ValTree(..)
     , vtsymlist
     , vtsym
+    , valToList
     )
 
 where
@@ -47,8 +48,8 @@ data ValueItem m where
     -- this is a rather stupid way to allow side effects, but will do for now
     UnsafeBuiltinFunc   :: (Callback m -> Value m -> m ())           -> ValueItem m
 
-    CLambda             :: Value m          -- ^ body
-                        -> LambdaArgName    -- ^ arg name(s)
+    CLambda             :: [Value m]        -- ^ body (list of statements)
+                        -> ArgSpec          -- ^ arg name(s)
                         -> Env m            -- ^ closure
                         -> ValueItem m
 
@@ -56,9 +57,13 @@ type Callback m = (Value m) -> m ()
 
 newtype Env m = Env (Map Identifier (Value m))
 
-data LambdaArgName
-    = LambdaArgNameCombined Identifier
-    | LambdaArgNameList [Identifier]
+data ArgSpec
+    = ArgSpecCombined
+        Identifier      -- ^ CPS return callback
+        Identifier      -- ^ argument name
+    | ArgSpecList
+        Identifier      -- ^ CPS return callback
+        [Identifier]    -- ^ list of argument names
 
 astToVal :: AST -> Value m
 astToVal (AST.Symbol dinfo name) = Value dinfo $ Symbol name
@@ -103,6 +108,11 @@ vffoldr f start (Value _ (Pair x xs))
         fx  = f x fxs
         fxs = vffoldr f start xs
 vffoldr _ _ v@(Value dinfo _) = makeFailList dinfo "not-a-list" [v]
+
+valToList :: Value m -> Maybe [Value m]
+valToList (Value _ (Pair x xs)) = (x:) <$> (valToList xs)
+valToList (Value _ Null) = pure []
+valToList _ = fail "expected list-like value"
 
 toValTree :: Value m -> ValTree m
 toValTree (Value dinfo Null) = L dinfo []

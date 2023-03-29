@@ -36,7 +36,7 @@ library
   hs-source-dirs:
       src
   default-extensions:
-      BlockArguments DeriveAnyClass DeriveGeneric DerivingStrategies DerivingVia GeneralisedNewtypeDeriving ImportQualifiedPost InstanceSigs LambdaCase NamedFieldPuns OverloadedStrings ScopedTypeVariables StandaloneDeriving TupleSections TypeApplications KindSignatures OverloadedRecordDot DuplicateRecordFields
+      BlockArguments DeriveAnyClass DeriveGeneric DerivingStrategies DerivingVia GeneralisedNewtypeDeriving ImportQualifiedPost InstanceSigs LambdaCase NamedFieldPuns OverloadedStrings ScopedTypeVariables StandaloneDeriving TupleSections TypeApplications KindSignatures OverloadedRecordDot DuplicateRecordFields ScopedTypeVariables
   ghc-options: -Werror -Wall -Wcompat -Widentities -Wmissing-deriving-strategies -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -Wunused-type-patterns -Wincomplete-uni-patterns -Wunused-packages
   build-depends:
       base >=4.7 && <5
@@ -54,7 +54,7 @@ executable poc-interpreter-exe
   hs-source-dirs:
       app
   default-extensions:
-      BlockArguments DeriveAnyClass DeriveGeneric DerivingStrategies DerivingVia GeneralisedNewtypeDeriving ImportQualifiedPost InstanceSigs LambdaCase NamedFieldPuns OverloadedStrings ScopedTypeVariables StandaloneDeriving TupleSections TypeApplications KindSignatures OverloadedRecordDot DuplicateRecordFields
+      BlockArguments DeriveAnyClass DeriveGeneric DerivingStrategies DerivingVia GeneralisedNewtypeDeriving ImportQualifiedPost InstanceSigs LambdaCase NamedFieldPuns OverloadedStrings ScopedTypeVariables StandaloneDeriving TupleSections TypeApplications KindSignatures OverloadedRecordDot DuplicateRecordFields ScopedTypeVariables
   ghc-options: -Werror -Wall -Wcompat -Widentities -Wmissing-deriving-strategies -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -Wunused-type-patterns -Wincomplete-uni-patterns -Wunused-packages -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
@@ -69,7 +69,7 @@ test-suite poc-interpreter-test
   hs-source-dirs:
       test
   default-extensions:
-      BlockArguments DeriveAnyClass DeriveGeneric DerivingStrategies DerivingVia GeneralisedNewtypeDeriving ImportQualifiedPost InstanceSigs LambdaCase NamedFieldPuns OverloadedStrings ScopedTypeVariables StandaloneDeriving TupleSections TypeApplications KindSignatures OverloadedRecordDot DuplicateRecordFields
+      BlockArguments DeriveAnyClass DeriveGeneric DerivingStrategies DerivingVia GeneralisedNewtypeDeriving ImportQualifiedPost InstanceSigs LambdaCase NamedFieldPuns OverloadedStrings ScopedTypeVariables StandaloneDeriving TupleSections TypeApplications KindSignatures OverloadedRecordDot DuplicateRecordFields ScopedTypeVariables
   ghc-options: -Werror -Wall -Wcompat -Widentities -Wmissing-deriving-strategies -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -Wunused-type-patterns -Wincomplete-uni-patterns -Wunused-packages -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
