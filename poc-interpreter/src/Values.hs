@@ -4,6 +4,7 @@ module Values
     , Callback
     , Env(..)
     , ArgSpec(..)
+    , CArgSpec(..)
     , astToVal
     , builtinVal
     , makeFail
@@ -49,7 +50,7 @@ data ValueItem m where
     UnsafeBuiltinFunc   :: (Callback m -> Value m -> m ())           -> ValueItem m
 
     CLambda             :: [Value m]        -- ^ body (list of statements)
-                        -> ArgSpec          -- ^ arg name(s)
+                        -> CArgSpec         -- ^ arg name(s)
                         -> Env m            -- ^ closure
                         -> ValueItem m
 
@@ -57,12 +58,14 @@ type Callback m = (Value m) -> m ()
 
 newtype Env m = Env (Map Identifier (Value m))
 
+data CArgSpec = CArgSpec 
+    Identifier      -- ^ CPS return callback
+    ArgSpec
+
 data ArgSpec
     = ArgSpecCombined
-        Identifier      -- ^ CPS return callback
         Identifier      -- ^ argument name
     | ArgSpecList
-        Identifier      -- ^ CPS return callback
         [Identifier]    -- ^ list of argument names
 
 astToVal :: AST -> Value m

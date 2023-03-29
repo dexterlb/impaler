@@ -39,7 +39,7 @@ call ret expr@(Value dinfo _) _ = ret $ makeFailList dinfo "dont-know-how-to-cal
 callCLambda :: forall m. (Monad m)
             => Callback m   -- ^ callback to call with result
             -> Env m        -- ^ closure that comes with lambda
-            -> ArgSpec      -- ^ formal arguments (argument names)
+            -> CArgSpec     -- ^ formal arguments (argument names)
             -> Value m      -- ^ arguments
             -> [Value m]    -- ^ body (list of statements)
             -> m ()
@@ -58,12 +58,20 @@ callCLambda ret closure argspec arg body = mapM_ evalBodyStatement body
 
 
 makeCLambdaEnv
-    :: ArgSpec
+    :: CArgSpec
     -> Callback m   -- ^ CPS callback
     -> Value m      -- ^ argument
     -> Env m        -- ^ closure
     -> Env m
-makeCLambdaEnv = error "not implemented" -- should combine closure, args and a return
+makeCLambdaEnv (CArgSpec retname argspec) ret arg closure
+    = envAdd retname (makeCallableFromCallback ret)
+    $ envUnion (bindArgs argspec arg) closure
+
+makeCallableFromCallback :: Callback m -> Value m
+makeCallableFromCallback = error "not implemented"
+
+bindArgs :: ArgSpec -> Value m -> Env m
+bindArgs = error "not implemented"
 
 -- | evaluate all elements in a given list
 -- | afterwards, pass a list of evaluated items to the callback
@@ -97,9 +105,9 @@ makeClambda
     -> Value m      -- ^ resulting clambda object
 makeClambda dinfo env retname arg body
     | (Just argsyms) <- vtsymlist vtarg, (Just retsym) <- vtsym vtretname
-    = Value dinfo $ CLambda body (ArgSpecList retsym argsyms) env
+    = Value dinfo $ CLambda body (CArgSpec retsym $ ArgSpecList argsyms) env
     | (Just argsym)  <- vtsym vtarg, (Just retsym) <- vtsym vtretname
-    = Value dinfo $ CLambda body (ArgSpecCombined retsym argsym) env
+    = Value dinfo $ CLambda body (CArgSpec retsym $ ArgSpecCombined argsym) env
     | otherwise = makeFailList dinfo "clambda-args-malformed" [arg]
     where
         vtarg = toValTree arg
