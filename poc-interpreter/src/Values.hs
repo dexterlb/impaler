@@ -37,32 +37,31 @@ import PrimitiveData
 
 data Value m = Value DebugInfo (ValueItem m)
 
-data ValueItem m where
+data ValueItem m
     -- at some point symbols need to be interned, but for now Text will do
-    Symbol              :: Identifier                     -> ValueItem m
+    = Symbol              Identifier
 
-    Str                 :: Text                           -> ValueItem m
-    Num                 :: Float                          -> ValueItem m
+    | Str                 Text
+    | Num                 Float
 
-    Pair                :: Value m -> Value m             -> ValueItem m
-    Null                ::                                   ValueItem m
+    | Pair                (Value m) (Value m)
+    | Null
 
     -- | encapsulates failure
-    Fail                :: Value m                        -> ValueItem m
+    | Fail                (Value m)
 
     -- this is a rather stupid way to allow side effects, but will do for now
-    UnsafeBuiltinFunc   :: (Callback m -> Value m -> m ())           -> ValueItem m
+    | UnsafeBuiltinFunc   (Callback m -> Value m -> m ())
 
-    CLambda             :: [Value m]        -- ^ body (list of statements)
-                        -> CArgSpec         -- ^ arg name(s)
-                        -> Env m            -- ^ closure
-                        -> ValueItem m
+    | CLambda   [Value m]        -- ^ body (list of statements)
+                CArgSpec         -- ^ arg name(s)
+                (Env m)          -- ^ closure
 
 type Callback m = (Value m) -> m ()
 
 newtype Env m = Env (Map Identifier (Value m))
 
-data CArgSpec = CArgSpec 
+data CArgSpec = CArgSpec
     Identifier      -- ^ CPS return callback
     ArgSpec
 
