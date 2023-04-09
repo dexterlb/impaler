@@ -35,32 +35,33 @@ import AST (AST)
 import DebugInfo
 import PrimitiveData
 
-data Value m = Value DebugInfo (ValueItem m)
+data Value v m = Value DebugInfo (ValueItem v m)
 
-data ValueItem m
+data ValueItem v m
     -- at some point symbols need to be interned, but for now Text will do
-    = Symbol              Identifier
+    = Symbol            Identifier
 
-    | Str                 Text
-    | Num                 Float
-    | Bool                Bool
+    | Str               Text
+    | Num               Float
+    | Bool              Bool
 
-    | Pair                (Value m) (Value m)
+    | Pair              (Value v m) (Value v m)
     | Null
 
     -- | encapsulates failure
-    | Fail                (Value m)
+    | Fail              (Value v m)
 
     -- this is a rather stupid way to allow side effects, but will do for now
-    | ExternalFunc   (Callback m -> Value m -> m ())
+    | ExternalFunc      (Callback v m -> Value v m -> m ())
+    | ExternalVal       v
 
-    | CLambda   [Value m]        -- ^ body (list of statements)
+    | CLambda   [Value v m]        -- ^ body (list of statements)
                 CArgSpec         -- ^ arg name(s)
-                (Env m)          -- ^ closure
+                (Env v m)          -- ^ closure
 
-type Callback m = (Value m) -> m ()
+type Callback v m = (Value v m) -> m ()
 
-newtype Env m = Env (Map Identifier (Value m))
+newtype Env v m = Env (Map Identifier (Value v m))
 
 data CArgSpec = CArgSpec
     Identifier      -- ^ CPS return callback
@@ -72,23 +73,23 @@ data ArgSpec
     | ArgSpecList
         [Identifier]    -- ^ list of argument names
 
-type CouldFail m a = Either (ValueItem m) a
+type CouldFail v m a = Either (ValueItem v m) a
 
-encodeFail :: DebugInfo -> CouldFail m (Value m) -> Value m
+encodeFail :: DebugInfo -> CouldFail v m (Value v m) -> Value v m
 encodeFail _ (Right v) = v
 encodeFail dinfo (Left f@(Fail _)) = Value dinfo f
 encodeFail _ _ = error "got a failure value that is not a Fail"
 
-returnFail :: Value m -> CouldFail m a
+returnFail :: Value v m -> CouldFail v m a
 returnFail v = Left $ Fail v
 
-returnFailList :: Identifier -> [Value m] -> CouldFail m a
+returnFailList :: Identifier -> [Value v m] -> CouldFail v m a
 returnFailList err vals
     | (Value _ item) <- makeFailList dinfo err vals = Left $ item
     where
         dinfo = builtinDebugInfo
 
-astToVal :: AST -> Value m
+astToVal :: AST -> Value v m
 astToVal (AST.Symbol dinfo name) = Value dinfo $ Symbol name
 astToVal (AST.Pair dinfo a b)    = Value dinfo $ Pair (astToVal a) (astToVal b)
 astToVal (AST.Null dinfo)        = Value dinfo $ Null
@@ -96,22 +97,22 @@ astToVal (AST.Num dinfo x)       = Value dinfo $ Num x
 astToVal (AST.Str dinfo s)       = Value dinfo $ Str s
 astToVal (AST.Bool dinfo b)      = Value dinfo $ Bool b
 
-builtinVal :: ValueItem m -> Value m
+builtinVal :: ValueItem v m -> Value v m
 builtinVal = Value builtinDebugInfo
 
 
-makeFail :: DebugInfo -> Value m -> Value m
+makeFail :: DebugInfo -> Value v m -> Value v m
 makeFail dinfo v = Value dinfo $ Fail v
 
-makeFailList :: DebugInfo -> Identifier -> [Value m] -> Value m
+makeFailList :: DebugInfo -> Identifier -> [Value v m] -> Value v m
 makeFailList dinfo err vals = makeFail dinfo $ makeList dinfo l
     where
         l = (Value dinfo $ Symbol err) : vals
 
-makeList :: DebugInfo -> [Value m] -> Value m
+makeList :: DebugInfo -> [Value v m] -> Value v m
 makeList dinfo = foldr (\x xs -> Value dinfo $ Pair x xs) (Value dinfo Null)
 
-vfoldr :: (Value m -> a -> a) -> a -> Value m -> Maybe a
+vfoldr :: (Value v m -> a -> a) -> a -> Value v m -> Maybe a
 vfoldr _ start (Value _ Null) = pure start
 vfoldr f start (Value _ (Pair x xs)) = do
     fxs <- vfoldr f start xs
@@ -119,10 +120,10 @@ vfoldr f start (Value _ (Pair x xs)) = do
 vfoldr _ _ _ = Nothing
 
 -- | fold the function over the given list and propagate failures
-vffoldr :: (Value m -> Value m -> Value m)
-        -> Value m  -- ^ base value
-        -> Value m  -- ^ list
-        -> Value m  -- ^ result
+vffoldr :: (Value v m -> Value v m -> Value v m)
+        -> Value v m  -- ^ base value
+        -> Value v m  -- ^ list
+        -> Value v m  -- ^ result
 vffoldr _ start (Value _ Null) = start
 vffoldr f start (Value _ (Pair x xs))
     | v@(Value _ (Fail _))      <- fxs = v
@@ -133,34 +134,34 @@ vffoldr f start (Value _ (Pair x xs))
         fxs = vffoldr f start xs
 vffoldr _ _ v@(Value dinfo _) = makeFailList dinfo "not-a-list" [v]
 
-valToList :: Value m -> Maybe [Value m]
+valToList :: Value v m -> Maybe [Value v m]
 valToList (Value _ (Pair x xs)) = (x:) <$> (valToList xs)
 valToList (Value _ Null) = pure []
 valToList _ = fail "expected list-like value"
 
-toValTree :: Value m -> ValTree m
+toValTree :: Value v m -> ValTree v m
 toValTree (Value dinfo Null) = L dinfo []
 toValTree (Value dinfo v@(Pair x xs))
     | (L _ ys) <- toValTree xs = L dinfo ((toValTree x):ys)
     | otherwise           = V dinfo v
 toValTree (Value dinfo v) = V dinfo v
 
-fromValTree :: ValTree m -> Value m
+fromValTree :: ValTree v m -> Value v m
 fromValTree = error "not implemented"
 
-vtsymlist :: ValTree m -> Maybe [Identifier]
+vtsymlist :: ValTree v m -> Maybe [Identifier]
 vtsymlist (L _ items) = mapM vtsym items
 vtsymlist _ = fail "not a list"
 
-vtsym :: ValTree m -> Maybe Identifier
+vtsym :: ValTree v m -> Maybe Identifier
 vtsym (V _ (Symbol i)) = pure i
 vtsym _ = fail "not a symbol"
 
-data ValTree m
-    = L DebugInfo [ ValTree m ]
-    | V DebugInfo (ValueItem m)
+data ValTree v m
+    = L DebugInfo [ ValTree v m ]
+    | V DebugInfo (ValueItem v m)
 
-instance (Show (ValueItem m)) where
+instance (Show v) => (Show (ValueItem v m)) where
     show (Symbol (Identifier name)) = "sym<" <> T.unpack name <> ">"
     show (Str s)       = "\"" <> (T.unpack s) <> "\""
     show (Num n)       = show n
@@ -170,7 +171,8 @@ instance (Show (ValueItem m)) where
     show (Fail err)    = "FAIL<" <> (show err) <> ">"
     show Null          = "null"
     show (ExternalFunc _) = "<external func>"
+    show (ExternalVal v) = show v
     show (CLambda _ _ _) = "<lambda>"
 
-instance (Show (Value m)) where
+instance (Show v) => (Show (Value v m)) where
     show (Value dinfo v) = (show v) <> (show dinfo)
