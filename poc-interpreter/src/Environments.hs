@@ -4,6 +4,7 @@ module Environments
     , envFromList
     , envGet
     , envUnion
+    , emptyEnv
     )
 
 where
@@ -19,6 +20,9 @@ envAdd i v (Env e) = Env $ Map.insert i v e
 
 envFromList :: [(Identifier, Value m)] -> Env m
 envFromList = Env . Map.fromList
+
+emptyEnv :: Env m
+emptyEnv = Env Map.empty
 
 envGet :: DebugInfo -> Identifier -> Env m -> Value m
 envGet dinfo i (Env e)

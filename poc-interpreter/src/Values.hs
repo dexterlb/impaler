@@ -18,6 +18,10 @@ module Values
     , vtsymlist
     , vtsym
     , valToList
+    , CouldFail
+    , returnFail
+    , returnFailList
+    , encodeFail
     )
 
 where
@@ -67,6 +71,22 @@ data ArgSpec
         Identifier      -- ^ argument name
     | ArgSpecList
         [Identifier]    -- ^ list of argument names
+
+type CouldFail m a = Either (ValueItem m) a
+
+encodeFail :: DebugInfo -> CouldFail m (Value m) -> Value m
+encodeFail _ (Right v) = v
+encodeFail dinfo (Left f@(Fail _)) = Value dinfo f
+encodeFail _ _ = error "got a failure value that is not a Fail"
+
+returnFail :: Value m -> CouldFail m a
+returnFail v = Left $ Fail v
+
+returnFailList :: Identifier -> [Value m] -> CouldFail m a
+returnFailList err vals
+    | (Value _ item) <- makeFailList dinfo err vals = Left $ item
+    where
+        dinfo = builtinDebugInfo
 
 astToVal :: AST -> Value m
 astToVal (AST.Symbol dinfo name) = Value dinfo $ Symbol name

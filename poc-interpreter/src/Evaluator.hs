@@ -33,45 +33,50 @@ call  :: (Monad m)
       -> Value m    -- ^ argument
       -> m ()
 call ret (Value _ (UnsafeBuiltinFunc f)) arg = f ret arg
-call ret (Value _ (CLambda body argn env)) arg = callCLambda ret env argn arg body
+call ret (Value dinfo (CLambda body argn env)) arg = callCLambda dinfo ret env argn arg body
 call ret expr@(Value dinfo _) _ = ret $ makeFailList dinfo "dont-know-how-to-call" [expr]
 
 callCLambda :: forall m. (Monad m)
-            => Callback m   -- ^ callback to call with result
+            => DebugInfo
+            -> Callback m   -- ^ callback to call with result
             -> Env m        -- ^ closure that comes with lambda
             -> CArgSpec     -- ^ formal arguments (argument names)
             -> Value m      -- ^ arguments
             -> [Value m]    -- ^ body (list of statements)
             -> m ()
-callCLambda ret closure argspec arg body = mapM_ evalBodyStatement body
+callCLambda dinfo ret closure argspec arg body
+    | (Right env) <- envOrErr = mapM_ (eval env void) body
+    | (Left err)  <- envOrErr = ret $ Value dinfo err
     where
-        evalBodyStatement :: Value m -> m ()
-        evalBodyStatement = eval env void
+        envOrErr :: CouldFail m (Env m)
+        envOrErr = makeCLambdaEnv argspec ret arg closure
 
-        -- | callback that discards its argument
-        -- | (expressions in body are interpreted as statements and their results are discarded)
-        void :: Callback m
-        void = error "not implemented"
 
-        env :: Env m
-        env = makeCLambdaEnv argspec ret arg closure
-
+-- | callback that discards its argument
+-- | (expressions in body are interpreted as statements and their results are discarded)
+void :: Callback m
+void = error "not implemented"
 
 makeCLambdaEnv
     :: CArgSpec
     -> Callback m   -- ^ CPS callback
     -> Value m      -- ^ argument
     -> Env m        -- ^ closure
-    -> Env m
-makeCLambdaEnv (CArgSpec retname argspec) ret arg closure
-    = envAdd retname (makeCallableFromCallback ret)
-    $ envUnion (bindArgs argspec arg) closure
+    -> CouldFail m (Env m)
+makeCLambdaEnv (CArgSpec retname argspec) ret arg closure = do
+    argEnv <- bindArgs argspec arg
+    let retEnv = envFromList [(retname, makeCallableFromCallback ret)]
+    pure $ foldr envUnion emptyEnv [argEnv, retEnv, closure]
 
 makeCallableFromCallback :: Callback m -> Value m
 makeCallableFromCallback = error "not implemented"
 
-bindArgs :: ArgSpec -> Value m -> Env m
-bindArgs = error "not implemented"
+bindArgs :: ArgSpec -> Value m -> CouldFail m (Env m)
+bindArgs (ArgSpecCombined argName) val = pure $ envFromList [(argName, val)]
+bindArgs (ArgSpecList argNames) val
+    | (Just args) <- valToList val, length args == length argNames
+    = pure $ envFromList $ zip argNames args
+    | otherwise = returnFailList "wrong-number-of-arguments" [val]
 
 -- | evaluate all elements in a given list
 -- | afterwards, pass a list of evaluated items to the callback
