@@ -65,11 +65,14 @@ makeCLambdaEnv
     -> CouldFail m (Env m)
 makeCLambdaEnv (CArgSpec retname argspec) ret arg closure = do
     argEnv <- bindArgs argspec arg
-    let retEnv = envFromList [(retname, makeCallableFromCallback ret)]
+    let retEnv = envFromList [(retname, makeCalableFromReturnCallback ret)]
     pure $ foldr envUnion emptyEnv [argEnv, retEnv, closure]
 
-makeCallableFromCallback :: Callback m -> Value m
-makeCallableFromCallback = error "not implemented"
+makeCalableFromReturnCallback :: forall m. () => Callback m -> Value m
+makeCalableFromReturnCallback f = builtinVal $ UnsafeBuiltinFunc g
+    where
+        g :: Callback m -> Value m -> m ()
+        g _ = f -- ignore the callback's callback - code after "return" is not executed
 
 bindArgs :: ArgSpec -> Value m -> CouldFail m (Env m)
 bindArgs (ArgSpecCombined argName) val = pure $ envFromList [(argName, val)]
