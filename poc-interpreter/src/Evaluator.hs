@@ -32,7 +32,7 @@ call  :: (Monad m)
       -> Value m    -- ^ callable
       -> Value m    -- ^ argument
       -> m ()
-call ret (Value _ (UnsafeBuiltinFunc f)) arg = f ret arg
+call ret (Value _ (ExternalFunc f)) arg = f ret arg
 call ret (Value dinfo (CLambda body argn env)) arg = callCLambda dinfo ret env argn arg body
 call ret expr@(Value dinfo _) _ = ret $ makeFailList dinfo "dont-know-how-to-call" [expr]
 
@@ -69,7 +69,7 @@ makeCLambdaEnv (CArgSpec retname argspec) ret arg closure = do
     pure $ foldr envUnion emptyEnv [argEnv, retEnv, closure]
 
 makeCalableFromReturnCallback :: forall m. () => Callback m -> Value m
-makeCalableFromReturnCallback f = builtinVal $ UnsafeBuiltinFunc g
+makeCalableFromReturnCallback f = builtinVal $ ExternalFunc g
     where
         g :: Callback m -> Value m -> m ()
         g _ = f -- ignore the callback's callback - code after "return" is not executed

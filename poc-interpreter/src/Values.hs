@@ -43,6 +43,7 @@ data ValueItem m
 
     | Str                 Text
     | Num                 Float
+    | Bool                Bool
 
     | Pair                (Value m) (Value m)
     | Null
@@ -51,7 +52,7 @@ data ValueItem m
     | Fail                (Value m)
 
     -- this is a rather stupid way to allow side effects, but will do for now
-    | UnsafeBuiltinFunc   (Callback m -> Value m -> m ())
+    | ExternalFunc   (Callback m -> Value m -> m ())
 
     | CLambda   [Value m]        -- ^ body (list of statements)
                 CArgSpec         -- ^ arg name(s)
@@ -93,6 +94,7 @@ astToVal (AST.Pair dinfo a b)    = Value dinfo $ Pair (astToVal a) (astToVal b)
 astToVal (AST.Null dinfo)        = Value dinfo $ Null
 astToVal (AST.Num dinfo x)       = Value dinfo $ Num x
 astToVal (AST.Str dinfo s)       = Value dinfo $ Str s
+astToVal (AST.Bool dinfo b)      = Value dinfo $ Bool b
 
 builtinVal :: ValueItem m -> Value m
 builtinVal = Value builtinDebugInfo
@@ -162,10 +164,12 @@ instance (Show (ValueItem m)) where
     show (Symbol (Identifier name)) = "sym<" <> T.unpack name <> ">"
     show (Str s)       = "\"" <> (T.unpack s) <> "\""
     show (Num n)       = show n
+    show (Bool True)   = "#t"
+    show (Bool False)  = "#f"
     show (Pair a b)    = "(" <> (show a) <> " . " <> (show b) <> ")"
     show (Fail err)    = "FAIL<" <> (show err) <> ">"
     show Null          = "null"
-    show (UnsafeBuiltinFunc _) = "<unsafe builtin>"
+    show (ExternalFunc _) = "<external func>"
     show (CLambda _ _ _) = "<lambda>"
 
 instance (Show (Value m)) where

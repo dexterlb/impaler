@@ -5,6 +5,7 @@ module AST
 where
 
 import Data.Text (Text)
+import Data.Functor (($>))
 
 import Utils.Parsing (Parseable, Parser, (<|>))
 import qualified Utils.Parsing as P
@@ -18,6 +19,7 @@ data AST
     | Null DebugInfo
     | Num DebugInfo Float
     | Str DebugInfo Text
+    | Bool DebugInfo Bool
     deriving stock (Show)
 
 instance (Parseable AST) where
@@ -27,7 +29,7 @@ parseAST :: Parser AST
 parseAST = parseAtom <|> parseSexpr
 
 parseAtom :: Parser AST
-parseAtom = parseSymbol <|> parseNum <|> parseStr
+parseAtom = parseSymbol <|> parseNum <|> parseStr <|> parseBool
 
 parseSexpr :: Parser AST
 parseSexpr = do
@@ -43,6 +45,9 @@ parseSymbol = parseSection Symbol par
 
 parseNum :: Parser AST
 parseNum = parseSection Num $ P.floatNumber
+
+parseBool :: Parser AST
+parseBool = parseSection Bool $ ((P.literal "#t" $> True) <|> (P.literal "#f" $> False))
 
 parseStr :: Parser AST
 parseStr = parseSection Str $ P.quotedString '"'
@@ -74,3 +79,4 @@ getDebugInfo (Pair info _ _) = info
 getDebugInfo (Null info) = info
 getDebugInfo (Num info _) = info
 getDebugInfo (Str info _) = info
+getDebugInfo (Bool info _) = info

@@ -37,7 +37,7 @@ adder (Value _ (Num a)) (Value _ (Num b)) = builtinVal $ Num $ a + b
 adder v1@(Value dinfo _) v2 = makeFailList dinfo "expected-two-numbers" [v1, v2]
 
 makeCPSFunc :: (Callback m -> Value m -> m ()) -> Value m
-makeCPSFunc f = builtinVal $ UnsafeBuiltinFunc f
+makeCPSFunc f = builtinVal $ ExternalFunc f
 
 makeFunc :: (Monad m) => (Value m -> m (Value m)) -> Value m
 makeFunc f = makeCPSFunc g
