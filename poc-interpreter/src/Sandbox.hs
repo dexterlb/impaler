@@ -57,4 +57,4 @@ rep :: Env NoValue PureComp -> Text -> String
 rep env = show . compResult . (eval env yieldResult) . mustParseVal -- TODO: instead of show, implement unparse
 
 demo :: IO ()
-demo = putStrLn $ rep sampleEnv "((clambda return (x y z) (return (add x y z))) 26 42 100)"
+demo = putStrLn $ rep sampleEnv "(add 1 ((clambda return (x y z) (return (add x y z))) 26 42 100))"

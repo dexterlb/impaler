@@ -65,14 +65,16 @@ makeCLambdaEnv
     -> CouldFail v m (Env v m)
 makeCLambdaEnv (CArgSpec retname argspec) ret arg closure = do
     argEnv <- bindArgs argspec arg
-    let retEnv = envFromList [(retname, makeCalableFromReturnCallback ret)]
+    let retEnv = envFromList [(retname, makeCallableFromReturnCallback ret)]
     pure $ foldr envUnion emptyEnv [argEnv, retEnv, closure]
 
-makeCalableFromReturnCallback :: forall v m. () => Callback v m -> Value v m
-makeCalableFromReturnCallback f = builtinVal $ ExternalFunc g
+makeCallableFromReturnCallback :: forall v m. () => Callback v m -> Value v m
+makeCallableFromReturnCallback f = builtinVal $ ExternalFunc g
     where
         g :: Callback v m -> Value v m -> m ()
-        g _ = f -- ignore the callback's callback - code after "return" is not executed
+        g _ (Value _ (Pair arg (Value _ Null)))
+            = f arg -- ignore the callback's callback - code after "return" is not executed
+        g _ val@(Value dinfo _) = f $ makeFailList dinfo "expected-one-arg-to-return" [val]
 
 bindArgs :: ArgSpec -> Value v m -> CouldFail v m (Env v m)
 bindArgs (ArgSpecCombined argName) val = pure $ envFromList [(argName, val)]
