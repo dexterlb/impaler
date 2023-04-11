@@ -22,6 +22,7 @@ module Values
     , returnFail
     , returnFailList
     , encodeFail
+    , stringifyVal
     )
 
 where
@@ -96,6 +97,25 @@ astToVal (AST.Null dinfo)        = Value dinfo $ Null
 astToVal (AST.Num dinfo x)       = Value dinfo $ Num x
 astToVal (AST.Str dinfo s)       = Value dinfo $ Str s
 astToVal (AST.Bool dinfo b)      = Value dinfo $ Bool b
+
+stringifyVal :: (Show v) => Value v m -> Text
+stringifyVal = stringifyValTree . toValTree
+
+stringifyValTree :: (Show v) => ValTree v m -> Text
+stringifyValTree (L _ items) = "(" <> (T.intercalate " " $ map stringifyValTree items) <> ")"
+stringifyValTree (V _ (Symbol (Identifier name))) = name
+stringifyValTree (V _ (Pair a b)) = "(" <> (stringifyVal a) <> " . " <> (stringifyVal b) <> ")"
+stringifyValTree (V _ Null) = "()"
+stringifyValTree (V _ (Num x)) = T.pack $ show x
+stringifyValTree (V _ (Str s)) = "\"" <> s <>  "\""
+stringifyValTree (V _ (Bool True)) = "#t"
+stringifyValTree (V _ (Bool False)) = "#f"
+stringifyValTree (V _ (Fail v)) = "(fail " <> stringifyVal v <> ")"
+stringifyValTree (V _ (ExternalFunc _)) = "<func>"
+stringifyValTree (V _ (ExternalVal v)) = T.pack $ show v
+stringifyValTree (V _ (CLambda _ _ _)) = "<lambda>"
+
+
 
 builtinVal :: ValueItem v m -> Value v m
 builtinVal = Value builtinDebugInfo
