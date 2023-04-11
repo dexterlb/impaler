@@ -6,6 +6,7 @@ module Sandbox
 where
 
 import Data.Text (Text)
+import qualified Data.Text.IO as TIO
 import Control.Monad.Trans.Writer.Lazy (Writer, tell, execWriter)
 
 import Values
@@ -53,8 +54,14 @@ makeFunc f = makeCPSFunc g
 
 
 
-rep :: Env NoValue PureComp -> Text -> String
-rep env = show . compResult . (eval env yieldResult) . mustParseVal -- TODO: instead of show, implement unparse
+parseEvalShow :: Env NoValue PureComp -> Text -> [Text]
+parseEvalShow env = (map stringifyVal) . compResult . (eval env yieldResult) . mustParseVal
+
+fileEvalPrint :: FilePath -> IO ()
+fileEvalPrint fname = do
+    txt <- TIO.readFile fname
+    let results = parseEvalShow sampleEnv txt
+    mapM_ TIO.putStrLn results
 
 demo :: IO ()
-demo = putStrLn $ rep sampleEnv "(add 1 ((clambda return (x y z) (return (add x y z))) 26 42 100))"
+demo = fileEvalPrint "bootstrap.l"
