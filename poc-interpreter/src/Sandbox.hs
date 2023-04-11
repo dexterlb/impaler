@@ -33,7 +33,10 @@ compResult (PureComp w) = execWriter w
 sampleEnv :: Env NoValue PureComp
 sampleEnv = envFromList
     [ ("yield", makeCPSFunc (\ret val -> (yieldResult val) >> (ret $ builtinVal Null)))
-    , ("add", makeFunc (\args -> pure $ vffoldr adder (builtinVal $ Num 0) args))
+    , ("add", makePureFunc $ vffoldr adder (builtinVal $ Num 0))
+    , ("cons", makePureFunc cons)
+    , ("car", makePureFunc car)
+    , ("cdr", makePureFunc cdr)
     , ("foo", builtinVal $ ExternalVal NoValue)
     ]
 
@@ -41,8 +44,20 @@ adder :: Value v m -> Value v m -> Value v m
 adder (Value _ (Num a)) (Value _ (Num b)) = builtinVal $ Num $ a + b
 adder v1@(Value dinfo _) v2 = makeFailList dinfo "expected-two-numbers" [v1, v2]
 
-makeCPSFunc :: (Callback v m -> Value v m -> m ()) -> Value v m
-makeCPSFunc f = builtinVal $ ExternalFunc f
+cons :: Value v m -> Value v m
+cons (Value dinfo (Pair a (Value _ (Pair b (Value _ Null))))) = Value dinfo (Pair a b)
+cons arg@(Value dinfo _) = makeFailList dinfo "expected-two-values" [arg]
+
+car :: Value v m -> Value v m
+car (Value _ (Pair (Value _ (Pair a _)) (Value _ Null))) = a
+car arg@(Value dinfo _) = makeFailList dinfo "expected-pair" [arg]
+
+cdr :: Value v m -> Value v m
+cdr (Value _ (Pair (Value _ (Pair _ b)) (Value _ Null))) = b
+cdr arg@(Value dinfo _) = makeFailList dinfo "expected-pair" [arg]
+
+makePureFunc :: (Monad m) => (Value v m -> Value v m) -> Value v m
+makePureFunc f = makeFunc (\args -> pure $ f args)
 
 makeFunc :: (Monad m) => (Value v m -> m (Value v m)) -> Value v m
 makeFunc f = makeCPSFunc g
@@ -52,6 +67,8 @@ makeFunc f = makeCPSFunc g
             let res = Value dinfo resV  -- maybe we need another way to pass the dinfo
             ret res
 
+makeCPSFunc :: (Callback v m -> Value v m -> m ()) -> Value v m
+makeCPSFunc f = builtinVal $ ExternalFunc f
 
 
 parseEvalShow :: Env NoValue PureComp -> Text -> [Text]

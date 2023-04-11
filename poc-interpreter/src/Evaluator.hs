@@ -96,14 +96,23 @@ evalList _ ret v@(Value dinfo _) = ret $ makeFailList dinfo "trying-to-call-some
 
 isSpecialForm :: Identifier -> Bool
 isSpecialForm "clambda" = True
+isSpecialForm "quote" = True
+isSpecialForm "expand" = True
 isSpecialForm _ = False
 
-evalSpecialForm :: Env v m -> Callback v m -> Identifier -> Value v m -> m ()
+evalSpecialForm :: forall v m. (Monad m) => Env v m -> Callback v m -> Identifier -> Value v m -> m ()
 evalSpecialForm env ret "clambda" (Value dinfo (Pair retname (Value _ (Pair arg bodyVal))))
     | (Just body) <- valToList bodyVal = ret $ makeClambda dinfo env retname arg body
     | otherwise = ret $ makeFailList dinfo "clambda-body-not-list" [bodyVal]
 evalSpecialForm _   ret "clambda" val@(Value dinfo _)
     = ret $ makeFailList dinfo "clambda-malformed" [val]
+evalSpecialForm _ ret "quote" (Value _ (Pair arg (Value _ Null))) = ret $ arg
+evalSpecialForm _ ret "quote" val@(Value dinfo _) = ret $ makeFailList dinfo "wrong-arg-to-quote" [val]
+evalSpecialForm env ret "expand" (Value _ (Pair arg (Value _ Null))) = eval env callback arg
+    where
+        callback :: Callback v m
+        callback = eval env ret
+evalSpecialForm _ ret "expand" val@(Value dinfo _) = ret $ makeFailList dinfo "wrong-arg-to-expand" [val]
 evalSpecialForm _ _ (Identifier i) _ = error $ "no special form handler defined for '" <> (T.unpack i) <> "' - this is a bug."
 
 makeClambda
