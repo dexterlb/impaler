@@ -1,8 +1,8 @@
 {-# OPTIONS_GHC -Wno-partial-fields #-}
 
 module Testing
-( loadExprTests
-, runExprTest
+( runExprTest
+, ExprTests(..)
 , ExprTest(..)
 , TestResult(..)
 )
@@ -14,14 +14,39 @@ import Values
 import AST
 import Evaluator
 
-loadExprTests :: FilePath -> IO [ExprTest]
-loadExprTests = error "not implemented"
+import Utils.Parsing (Parseable, Parser, parser)
+import qualified Utils.Parsing as P
+
+newtype ExprTests = ExprTests [ExprTest]
+
+instance Parseable ExprTests where
+    parser = P.braces $ do
+        _ <- P.literal "quote"
+        P.braces $ do
+            ExprTests <$> P.separatedByWhitespace (parser :: Parser ExprTest)
 
 data ExprTest = ExprTest
     { input :: AST
     , expectedOutput :: AST
     , name :: Text
     }
+
+instance Parseable ExprTest where
+    parser = P.braces $ do
+        name <- P.braces $ do
+            _ <- P.literal "test"
+            P.quotedString '"'
+        input <- P.braces $ do
+            _ <- P.literal "input"
+            parser :: Parser AST
+        output <- P.braces $ do
+            _ <- P.literal "output"
+            parser :: Parser AST
+        pure $ ExprTest
+                { input = input
+                , name = name
+                , expectedOutput = output
+                }
 
 data TestResult v m
     = TestOK

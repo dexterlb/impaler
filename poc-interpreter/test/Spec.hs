@@ -4,12 +4,17 @@ import Testing
 import Data.Text (Text)
 import qualified Data.Text as T
 import System.Directory (listDirectory)
+import System.FilePath ((</>))
 import Test.Hspec
+
+import Utils.Parsing (parseFile)
 
 main :: IO ()
 main = do
-    testFiles <- listDirectory "."
-    groups <- loadExprTestGroups testFiles
+    let dir = "./test/expr-tests"
+    testFiles <- listDirectory dir
+    let testPaths = map (dir </>) testFiles
+    groups <- loadExprTestGroups testPaths
     hspec $ do
         mapM_ specExprTestGroup groups
 
@@ -23,7 +28,7 @@ loadExprTestGroups = mapM loadExprTestGroup
 
 loadExprTestGroup :: FilePath -> IO ExprTestGroup
 loadExprTestGroup path = do
-    tests <- loadExprTests path
+    (ExprTests tests) <- parseFile path
     pure $ ExprTestGroup
         { name = T.pack path
         , tests = tests

@@ -88,3 +88,4 @@ tests:
       - text
       - hspec
       - directory
+      - filepath

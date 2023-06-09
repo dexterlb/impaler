@@ -75,6 +75,7 @@ test-suite poc-interpreter-test
   build-depends:
       base >=4.7 && <5
     , directory
+    , filepath
     , hspec
     , poc-interpreter
     , text
