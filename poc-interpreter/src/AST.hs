@@ -26,7 +26,7 @@ instance (Parseable AST) where
     parser = parseAST
 
 parseAST :: Parser AST
-parseAST = parseAtom <|> parseSexpr
+parseAST = parseAtom <|> (P.try parseDotExpr) <|> parseSexpr
 
 parseAtom :: Parser AST
 parseAtom = parseSymbol <|> parseNum <|> parseStr <|> parseBool
@@ -36,7 +36,18 @@ parseSexpr = do
     offBefore <- P.getOffset
     els <- P.braces $ P.separatedByWhitespace parseAST
     offAfter <- P.getOffset
-    pure $ makeSexpr offBefore offAfter els
+    pure $ makeSexpr offBefore offAfter els Nothing
+
+parseDotExpr :: Parser AST
+parseDotExpr = do
+    offBefore <- P.getOffset
+    (els, after) <- P.braces $ do
+        els   <- P.separatedByWhitespace parseAST
+        _     <- P.literal "."
+        after <- parseAST
+        pure (els, after)
+    offAfter <- P.getOffset
+    pure $ makeSexpr offBefore offAfter els (Just after)
 
 parseSymbol :: Parser AST
 parseSymbol = parseSection Symbol par
@@ -52,11 +63,12 @@ parseBool = parseSection Bool $ ((P.literal "#t" $> True) <|> (P.literal "#f" $>
 parseStr :: Parser AST
 parseStr = parseSection Str $ P.quotedString '"'
 
-makeSexpr :: Int -> Int -> [AST] -> AST
-makeSexpr offBefore offAfter [] = Null $ debugOffset offBefore offAfter
-makeSexpr offBefore offAfter (x:xs) = Pair (debugOffset offBefore offAfter)
+makeSexpr :: Int -> Int -> [AST] -> Maybe AST -> AST
+makeSexpr _ _ [] (Just t) = t
+makeSexpr offBefore offAfter [] Nothing = Null $ debugOffset offBefore offAfter
+makeSexpr offBefore offAfter (x:xs) mtail = Pair (debugOffset offBefore offAfter)
     x
-    (makeSexpr (getOffsetAfter x) offAfter xs)
+    (makeSexpr (getOffsetAfter x) offAfter xs mtail)
 
 getOffsetAfter :: AST -> Int
 getOffsetAfter ast = unwrapLocation info.location

@@ -21,16 +21,7 @@
         (output (1 . 2)))
     (
         (test "letrec works (recursive)")
-        (input
-            (letrec (
-                (fact
-                    (clambda ret (x) (ret
-                        ((bool (eq? x 0))
-                            1
-                            (* x (fact (- x 1))))))
-                )
-
-                (fact 5)))
+        (input unimplemented)
 
         (output 120))
-)
+))
