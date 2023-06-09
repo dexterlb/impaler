@@ -102,7 +102,7 @@ separatedByWhitespace :: Parser a -> Parser [a]
 separatedByWhitespace = separatedBy $ pure ()
 
 separatedBy :: Parser b -> Parser a -> Parser [a]
-separatedBy sep p = (try (multi)) <|> (pure <$> p)
+separatedBy sep p = (try (multi)) <|> (pure [])
     where
         multi = do
             h <- p
