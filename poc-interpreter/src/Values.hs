@@ -1,6 +1,7 @@
 module Values
     ( Value(..)
     , ValueItem(..)
+    , Computation(..)
     , Callback
     , Env(..)
     , ArgSpec(..)
@@ -23,6 +24,8 @@ module Values
     , returnFailList
     , encodeFail
     , stringifyVal
+    , weaklyEqual
+    , weaklyEqualItems
     )
 
 where
@@ -116,6 +119,17 @@ stringifyValTree (V _ (ExternalVal v)) = T.pack $ show v
 stringifyValTree (V _ (CLambda _ _ _)) = "<lambda>"
 
 
+weaklyEqual :: Value v m -> Value v m -> Bool
+weaklyEqual (Value _ a) (Value _ b) = weaklyEqualItems a b
+
+weaklyEqualItems :: ValueItem v m -> ValueItem v m -> Bool
+weaklyEqualItems Null Null = True
+weaklyEqualItems (Symbol a) (Symbol b) = a == b
+weaklyEqualItems (Num a) (Num b) = a == b
+weaklyEqualItems (Str a) (Str b) = a == b
+weaklyEqualItems (Bool a) (Bool b) = a == b
+weaklyEqualItems (Pair a1 a2) (Pair b1 b2) = (weaklyEqual a1 b1) && (weaklyEqual a2 b2)
+weaklyEqualItems _ _ = False
 
 builtinVal :: ValueItem v m -> Value v m
 builtinVal = Value builtinDebugInfo
@@ -196,3 +210,16 @@ instance (Show v) => (Show (ValueItem v m)) where
 
 instance (Show v) => (Show (Value v m)) where
     show (Value dinfo v) = (show v) <> (show dinfo)
+
+class (Monad m) => Computation v m where
+    yieldResult :: Value v m -> m ()
+
+    resultOf :: m a -> Maybe (Value v m)
+    resultOf m
+        | (r:_) <- resultsOf m = Just r
+        | otherwise = Nothing
+
+    resultsOf :: m a -> [Value v m]
+    resultsOf m
+        | (Just r) <- resultOf m = [r]
+        | otherwise = []

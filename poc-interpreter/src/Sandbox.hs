@@ -1,6 +1,7 @@
 module Sandbox
     ( mustParseVal
     , demo
+    , sampleEnv
     )
 
 where
@@ -23,12 +24,11 @@ newtype PureComp a = PureComp (Writer [Value NoValue PureComp] a)
 data NoValue = NoValue
     deriving stock (Show)
 
-yieldResult :: Value NoValue PureComp -> PureComp ()
-yieldResult arg = PureComp $ do
-    tell [arg]
+instance (Computation NoValue PureComp) where
+    yieldResult arg = PureComp $ do
+        tell [arg]
 
-compResult :: PureComp () -> [Value NoValue PureComp]
-compResult (PureComp w) = execWriter w
+    resultsOf (PureComp w) = execWriter w
 
 sampleEnv :: Env NoValue PureComp
 sampleEnv = envFromList
@@ -72,7 +72,10 @@ makeCPSFunc f = builtinVal $ ExternalFunc f
 
 
 parseEvalShow :: Env NoValue PureComp -> Text -> [Text]
-parseEvalShow env = (map stringifyVal) . compResult . (eval env yieldResult) . mustParseVal
+parseEvalShow env = (map stringifyVal) . (parseEval env)
+
+parseEval :: Env NoValue PureComp -> Text -> [Value NoValue PureComp]
+parseEval env = resultsOf . (eval env yieldResult) . mustParseVal
 
 fileEvalPrint :: FilePath -> IO ()
 fileEvalPrint fname = do
