@@ -71,11 +71,10 @@ data CArgSpec = CArgSpec
     Identifier      -- ^ CPS return callback
     ArgSpec
 
-data ArgSpec
-    = ArgSpecCombined
-        Identifier      -- ^ argument name
-    | ArgSpecList
-        [Identifier]    -- ^ list of argument names
+data ArgSpec = ArgSpec
+    { argNames :: [Identifier]
+    , tailName :: Maybe Identifier
+    }
 
 type CouldFail v m a = Either (ValueItem v m) a
 

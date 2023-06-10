@@ -77,11 +77,14 @@ makeCallableFromReturnCallback f = builtinVal $ ExternalFunc g
         g _ val@(Value dinfo _) = f $ makeFailList dinfo "expected-one-arg-to-return" [val]
 
 bindArgs :: ArgSpec -> Value v m -> CouldFail v m (Env v m)
-bindArgs (ArgSpecCombined argName) val = pure $ envFromList [(argName, val)]
-bindArgs (ArgSpecList argNames) val
-    | (Just args) <- valToList val, length args == length argNames
-    = pure $ envFromList $ zip argNames args
-    | otherwise = returnFailList "wrong-number-of-arguments" [val]
+bindArgs (ArgSpec { argNames, tailName }) val
+    | (Value _ (Pair arg vs)) <- val, (argName:ns) <- argNames = do
+        rest <- bindArgs (ArgSpec { argNames = ns, tailName = tailName }) vs
+        pure $ envAdd argName arg rest
+    | [] <- argNames, (Just tn) <- tailName = pure $ envFromList [(tn, val)]
+    | [] <- argNames, Nothing <- tailName, Value _ Null <- val = pure $ emptyEnv
+    | [] <- argNames = returnFailList "too-many-arguments" [val]
+    | otherwise = returnFailList "incorrect-arguments" []
 
 -- | evaluate all elements in a given list
 -- | afterwards, pass a list of evaluated items to the callback
@@ -123,11 +126,19 @@ makeClambda
     -> [Value v m]    -- ^ body
     -> Value v m      -- ^ resulting clambda object
 makeClambda dinfo env retname arg body
-    | (Just argsyms) <- vtsymlist vtarg, (Just retsym) <- vtsym vtretname
-    = Value dinfo $ CLambda body (CArgSpec retsym $ ArgSpecList argsyms) env
-    | (Just argsym)  <- vtsym vtarg, (Just retsym) <- vtsym vtretname
-    = Value dinfo $ CLambda body (CArgSpec retsym $ ArgSpecCombined argsym) env
-    | otherwise = makeFailList dinfo "clambda-args-malformed" [arg]
+    | (Right spec) <- mspec, (Value _ (Symbol retsym)) <- retname
+    = Value dinfo $ CLambda body (CArgSpec retsym spec) env
+    | (Left err) <- mspec = Value dinfo err
+    | otherwise = makeFailList dinfo "clambda-malformed" [arg]
     where
-        vtarg = toValTree arg
-        vtretname = toValTree retname
+        mspec = makeArgSpec arg
+
+makeArgSpec :: Value v m -> CouldFail v m ArgSpec
+makeArgSpec (Value _ (Pair (Value _ (Symbol argName)) vs)) = do
+    rest <- makeArgSpec vs
+    let restTail = tailName rest
+    let restNames = argNames rest
+    pure $ ArgSpec { argNames = argName:restNames, tailName = restTail }
+makeArgSpec (Value _ Null) = pure $ ArgSpec { argNames = [], tailName = Nothing }
+makeArgSpec (Value _ (Symbol tn)) = pure $ ArgSpec {argNames = [], tailName = Just tn}
+makeArgSpec v = returnFailList "malformed-arg-list" [v]
