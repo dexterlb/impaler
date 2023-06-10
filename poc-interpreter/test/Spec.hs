@@ -12,6 +12,9 @@ import Test.Hspec
 
 import Utils.Parsing (parseFile)
 
+-- TODO: instead of reading the files at runtime,
+-- use embedDir from here: https://hackage.haskell.org/package/file-embed-0.0.15.0/docs/Data-FileEmbed.html
+-- this will make it work under nix, etc
 main :: IO ()
 main = do
     let dir = (takeDirectory $ $__FILE__) </> "expr-tests"
