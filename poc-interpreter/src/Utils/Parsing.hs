@@ -8,7 +8,7 @@ module Utils.Parsing
     , lexeme, symbol, lambda, braces, curlyBraces, block
     , operator, word, identifier, literal, quotedString
     , separated, separatedBy, separatedByWhitespace
-    , floatNumber
+    , floatNumber, whitespace
     , ps
     , pss
     , forceParse
@@ -59,18 +59,17 @@ forceParseNamed p t name = case parse (p <* eof) name t of
     Right d     -> d
     Left errors -> error $ errorBundlePretty errors
 
-sc :: Parser ()
-sc = L.space space1 lineCmnt blockCmnt
+whitespace :: Parser ()
+whitespace = L.space space1 lineCmnt blockCmnt
   where
     lineCmnt  = L.skipLineComment ";"
-    -- blockCmnt = L.skipBlockComment "/*" "*/"
-    blockCmnt = fail "block comments not supported"
+    blockCmnt = empty
 
 lexeme :: Parser a -> Parser a
-lexeme = L.lexeme sc
+lexeme = L.lexeme whitespace
 
 symbol :: Text -> Parser Text
-symbol = L.symbol sc
+symbol = L.symbol whitespace
 
 lambda :: Parser Text
 lambda = symbol "λ"
@@ -131,7 +130,7 @@ quotedString quote = (lexeme . try) $ do
         nonEscaped = noneOf [quote, '\\']
 
 floatNumber :: Parser Float
-floatNumber = (lexeme . try) $ L.signed sc (lexeme (try L.float <|> (toFloat <$> try L.decimal)))
+floatNumber = (lexeme . try) $ L.signed whitespace (lexeme (try L.float <|> (toFloat <$> try L.decimal)))
     where
         toFloat :: Int -> Float
         toFloat = fromIntegral

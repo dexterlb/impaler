@@ -23,7 +23,7 @@ data AST
     deriving stock (Show)
 
 instance (Parseable AST) where
-    parser = parseAST
+    parser = P.whitespace >> parseAST
 
 parseAST :: Parser AST
 parseAST = parseAtom <|> (P.try parseDotExpr) <|> parseSexpr
