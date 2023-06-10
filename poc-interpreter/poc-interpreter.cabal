@@ -78,5 +78,6 @@ test-suite poc-interpreter-test
     , filepath
     , hspec
     , poc-interpreter
+    , pseudomacros
     , text
   default-language: GHC2021

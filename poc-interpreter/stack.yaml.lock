@@ -3,7 +3,14 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: pseudomacros-0.0.2@sha256:7cb5a666faa4debc537ccc4a6490e6456ca660367578a98c7d1497e0fb836a80,715
+    pantry-tree:
+      sha256: dd414a46a92aea56d292a54b144f6f9eae3eab22bb48666711dc8c9079f79372
+      size: 212
+  original:
+    hackage: pseudomacros-0.0.2@sha256:7cb5a666faa4debc537ccc4a6490e6456ca660367578a98c7d1497e0fb836a80,715
 snapshots:
 - completed:
     sha256: 4905c93319aa94aa53da8f41d614d7bacdbfe6c63a8c6132d32e6e62f24a9af4

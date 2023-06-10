@@ -89,3 +89,4 @@ tests:
       - hspec
       - directory
       - filepath
+      - pseudomacros

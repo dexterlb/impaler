@@ -1,17 +1,20 @@
+{-# LANGUAGE TemplateHaskell #-}
+import PseudoMacros
+
 import Sandbox
 import Testing
 
 import Data.Text (Text)
 import qualified Data.Text as T
 import System.Directory (listDirectory)
-import System.FilePath ((</>))
+import System.FilePath ((</>), takeDirectory)
 import Test.Hspec
 
 import Utils.Parsing (parseFile)
 
 main :: IO ()
 main = do
-    let dir = "./test/expr-tests"
+    let dir = (takeDirectory $ $__FILE__) </> "expr-tests"
     testFiles <- listDirectory dir
     let testPaths = map (dir </>) testFiles
     groups <- loadExprTestGroups testPaths

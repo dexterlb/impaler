@@ -40,7 +40,9 @@ packages:
 # - git: https://github.com/commercialhaskell/stack.git
 #   commit: e7b331f14bcffb8367cd58fbfc8b40ec7642100a
 #
-# extra-deps: []
+extra-deps:
+  - pseudomacros-0.0.2@sha256:7cb5a666faa4debc537ccc4a6490e6456ca660367578a98c7d1497e0fb836a80,715
+
 
 # Override default flag values for local packages and extra-deps
 # flags: {}

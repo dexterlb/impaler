@@ -60,7 +60,7 @@ data ValueItem v m
     | ExternalVal       v
 
     | CLambda   [Value v m]        -- ^ body (list of statements)
-                CArgSpec         -- ^ arg name(s)
+                CArgSpec           -- ^ arg name(s)
                 (Env v m)          -- ^ closure
 
 type Callback v m = (Value v m) -> m ()
