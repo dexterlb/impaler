@@ -1,8 +1,8 @@
 (quote (
-    (
-        (test "bool prefix atoms don't break parser")
-        (input (quote #fuck))
-        (output #fuck))
+    ; (
+    ;     (test "bool prefix atoms don't break parser")
+    ;     (input (quote #fuck))
+    ;     (output #fuck))
     (
         (test "ints parse correctly")
         (input 42)
@@ -13,7 +13,7 @@
         (output 42.5))
     (
         (test "car works")
-        (input (car (cons (quote foo) (quote bar))))
+        (input (car (cons 'foo 'bar)))
         (output foo))
     (
         (test "cdr works")

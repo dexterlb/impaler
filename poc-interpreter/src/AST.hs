@@ -27,7 +27,7 @@ instance (Parseable AST) where
     parser = P.whitespace >> parseAST
 
 parseAST :: Parser AST
-parseAST = parseAtom <|> parseSexpr
+parseAST = parseAtom <|> parseSexpr <|> parseQuoted
 
 parseAtom :: Parser AST
 parseAtom = (P.try parseBool) <|> parseSymbol <|> parseNum <|> parseStr
@@ -61,6 +61,14 @@ parseSymbol = parseSection Symbol $ P.lexeme $ do
     cs <- P.many (P.letterChar <|> specialChar <|> P.digitChar)
     pure $ Identifier $ T.pack $ c:cs
 
+parseQuoted :: Parser AST
+parseQuoted = do
+    before <- P.getOffset
+    quote <- parseSection (\dinfo _ -> Symbol dinfo "quote") $ P.char '\''
+    ast <- parseAST
+    after <- P.getOffset
+    pure $ makeList before after [quote, ast]
+
 specialChar :: Parser Char
 specialChar = P.oneOf ("!$%&|*+-/:<=>?@^_~#" :: [Char])
 
@@ -79,6 +87,9 @@ makeSexpr offBefore offAfter [] Nothing = Null $ debugOffset offBefore offAfter
 makeSexpr offBefore offAfter (x:xs) mtail = Pair (debugOffset offBefore offAfter)
     x
     (makeSexpr (getOffsetAfter x) offAfter xs mtail)
+
+makeList :: Int -> Int -> [AST] -> AST
+makeList offBefore offAfter l = makeSexpr offBefore offAfter l Nothing 
 
 getOffsetAfter :: AST -> Int
 getOffsetAfter ast = unwrapLocation info.location
