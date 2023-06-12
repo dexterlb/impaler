@@ -13,6 +13,7 @@ module Values
     , makeList
     , vfoldr
     , vffoldr
+    , vfmap
     , toValTree
     , fromValTree
     , ValTree(..)
@@ -166,6 +167,17 @@ vffoldr f start (Value _ (Pair x xs))
         fx  = f x fxs
         fxs = vffoldr f start xs
 vffoldr _ _ v@(Value dinfo _) = makeFailList dinfo "not-a-list" [v]
+
+vfmap :: (Value v m -> Value v m) -> Value v m -> Value v m
+vfmap _ v@(Value _ Null) = v
+vfmap f (Value dinfo (Pair x xs))
+    | failure@(Value _ (Fail _)) <- nxs = failure
+    | Value dinfo' (Fail err) <- nx = makeFailList dinfo' "fail-in-element" [err]
+    | otherwise = Value dinfo (Pair nx nxs)
+    where
+        nx = f x
+        nxs = vfmap f xs
+vfmap _ v@(Value dinfo _) = makeFailList dinfo "not-a-list" [v]
 
 valToList :: Value v m -> Maybe [Value v m]
 valToList (Value _ (Pair x xs)) = (x:) <$> (valToList xs)

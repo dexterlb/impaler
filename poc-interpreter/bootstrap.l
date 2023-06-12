@@ -8,7 +8,7 @@
 ;  '(x y) '(add x y))
 
 ((clambda ret (lambda)
-    (ret ((expand (lambda '(x y) '(add x y))) 1 2)))
+    (ret ((macroexpand lambda (x y) (add x y)) 1 2)))
 
 (clambda ret (args body) 
          (ret 

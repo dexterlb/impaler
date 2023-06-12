@@ -101,6 +101,7 @@ isSpecialForm :: Identifier -> Bool
 isSpecialForm "clambda" = True
 isSpecialForm "quote" = True
 isSpecialForm "expand" = True
+isSpecialForm "macroexpand" = True
 isSpecialForm _ = False
 
 evalSpecialForm :: forall v m. (Monad m) => Env v m -> Callback v m -> Identifier -> Value v m -> m ()
@@ -116,6 +117,12 @@ evalSpecialForm env ret "expand" (Value _ (Pair arg (Value _ Null))) = eval env 
         callback :: Callback v m
         callback = eval env ret
 evalSpecialForm _ ret "expand" val@(Value dinfo _) = ret $ makeFailList dinfo "wrong-arg-to-expand" [val]
+evalSpecialForm env ret "macroexpand" (Value dinfo (Pair macro args))
+    = eval env ret $ Value dinfo (Pair (Value dinfo (Symbol "expand")) (Value dinfo (Pair (Value dinfo (Pair macro $ vfmap quoteVal args)) (Value dinfo Null))) )
+    where
+        quoteVal :: Value v m -> Value v m
+        quoteVal uval = Value dinfo (Pair (Value dinfo (Symbol "quote")) (Value dinfo (Pair uval (Value dinfo Null))))
+evalSpecialForm _ ret "macroexpand" val@(Value dinfo _) = ret $ makeFailList dinfo "wrong-arg-to-macroexpand" [val]
 evalSpecialForm _ _ (Identifier i) _ = error $ "no special form handler defined for '" <> (T.unpack i) <> "' - this is a bug."
 
 makeClambda
