@@ -1,4 +1,16 @@
 ; ((clambda ret (lambda)  ((!lambda (x y) (add x y)) 1 2))
 
-((clambda ret (args body) (ret (cons (quote clambda) (cons (quote the-ret-symb) (cons args (cons body ()))))))
- (quote (x y)) (quote (add x y)))
+; lambda -> clambda transformer test
+; ((clambda ret (args body) 
+;     (ret 
+;         (cons 'clambda (cons 'the-ret-symb 
+;             (cons args (cons (cons 'the-ret-symb (cons body ())) ()))))))
+;  '(x y) '(add x y))
+
+((clambda ret (lambda)
+    (ret ((expand (lambda '(x y) '(add x y))) 1 2)))
+
+(clambda ret (args body) 
+         (ret 
+           (cons 'clambda (cons 'the-ret-symb 
+                                (cons args (cons (cons 'the-ret-symb (cons body ())) ())))))))

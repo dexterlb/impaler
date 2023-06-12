@@ -17,6 +17,6 @@
         (output foo))
     (
         (test "cdr works")
-        (input (car (cons (quote foo) (quote bar))))
+        (input (car (cons 'foo 'bar)))
         (output foo))
 ))
