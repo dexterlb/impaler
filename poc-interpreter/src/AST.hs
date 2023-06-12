@@ -38,10 +38,17 @@ parseSexpr = do
 
     (els, consTail) <- P.braces
         $   (P.try parseDotExprBody)
+        <|> parseMacroExpandBody
         <|> parseSexprBody
 
     offAfter <- P.getOffset
     pure $ makeSexpr offBefore offAfter els consTail
+
+parseMacroExpandBody :: Parser ([AST], Maybe AST)
+parseMacroExpandBody = do
+    macroexpand <- parseSection (\dinfo _ -> Symbol dinfo "macroexpand") $ P.char '!'
+    (els, consTail) <- parseSexprBody
+    pure $ (macroexpand:els, consTail)
 
 parseSexprBody :: Parser ([AST], Maybe AST)
 parseSexprBody = do

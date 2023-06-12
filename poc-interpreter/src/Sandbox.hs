@@ -37,12 +37,29 @@ sampleEnv = envFromList
     , ("cons", makePureFunc cons)
     , ("car", makePureFunc car)
     , ("cdr", makePureFunc cdr)
-    , ("foo", builtinVal $ ExternalVal NoValue)
+    , ("bool-to-k", makePureFunc boolToK)
+    , ("null?", makePureFunc isNull)
     ]
 
 adder :: Value v m -> Value v m -> Value v m
 adder (Value _ (Num a)) (Value _ (Num b)) = builtinVal $ Num $ a + b
 adder v1@(Value dinfo _) v2 = makeFailList dinfo "expected-two-numbers" [v1, v2]
+
+boolToK :: (Monad m) => Value v m -> Value v m
+boolToK (Value _ (Pair (Value _ (Bool b)) (Value _ Null)))
+    | b = makePureFunc k
+    | not b = makePureFunc k_
+    where
+        k (Value _ (Pair x (Value _ (Pair _ (Value _ Null))))) = x
+        k v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-k" [v]
+        k_ (Value _ (Pair _ (Value _ (Pair y (Value _ Null))))) = y
+        k_ v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-k_" [v]
+boolToK v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-bool-to-k" [v]
+
+isNull :: Value v m -> Value v m
+isNull (Value dinfo (Pair (Value _ Null) (Value _ Null))) = Value dinfo $ Bool True
+isNull (Value dinfo (Pair _ (Value _ Null))) = Value dinfo $ Bool False
+isNull v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-null?" [v]
 
 cons :: Value v m -> Value v m
 cons (Value dinfo (Pair a (Value _ (Pair b (Value _ Null))))) = Value dinfo (Pair a b)
