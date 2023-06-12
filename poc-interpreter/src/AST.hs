@@ -5,6 +5,7 @@ module AST
 where
 
 import Data.Text (Text)
+import qualified Data.Text as T
 import Data.Functor (($>))
 
 import Utils.Parsing (Parseable, Parser, (<|>))
@@ -26,33 +27,42 @@ instance (Parseable AST) where
     parser = P.whitespace >> parseAST
 
 parseAST :: Parser AST
-parseAST = parseAtom <|> (P.try parseDotExpr) <|> parseSexpr
+parseAST = parseAtom <|> parseSexpr
 
 parseAtom :: Parser AST
-parseAtom = parseSymbol <|> parseNum <|> parseStr <|> parseBool
+parseAtom = (P.try parseBool) <|> parseSymbol <|> parseNum <|> parseStr
 
 parseSexpr :: Parser AST
 parseSexpr = do
     offBefore <- P.getOffset
-    els <- P.braces $ P.separatedByWhitespace parseAST
-    offAfter <- P.getOffset
-    pure $ makeSexpr offBefore offAfter els Nothing
 
-parseDotExpr :: Parser AST
-parseDotExpr = do
-    offBefore <- P.getOffset
-    (els, after) <- P.braces $ do
-        els   <- P.separatedByWhitespace parseAST
-        _     <- P.literal "."
-        after <- parseAST
-        pure (els, after)
+    (els, consTail) <- P.braces
+        $   (P.try parseDotExprBody)
+        <|> parseSexprBody
+
     offAfter <- P.getOffset
-    pure $ makeSexpr offBefore offAfter els (Just after)
+    pure $ makeSexpr offBefore offAfter els consTail
+
+parseSexprBody :: Parser ([AST], Maybe AST)
+parseSexprBody = do
+    els <- P.separatedByWhitespace parseAST
+    pure $ (els, Nothing)
+
+parseDotExprBody :: Parser ([AST], Maybe AST)
+parseDotExprBody = do
+    els   <- P.separatedByWhitespace parseAST
+    _     <- P.literal "."
+    after <- parseAST
+    pure $ (els, Just after)
 
 parseSymbol :: Parser AST
-parseSymbol = parseSection Symbol par
-    where
-        par = Identifier <$> P.identifier
+parseSymbol = parseSection Symbol $ P.lexeme $ do
+    c <- P.letterChar <|> specialChar
+    cs <- P.many (P.letterChar <|> specialChar <|> P.digitChar)
+    pure $ Identifier $ T.pack $ c:cs
+
+specialChar :: Parser Char
+specialChar = P.oneOf ("!$%&|*+-/:<=>?@^_~#" :: [Char])
 
 parseNum :: Parser AST
 parseNum = parseSection Num $ P.floatNumber

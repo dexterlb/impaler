@@ -86,10 +86,10 @@ block t p = do
     curlyBraces p
 
 word :: Parser a -> Parser a
-word x = (lexeme . try) (x <* notFollowedBy alphaNumChar)
+word x = lexeme (x <* notFollowedBy alphaNumChar)
 
 literal :: Text -> Parser Text
-literal = (lexeme . try) . string
+literal = lexeme . string
 
 operator :: Text -> Parser Text
 operator = literal
@@ -98,22 +98,16 @@ separated :: Text -> Parser a -> Parser [a]
 separated sep = separatedBy $ literal sep
 
 separatedByWhitespace :: Parser a -> Parser [a]
-separatedByWhitespace = separatedBy $ pure ()
+separatedByWhitespace = separatedBy whitespace
 
 separatedBy :: Parser b -> Parser a -> Parser [a]
-separatedBy sep p = (try (multi)) <|> (pure [])
-    where
-        multi = do
-            h <- p
-            _ <- sep
-            t <- separatedBy sep p
-            pure $ h : t
+separatedBy sep f = sepBy f sep
 
 identifier :: Parser Text
-identifier = T.pack <$> (lexeme . try) (liftA2 (:) letterChar (many alphaNumChar))
+identifier = T.pack <$> lexeme (liftA2 (:) letterChar (many alphaNumChar))
 
 quotedString :: Char -> Parser Text
-quotedString quote = (lexeme . try) $ do
+quotedString quote = lexeme $ do
     _     <- char quote
     chars <- many character
     _     <- char quote
@@ -130,7 +124,7 @@ quotedString quote = (lexeme . try) $ do
         nonEscaped = noneOf [quote, '\\']
 
 floatNumber :: Parser Float
-floatNumber = (lexeme . try) $ L.signed whitespace (lexeme (try L.float <|> (toFloat <$> try L.decimal)))
+floatNumber = lexeme $ L.signed whitespace (lexeme (try L.float <|> (toFloat <$> L.decimal)))
     where
         toFloat :: Int -> Float
         toFloat = fromIntegral
