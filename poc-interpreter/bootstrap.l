@@ -7,6 +7,7 @@
 ;             (cons args (cons (cons 'the-ret-symb (cons body ())) ()))))))
 ;  '(x y) '(add x y))
 
+; (macroexpand foo bar baz) -> (expand (foo (quote bar) (quote baz)))
 ((clambda ret (lambda)
     (ret
 
@@ -19,16 +20,22 @@
         ;  (!lambda (items body) (cons 'quote (cons (cons items (cons body ())) ()))))))
 
         ((!lambda (Y if)
-          (!if (null? ('foo))
-            'yay
-            'nay))
+          ((!lambda (map)
+            (map car '((foo bar) (baz qux))))
+
+            ; definition of "map"
+            (Y (!lambda (map)
+                (!lambda (f l)
+                  (if (null? l)
+                    l
+                    (cons (f (car l) (map f (cdr l))))))))))
 
           ; definition of "Y"
-          (lambda (f)
-            ((lambda (x)
-              (f (lambda (y) ((x x) y))))
-            (lambda (x)
-              (f (lambda (y) ((x x) y))))))
+          (!lambda (f)
+            ((!lambda (x)
+              (f (!lambda args (apply (x x) args))))
+            (!lambda (x)
+              (f (!lambda args (apply (x x) args))))))
 
           ; definition of "if"
           ; (if cond foo bar) -> (((bool-to-k cond) (!lambda () foo) (!lambda () bar)))
@@ -39,7 +46,9 @@
               (cons (cons 'macroexpand (cons 'lambda (cons () (cons b ()))))
               ())))
 
-              ())))))
+              ()))
+
+           )))
 
 (clambda ret (args body)
          (ret
