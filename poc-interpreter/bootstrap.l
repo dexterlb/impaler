@@ -19,23 +19,28 @@
         ;
         ;  (!lambda (items body) (cons 'quote (cons (cons items (cons body ())) ()))))))
 
-        ((!lambda (Y if)
-          ((!lambda (map)
-            (map car '((foo bar) (baz qux))))
+        ((!lambda (apply if)
+          ((!lambda (Y)
+            ((!lambda (map)
+              (map car '((foo bar) (baz qux))))
 
-            ; definition of "map"
-            (Y (!lambda (map)
-                (!lambda (f l)
-                  (if (null? l)
-                    l
-                    (cons (f (car l) (map f (cdr l))))))))))
+              ; definition of "map"
+              (Y (!lambda (map)
+                  (!lambda (f l)
+                    (if (null? l)
+                      l
+                      (cons (f (car l) (map f (cdr l))))))))))
 
-          ; definition of "Y"
-          (!lambda (f)
-            ((!lambda (x)
-              (f (!lambda args (apply (x x) args))))
-            (!lambda (x)
-              (f (!lambda args (apply (x x) args))))))
+              ; definition of "Y"
+              (!lambda (f)
+                ((!lambda (x)
+                  (f (!lambda args (apply (x x) args))))
+                (!lambda (x)
+                  (f (!lambda args (apply (x x) args))))))))
+
+          ; definition of "apply"
+          (!lambda (f args)
+            (expand (cons f args)))
 
           ; definition of "if"
           ; (if cond foo bar) -> (((bool-to-k cond) (!lambda () foo) (!lambda () bar)))
