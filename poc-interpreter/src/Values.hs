@@ -2,6 +2,7 @@ module Values
     ( Value(..)
     , ValueItem(..)
     , Computation(..)
+    , EvalWorld
     , Callback
     , Env(..)
     , ArgSpec(..)
@@ -222,7 +223,9 @@ instance (Show v) => (Show (ValueItem v m)) where
 instance (Show v) => (Show (Value v m)) where
     show (Value dinfo v) = (show v) <> (show dinfo)
 
-class (Monad m) => Computation v m where
+class (Monad m, Show v) => EvalWorld v m where
+
+class (EvalWorld v m) => Computation v m where
     yieldResult :: Value v m -> m ()
 
     resultOf :: m a -> Maybe (Value v m)

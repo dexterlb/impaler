@@ -24,6 +24,8 @@ newtype PureComp a = PureComp (Writer [Value NoValue PureComp] a)
 data NoValue = NoValue
     deriving stock (Show)
 
+instance (EvalWorld NoValue PureComp)
+
 instance (Computation NoValue PureComp) where
     yieldResult arg = PureComp $ do
         tell [arg]

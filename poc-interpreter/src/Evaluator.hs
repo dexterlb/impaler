@@ -12,14 +12,14 @@ import PrimitiveData
 import DebugInfo
 
 -- | eval the given value under the given environment
-eval :: (Monad m) => Env v m -> Callback v m -> Value v m -> m ()
+eval :: (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
 eval env ret v@(Value _ (Pair (Value _ x) xs))
     | (Symbol sym) <- x, isSpecialForm sym = evalSpecialForm env ret sym xs
     | otherwise = evalList env (callSexpr ret) v
 eval env ret (Value dinfo (Symbol i)) = ret $ envGet dinfo i env
 eval _   ret v = ret $ v   -- all other values evaluate to themselves
 
-callSexpr   :: (Monad m)
+callSexpr   :: (EvalWorld v m)
             => Callback v m
             -> Value v m  -- ^ sexpr to call
             -> m ()
@@ -27,7 +27,7 @@ callSexpr ret (Value _ (Pair f arg)) = call ret f arg
 callSexpr ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-sexpr" [v]
 
 -- | execute the given callable
-call  :: (Monad m)
+call  :: (EvalWorld v m)
       => Callback v m -- ^ callback to call with result
       -> Value v m    -- ^ callable
       -> Value v m    -- ^ argument
@@ -36,7 +36,7 @@ call ret (Value _ (ExternalFunc f)) arg = f ret arg
 call ret (Value dinfo (CLambda body argn env)) arg = callCLambda dinfo ret env argn arg body
 call ret expr@(Value dinfo _) _ = ret $ makeFailList dinfo "dont-know-how-to-call" [expr]
 
-callCLambda :: forall v m. (Monad m)
+callCLambda :: forall v m. (EvalWorld v m)
             => DebugInfo
             -> Callback v m   -- ^ callback to call with result
             -> Env v m        -- ^ closure that comes with lambda
@@ -88,7 +88,7 @@ bindArgs (ArgSpec { argNames, tailName }) val
 
 -- | evaluate all elements in a given list
 -- | afterwards, pass a list of evaluated items to the callback
-evalList :: (Monad m) => Env v m -> Callback v m -> Value v m -> m ()
+evalList :: (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
 evalList _ ret v@(Value _ Null) = ret v
 evalList env ret (Value dinfo (Pair x xs)) = eval env g x
     where
@@ -104,7 +104,7 @@ isSpecialForm "expand" = True
 isSpecialForm "macroexpand" = True
 isSpecialForm _ = False
 
-evalSpecialForm :: forall v m. (Monad m) => Env v m -> Callback v m -> Identifier -> Value v m -> m ()
+evalSpecialForm :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> Identifier -> Value v m -> m ()
 evalSpecialForm env ret "clambda" (Value dinfo (Pair retname (Value _ (Pair arg bodyVal))))
     | (Just body) <- valToList bodyVal = ret $ makeClambda dinfo env retname arg body
     | otherwise = ret $ makeFailList dinfo "clambda-body-not-list" [bodyVal]
