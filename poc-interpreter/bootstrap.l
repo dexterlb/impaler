@@ -19,7 +19,7 @@
         ;
         ;  (!lambda (items body) (cons 'quote (cons (cons items (cons body ())) ()))))))
 
-        ((!lambda (apply if)
+        ((!lambda (wrong-apply if)
           ((!lambda (Y)
             ((!lambda (map)
               (map car '((foo bar) (baz qux))))
@@ -27,9 +27,9 @@
               ; definition of "map"
               (Y (!lambda (map)
                   (!lambda (f l)
-                    (if (null? l)
+                    (!if (null? l)
                       l
-                      (cons (f (car l) (map f (cdr l))))))))))
+                      (cons (f (car l)) (map f (cdr l)))))))))
 
               ; definition of "Y"
               (!lambda (f)
@@ -40,7 +40,7 @@
 
           ; definition of "apply"
           (!lambda (f args)
-            (expand (cons f args)))
+            (eval '() (cons f args)))
 
           ; definition of "if"
           ; (if cond foo bar) -> (((bool-to-k cond) (!lambda () foo) (!lambda () bar)))

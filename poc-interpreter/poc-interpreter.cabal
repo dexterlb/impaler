@@ -30,6 +30,7 @@ library
       PrimitiveData
       Sandbox
       Testing
+      Utils.Debug
       Utils.Parsing
       Values
   other-modules:

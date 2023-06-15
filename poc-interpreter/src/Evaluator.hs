@@ -1,5 +1,6 @@
 module Evaluator
     ( eval
+    , apply
     )
 
 where
@@ -15,26 +16,26 @@ import DebugInfo
 eval :: (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
 eval env ret v@(Value _ (Pair (Value _ x) xs))
     | (Symbol sym) <- x, isSpecialForm sym = evalSpecialForm env ret sym xs
-    | otherwise = evalList env (callSexpr ret) v
+    | otherwise = evalList env (evalSexpr ret) v
 eval env ret (Value dinfo (Symbol i)) = ret $ envGet dinfo i env
 eval _   ret v = ret $ v   -- all other values evaluate to themselves
 
-callSexpr   :: (EvalWorld v m)
+evalSexpr   :: (EvalWorld v m)
             => Callback v m
             -> Value v m  -- ^ sexpr to call
             -> m ()
-callSexpr ret (Value _ (Pair f arg)) = call ret f arg
-callSexpr ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-sexpr" [v]
+evalSexpr ret (Value _ (Pair f arg)) = apply ret f arg
+evalSexpr ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-sexpr" [v]
 
 -- | execute the given callable
-call  :: (EvalWorld v m)
-      => Callback v m -- ^ callback to call with result
-      -> Value v m    -- ^ callable
-      -> Value v m    -- ^ argument
-      -> m ()
-call ret (Value _ (ExternalFunc f)) arg = f ret arg
-call ret (Value dinfo (CLambda body argn env)) arg = callCLambda dinfo ret env argn arg body
-call ret expr@(Value dinfo _) _ = ret $ makeFailList dinfo "dont-know-how-to-call" [expr]
+apply  :: (EvalWorld v m)
+       => Callback v m -- ^ callback to call with result
+       -> Value v m    -- ^ callable
+       -> Value v m    -- ^ argument
+       -> m ()
+apply ret (Value _ (ExternalFunc f)) arg = f ret arg
+apply ret (Value dinfo (CLambda body argn env)) arg = callCLambda dinfo ret env argn arg body
+apply ret expr@(Value dinfo _) _ = ret $ makeFailList dinfo "dont-know-how-to-call" [expr]
 
 callCLambda :: forall v m. (EvalWorld v m)
             => DebugInfo

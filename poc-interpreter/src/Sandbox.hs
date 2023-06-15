@@ -35,6 +35,8 @@ instance (Computation NoValue PureComp) where
 sampleEnv :: Env NoValue PureComp
 sampleEnv = envFromList
     [ ("yield", makeCPSFunc (\ret val -> (yieldResult val) >> (ret $ builtinVal Null)))
+    , ("eval", makeCPSFunc internalEval)
+    , ("apply", makeCPSFunc internalApply)
     , ("add", makePureFunc $ vffoldr adder (builtinVal $ Num 0))
     , ("cons", makePureFunc cons)
     , ("car", makePureFunc car)
@@ -42,6 +44,24 @@ sampleEnv = envFromList
     , ("bool-to-k", makePureFunc boolToK)
     , ("null?", makePureFunc isNull)
     ]
+
+internalEval :: forall v m. (EvalWorld v m) => Callback v m -> Value v m -> m ()
+internalEval ret (Value dinfo (Pair envRepr (Value _ (Pair val (Value _ Null)))))
+    | (Just env) <- envResult = eval env ret val
+    | otherwise = ret $ makeFailList dinfo "malformed-environment-arg" [envRepr]
+    where
+        envResult :: Maybe (Env v m)
+        envResult = parseEnv envRepr
+internalEval ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-two-args" [v]
+
+internalApply :: forall v m. (EvalWorld v m) => Callback v m -> Value v m -> m ()
+internalApply ret (Value _ (Pair f (Value _ (Pair arg (Value _ Null)))))
+    = apply ret f arg
+internalApply ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-two-args" [v]
+
+parseEnv :: Value v m -> Maybe (Env v m)
+parseEnv (Value _ Null) = Just $ emptyEnv
+parseEnv _ = error "non-empty environment eval not implemented"
 
 adder :: Value v m -> Value v m -> Value v m
 adder (Value _ (Num a)) (Value _ (Num b)) = builtinVal $ Num $ a + b
