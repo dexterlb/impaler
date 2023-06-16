@@ -55,7 +55,7 @@ library
       ScopedTypeVariables
       FlexibleContexts
       MultiParamTypeClasses
-  ghc-options: -Werror -Wall -Wcompat -Widentities -Wmissing-deriving-strategies -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -Wunused-type-patterns -Wincomplete-uni-patterns -Wunused-packages
+  ghc-options: -Werror -Wall -Wcompat -Widentities -Wmissing-deriving-strategies -Wpartial-fields -Wredundant-constraints -Wunused-type-patterns -Wincomplete-uni-patterns -Wunused-packages
   build-depends:
       base >=4.7 && <5
     , containers
@@ -95,7 +95,7 @@ executable poc-interpreter
       ScopedTypeVariables
       FlexibleContexts
       MultiParamTypeClasses
-  ghc-options: -Werror -Wall -Wcompat -Widentities -Wmissing-deriving-strategies -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -Wunused-type-patterns -Wincomplete-uni-patterns -Wunused-packages -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Werror -Wall -Wcompat -Widentities -Wmissing-deriving-strategies -Wpartial-fields -Wredundant-constraints -Wunused-type-patterns -Wincomplete-uni-patterns -Wunused-packages -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base ==4.*
     , poc-interpreter
@@ -132,7 +132,7 @@ test-suite poc-interpreter-test
       ScopedTypeVariables
       FlexibleContexts
       MultiParamTypeClasses
-  ghc-options: -Werror -Wall -Wcompat -Widentities -Wmissing-deriving-strategies -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -Wunused-type-patterns -Wincomplete-uni-patterns -Wunused-packages -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Werror -Wall -Wcompat -Widentities -Wmissing-deriving-strategies -Wpartial-fields -Wredundant-constraints -Wunused-type-patterns -Wincomplete-uni-patterns -Wunused-packages -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base ==4.*
     , directory

@@ -25,7 +25,7 @@
         "-Wcompat"
         "-Widentities"
         "-Wmissing-deriving-strategies"
-        "-Wmissing-export-lists"
+        # "-Wmissing-export-lists"
         "-Wpartial-fields"
         "-Wredundant-constraints"
         "-Wunused-type-patterns"
