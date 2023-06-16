@@ -1,26 +1,75 @@
 {
   description = "A Haskell project";
 
-  inputs.hix.url = "github:tek/hix";
+  inputs.hix.url = "github:tek/hix/main";
 
-  outputs = {hix, ...}: hix.lib.flake {
-    hackage.versionFile = "ops/version.nix";
+  outputs = {hix, ...}: hix.lib.flake ({config, ...}: {
+    hackage.versionFile = "./ops/version.nix";
+
+    compiler = "ghc94";
+    ghcVersions = [
+      "ghc94"
+    ];
+
+    envs.dev = {
+      buildInputs = [ config.pkgs.cabal-install ];
+    };
 
     cabal = {
       license = "BSD-2-Clause-Patent";
       license-file = "LICENSE";
       author = "dexterlb";
-      ghc-options = ["-Wall"];
+      ghc-options = [
+        "-Werror"
+        "-Wall"
+        "-Wcompat"
+        "-Widentities"
+        "-Wmissing-deriving-strategies"
+        "-Wmissing-export-lists"
+        "-Wpartial-fields"
+        "-Wredundant-constraints"
+        "-Wunused-type-patterns"
+        "-Wincomplete-uni-patterns"
+        "-Wunused-packages"
+      ];
+      default-extensions = [
+        "BlockArguments"
+        "DeriveAnyClass"
+        "DeriveGeneric"
+        "DerivingStrategies"
+        "DerivingVia"
+        "GeneralisedNewtypeDeriving"
+        "ImportQualifiedPost"
+        "InstanceSigs"
+        "LambdaCase"
+        "NamedFieldPuns"
+        "OverloadedStrings"
+        "ScopedTypeVariables"
+        "StandaloneDeriving"
+        "TupleSections"
+        "TypeApplications"
+        "KindSignatures"
+        "OverloadedRecordDot"
+        "DuplicateRecordFields"
+        "ScopedTypeVariables"
+        "FlexibleContexts"
+        "MultiParamTypeClasses"
+      ];
     };
 
     packages.poc-interpreter = {
       src = ./.;
-      cabal.meta.synopsis = "A Haskell project";
+      cabal.meta.synopsis = "PoC interpreter";
 
       library = {
         enable = true;
         dependencies = [
+          "base >=4.7 && <5"
           "containers"
+          "megaparsec"
+          "parser-combinators"
+          "text"
+          "transformers"
         ];
       };
 
@@ -29,12 +78,13 @@
       test = {
         enable = true;
         dependencies = [
-          "hedgehog >= 1.1 && < 1.3"
-          "tasty ^>= 1.4"
-          "tasty-hedgehog >= 1.3 && < 1.5"
+          "hspec"
+          "filepath"
+          "directory"
+          "text"
+          "pseudomacros"
         ];
       };
-
     };
-  };
+  });
 }

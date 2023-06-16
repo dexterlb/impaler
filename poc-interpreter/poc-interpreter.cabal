@@ -1,0 +1,144 @@
+cabal-version: 2.2
+
+-- This file has been generated from package.yaml by hpack version 0.35.2.
+--
+-- see: https://github.com/sol/hpack
+
+name:           poc-interpreter
+version:        0.1.0.0
+synopsis:       PoC interpreter
+description:    See https://hackage.haskell.org/package/poc-interpreter/docs/Poc-Interpreter.html
+author:         dexterlb
+maintainer:     dexterlb
+copyright:      2023 dexterlb
+license:        BSD-2-Clause-Patent
+license-file:   LICENSE
+build-type:     Simple
+
+library
+  exposed-modules:
+      AST
+      DebugInfo
+      Environments
+      Evaluator
+      PrimitiveData
+      Sandbox
+      Testing
+      Utils.Debug
+      Utils.Parsing
+      Values
+  other-modules:
+      Paths_poc_interpreter
+  autogen-modules:
+      Paths_poc_interpreter
+  hs-source-dirs:
+      lib
+  default-extensions:
+      BlockArguments
+      DeriveAnyClass
+      DeriveGeneric
+      DerivingStrategies
+      DerivingVia
+      GeneralisedNewtypeDeriving
+      ImportQualifiedPost
+      InstanceSigs
+      LambdaCase
+      NamedFieldPuns
+      OverloadedStrings
+      ScopedTypeVariables
+      StandaloneDeriving
+      TupleSections
+      TypeApplications
+      KindSignatures
+      OverloadedRecordDot
+      DuplicateRecordFields
+      ScopedTypeVariables
+      FlexibleContexts
+      MultiParamTypeClasses
+  ghc-options: -Werror -Wall -Wcompat -Widentities -Wmissing-deriving-strategies -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -Wunused-type-patterns -Wincomplete-uni-patterns -Wunused-packages
+  build-depends:
+      base >=4.7 && <5
+    , containers
+    , megaparsec
+    , parser-combinators
+    , text
+    , transformers
+  default-language: GHC2021
+
+executable poc-interpreter
+  main-is: Main.hs
+  other-modules:
+      Paths_poc_interpreter
+  autogen-modules:
+      Paths_poc_interpreter
+  hs-source-dirs:
+      app
+  default-extensions:
+      BlockArguments
+      DeriveAnyClass
+      DeriveGeneric
+      DerivingStrategies
+      DerivingVia
+      GeneralisedNewtypeDeriving
+      ImportQualifiedPost
+      InstanceSigs
+      LambdaCase
+      NamedFieldPuns
+      OverloadedStrings
+      ScopedTypeVariables
+      StandaloneDeriving
+      TupleSections
+      TypeApplications
+      KindSignatures
+      OverloadedRecordDot
+      DuplicateRecordFields
+      ScopedTypeVariables
+      FlexibleContexts
+      MultiParamTypeClasses
+  ghc-options: -Werror -Wall -Wcompat -Widentities -Wmissing-deriving-strategies -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -Wunused-type-patterns -Wincomplete-uni-patterns -Wunused-packages -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base ==4.*
+    , poc-interpreter
+  default-language: GHC2021
+
+test-suite poc-interpreter-test
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  other-modules:
+      Paths_poc_interpreter
+  autogen-modules:
+      Paths_poc_interpreter
+  hs-source-dirs:
+      test
+  default-extensions:
+      BlockArguments
+      DeriveAnyClass
+      DeriveGeneric
+      DerivingStrategies
+      DerivingVia
+      GeneralisedNewtypeDeriving
+      ImportQualifiedPost
+      InstanceSigs
+      LambdaCase
+      NamedFieldPuns
+      OverloadedStrings
+      ScopedTypeVariables
+      StandaloneDeriving
+      TupleSections
+      TypeApplications
+      KindSignatures
+      OverloadedRecordDot
+      DuplicateRecordFields
+      ScopedTypeVariables
+      FlexibleContexts
+      MultiParamTypeClasses
+  ghc-options: -Werror -Wall -Wcompat -Widentities -Wmissing-deriving-strategies -Wmissing-export-lists -Wpartial-fields -Wredundant-constraints -Wunused-type-patterns -Wincomplete-uni-patterns -Wunused-packages -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base ==4.*
+    , directory
+    , filepath
+    , hspec
+    , poc-interpreter
+    , pseudomacros
+    , text
+  default-language: GHC2021
