@@ -1,26 +1,40 @@
 {
-  inputs = {
-    nixpkgs.url = "github:nixos/nixpkgs/nixpkgs-unstable";
-    flake-parts.url = "github:hercules-ci/flake-parts";
-    haskell-flake.url = "github:srid/haskell-flake";
-  };
-  outputs = inputs@{ self, nixpkgs, flake-parts, ... }:
-    flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = nixpkgs.lib.systems.flakeExposed;
-      imports = [ inputs.haskell-flake.flakeModule ];
-      perSystem = { self', pkgs, ... }: {
-        haskellProjects.default = {
-          packages = {
-            # You can add more than one local package here.
-            poc-interpreter.root = ./.;  # Assumes ./poc-interpreter.cabal
-          };
-          # buildTools = hp: { fourmolu = hp.fourmolu; ghcid = null; };
-          # overrides = self: super: { };
-          # hlintCheck.enable = true;
-          # hlsCheck.enable = true;
-        };
-        # haskell-flake doesn't set the default package, but you can do it here.
-        packages.default = self'.packages.poc-interpreter;
-      };
+  description = "A Haskell project";
+
+  inputs.hix.url = "github:tek/hix";
+
+  outputs = {hix, ...}: hix.lib.flake {
+    hackage.versionFile = "ops/version.nix";
+
+    cabal = {
+      license = "BSD-2-Clause-Patent";
+      license-file = "LICENSE";
+      author = "dexterlb";
+      ghc-options = ["-Wall"];
     };
+
+    packages.poc-interpreter = {
+      src = ./.;
+      cabal.meta.synopsis = "A Haskell project";
+
+      library = {
+        enable = true;
+        dependencies = [
+          "containers"
+        ];
+      };
+
+      executable.enable = true;
+
+      test = {
+        enable = true;
+        dependencies = [
+          "hedgehog >= 1.1 && < 1.3"
+          "tasty ^>= 1.4"
+          "tasty-hedgehog >= 1.3 && < 1.5"
+        ];
+      };
+
+    };
+  };
 }
