@@ -11,14 +11,19 @@ import Values
 import Environments
 import PrimitiveData
 import DebugInfo
+-- import Utils.Debug
 
 -- | eval the given value under the given environment
 eval :: (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
-eval env ret v@(Value _ (Pair (Value _ x) xs))
+eval = eval'
+-- eval env ret v = eval' env ret (traceVal "eval" v)
+
+eval' :: (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
+eval' env ret v@(Value _ (Pair (Value _ x) xs))
     | (Symbol sym) <- x, isSpecialForm sym = evalSpecialForm env ret sym xs
     | otherwise = evalList env (evalSexpr ret) v
-eval env ret (Value dinfo (Symbol i)) = ret $ envGet dinfo i env
-eval _   ret v = ret $ v   -- all other values evaluate to themselves
+eval' env ret (Value dinfo (Symbol i)) = ret $ envGet dinfo i env
+eval' _   ret v = ret $ v   -- all other values evaluate to themselves
 
 evalSexpr   :: (EvalWorld v m)
             => Callback v m
@@ -33,9 +38,17 @@ apply  :: (EvalWorld v m)
        -> Value v m    -- ^ callable
        -> Value v m    -- ^ argument
        -> m ()
-apply ret (Value _ (ExternalFunc f)) arg = f ret arg
-apply ret (Value dinfo (CLambda body argn env)) arg = callCLambda dinfo ret env argn arg body
-apply ret expr@(Value dinfo _) _ = ret $ makeFailList dinfo "dont-know-how-to-call" [expr]
+apply = apply'
+-- apply ret callable arg = apply' ret callable ((traceVals "apply" [callable, arg]) !! 1)
+
+apply'   :: (EvalWorld v m)
+         => Callback v m -- ^ callback to call with result
+         -> Value v m    -- ^ callable
+         -> Value v m    -- ^ argument
+         -> m ()
+apply' ret (Value _ (ExternalFunc f)) arg = f ret arg
+apply' ret (Value dinfo (CLambda body argn env)) arg = callCLambda dinfo ret env argn arg body
+apply' ret expr@(Value dinfo _) _ = ret $ makeFailList dinfo "dont-know-how-to-call" [expr]
 
 callCLambda :: forall v m. (EvalWorld v m)
             => DebugInfo

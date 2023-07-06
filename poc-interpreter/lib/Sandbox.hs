@@ -43,6 +43,7 @@ sampleEnv = envFromList
     , ("cdr", makePureFunc cdr)
     , ("bool-to-k", makePureFunc boolToK)
     , ("null?", makePureFunc isNull)
+    , ("pair?", makePureFunc isPair)
     ]
 
 internalEval :: forall v m. (EvalWorld v m) => Callback v m -> Value v m -> m ()
@@ -82,6 +83,11 @@ isNull :: Value v m -> Value v m
 isNull (Value dinfo (Pair (Value _ Null) (Value _ Null))) = Value dinfo $ Bool True
 isNull (Value dinfo (Pair _ (Value _ Null))) = Value dinfo $ Bool False
 isNull v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-null?" [v]
+
+isPair :: Value v m -> Value v m
+isPair (Value dinfo (Pair (Value _ (Pair _ _)) (Value _ Null))) = Value dinfo $ Bool True
+isPair (Value dinfo (Pair _ _)) = Value dinfo $ Bool True
+isPair v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-pair?" [v]
 
 cons :: Value v m -> Value v m
 cons (Value dinfo (Pair a (Value _ (Pair b (Value _ Null))))) = Value dinfo (Pair a b)
