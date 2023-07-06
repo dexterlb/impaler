@@ -10,7 +10,14 @@
 
 ((!lambda (Y if)
   ((!lambda (map)
-    (map (!lambda (x) (add 1 x)) '(1 2 3 4)))
+    ;(map (!lambda (x) (add 1 x)) '(1 2 3 4)))
+    ((!lambda (let)
+      (!let ((foo 1)
+             (bar 2))
+          (add foo bar)))
+
+      (!lambda (letlist body)
+        'baba)))
 
     ; definition of "map"
     (Y (!lambda (map)
