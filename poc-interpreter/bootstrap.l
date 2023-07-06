@@ -1,51 +1,53 @@
 ((clambda ret (lambda) (ret
 
-        ; ((!lambda (let)
-        ;
-        ;           (!let ((foo 1)
-        ;                  (bar 2))
-        ;             (add foo bar)))
-        ;
-        ;  (!lambda (items body) (cons 'quote (cons (cons items (cons body ())) ()))))))
+  ((!lambda (Y list cadr if)
+    ((!lambda (map)
+      ((!lambda (let)
 
-((!lambda (Y if)
-  ((!lambda (map)
-    ;(map (!lambda (x) (add 1 x)) '(1 2 3 4)))
-    ((!lambda (let)
-      (!let ((foo 1)
-             (bar 2))
-          (add foo bar)))
+        (!let ((foo 1)
+               (bar 2))
+            (add foo bar)))
 
-      (!lambda (letlist body)
-        'baba)))
+        ; definition of "let"
+        (!lambda (letlist body)
+          (cons
+            (list 'macroexpand 'lambda (map car letlist) body)
+            (map cadr letlist)))))
 
-    ; definition of "map"
-    (Y (!lambda (map)
-        (!lambda (f l)
-          (!if (null? l)
-            l
-            (cons (f (car l)) (map f (cdr l)))))))))
+      ; definition of "map"
+      (Y (!lambda (map)
+          (!lambda (f l)
+            (!if (null? l)
+              l
+              (cons (f (car l)) (map f (cdr l)))))))))
 
-  ; definition of "Y"
-  (!lambda (f)
-    ((!lambda (x)
-      (f (!lambda args (apply (x x) args))))
-    (!lambda (x)
-      (f (!lambda args (apply (x x) args))))))
+    ; definition of "Y"
+    (!lambda (f)
+      ((!lambda (x)
+        (f (!lambda args (apply (x x) args))))
+      (!lambda (x)
+        (f (!lambda args (apply (x x) args))))))
 
-  ; definition of "if"
-  ; (if cond foo bar) -> (((bool-to-k cond) (!lambda () foo) (!lambda () bar)))
-  (!lambda (cond a b)
-    (cons
-      (cons (cons 'bool-to-k (cons cond ()))
-      (cons (cons 'macroexpand (cons 'lambda (cons () (cons a ()))))
-      (cons (cons 'macroexpand (cons 'lambda (cons () (cons b ()))))
-      ())))
+    ; definition of "list"
+    (!lambda args args)
 
-      ()))
+    ; definition of "cadr"
+    (!lambda (p) (car (cdr p)))
 
-    )))
+    ; definition of "if"
+    ; (if cond foo bar) -> (((bool-to-k cond) (!lambda () foo) (!lambda () bar)))
+    (!lambda (cond a b)
+      (cons
+        (cons (cons 'bool-to-k (cons cond ()))
+        (cons (cons 'macroexpand (cons 'lambda (cons () (cons a ()))))
+        (cons (cons 'macroexpand (cons 'lambda (cons () (cons b ()))))
+        ())))
 
+        ()))
+
+      )))
+
+; definition of "lambda"
 (clambda ret (args body)
          (ret
            (cons 'clambda (cons 'the-ret-symb
