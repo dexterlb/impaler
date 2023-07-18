@@ -1,4 +1,9 @@
 {-# LANGUAGE TemplateHaskell #-}
+module Main
+    ( main
+    , sandboxDemo )
+where
+
 import PseudoMacros
 
 import Sandbox
@@ -11,6 +16,9 @@ import System.FilePath ((</>), takeDirectory)
 import Test.Hspec
 
 import Utils.Parsing (parseFile)
+
+sandboxDemo :: IO ()
+sandboxDemo = demo
 
 -- TODO: instead of reading the files at runtime,
 -- use embedDir from here: https://hackage.haskell.org/package/file-embed-0.0.15.0/docs/Data-FileEmbed.html
