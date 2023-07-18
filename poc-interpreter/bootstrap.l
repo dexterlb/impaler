@@ -8,10 +8,11 @@
                (bar 2))
             (add foo bar)))
 
+
         ; definition of "let"
         (!lambda (letlist body)
           (cons
-            (list 'macroexpand 'lambda (map car letlist) body)
+            (lambda (map car letlist) body)
             (map cadr letlist)))))
 
       ; definition of "map"
@@ -39,8 +40,8 @@
     (!lambda (cond a b)
       (cons
         (cons (cons 'bool-to-k (cons cond ()))
-        (cons (cons 'macroexpand (cons 'lambda (cons () (cons a ()))))
-        (cons (cons 'macroexpand (cons 'lambda (cons () (cons b ()))))
+        (cons (lambda '() a)
+        (cons (lambda '() b)
         ())))
 
         ()))
