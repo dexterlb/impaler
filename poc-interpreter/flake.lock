@@ -1,35 +1,16 @@
 {
   "nodes": {
-    "flake-utils": {
-      "inputs": {
-        "systems": "systems"
-      },
-      "locked": {
-        "lastModified": 1685518550,
-        "narHash": "sha256-o2d0KcvaXzTrPRIo0kOLV0/QXHhDQ5DTi+OxcjO8xqY=",
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "rev": "a1720a10a6cfe8234c0e93907ffe81be440f4cef",
-        "type": "github"
-      },
-      "original": {
-        "owner": "numtide",
-        "repo": "flake-utils",
-        "type": "github"
-      }
-    },
     "hix": {
       "inputs": {
-        "flake-utils": "flake-utils",
         "nixpkgs": "nixpkgs",
         "thax": "thax"
       },
       "locked": {
-        "lastModified": 1686915171,
-        "narHash": "sha256-hsKWriEJpD2vlsc1OIt7eTTBi27cquRP4uaMdtecbgg=",
+        "lastModified": 1689722786,
+        "narHash": "sha256-DP67PvK2KO0+hzkdvSOximFbcmKxlAMKO0CRm6y3gwY=",
         "owner": "tek",
         "repo": "hix",
-        "rev": "e2f857fa72bbd2d82616c158e9138a85c12e1d40",
+        "rev": "c8c3a4dfee19d87e446f3ce30e957cf7d8978c77",
         "type": "github"
       },
       "original": {
@@ -58,21 +39,6 @@
     "root": {
       "inputs": {
         "hix": "hix"
-      }
-    },
-    "systems": {
-      "locked": {
-        "lastModified": 1681028828,
-        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
-        "owner": "nix-systems",
-        "repo": "default",
-        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
-        "type": "github"
-      },
-      "original": {
-        "owner": "nix-systems",
-        "repo": "default",
-        "type": "github"
       }
     },
     "thax": {
