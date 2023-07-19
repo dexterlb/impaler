@@ -4,9 +4,21 @@
     ((!lambda (map)
       ((!lambda (let)
 
-        (!let ((foo 1)
-               (bar 2))
-            (add foo bar)))
+        (!let
+          ((le-arglist
+            '((is-even? (!lambda (x) (if (= x 0) #t (is-odd?  (- x 1)))))
+              (is-odd? (!lambda (x) (if (= x 0) #f (is-even? (- x 1)))))))
+            (le-body
+              '(is-even? 42))
+           (letrec (!lambda (defs body)
+             (!let
+               ((args (map car defs))
+                (item-bodies (map cadr defs)))
+
+                ; infinite loop??
+                (list 'implement-me args item-bodies)))))
+
+          (letrec le-arglist le-body)))
 
 
         ; definition of "let"
@@ -20,7 +32,9 @@
           (!lambda (f l)
             (!if (null? l)
               l
-              (cons (f (car l)) (map f (cdr l)))))))))
+              (!if (pair? l)
+                (cons (f (car l)) (map f (cdr l)))
+                (make-fail (list 'not-a-list l)))))))))
 
     ; definition of "Y"
     (!lambda (f)
