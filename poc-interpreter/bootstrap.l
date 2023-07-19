@@ -10,13 +10,30 @@
               (is-odd? (!lambda (x) (if (= x 0) #f (is-even? (- x 1)))))))
             (le-body
               '(is-even? 42))
+
            (letrec (!lambda (defs body)
              (!let
                ((args (map car defs))
-                (item-bodies (map cadr defs)))
+                (item-bodies (map cadr defs))
+                (generate-element-getters (Y (!lambda (rec) (!lambda (list-name l)
+                  (!if (null? l)
+                    l
+                    (!if (pair? l)
+                      (cons (list 'car list-name)
+                            (map (!lambda (subl) (list (car subl) (cons 'cdr (cdr subl))))
+                                 (rec list-name (cdr l))))
+                      (make-fail (list 'list-of-letrec-elements-not-a-list l)))))))))
 
-                ; infinite loop??
-                (list 'implement-me args item-bodies)))))
+                (!let
+                  ((arg-bodies (map (!lambda (def-body) (lambda args def-body)) item-bodies))
+                   (flist 'the-flist-symb))
+
+                  (!let
+                    ((result-body (cons (lambda args body)
+                                        (generate-element-getters flist args))))
+
+                    (list (lambda (list flist) result-body) (cons 'Y arg-bodies)))))))
+          )
 
           (letrec le-arglist le-body)))
 
