@@ -23,7 +23,7 @@ instance Parseable ExprTests where
     parser = P.braces $ do
         _ <- P.literal "quote"
         P.braces $ do
-            ExprTests <$> P.separatedByWhitespace (parser :: Parser ExprTest)
+            ExprTests <$> P.many (parser :: Parser ExprTest)
 
 data ExprTest = ExprTest
     { input :: AST

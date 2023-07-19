@@ -62,6 +62,7 @@ library
     , megaparsec
     , parser-combinators
     , text
+    , timeit >=2.0
     , transformers
   default-language: GHC2021
 

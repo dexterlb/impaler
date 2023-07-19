@@ -7,8 +7,11 @@ module Sandbox
 where
 
 import Data.Text (Text)
+import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import Control.Monad.Trans.Writer.Lazy (Writer, tell, execWriter)
+
+import qualified System.TimeIt as TIT
 
 import Values
 import Environments
@@ -119,18 +122,22 @@ makeFunc f = makeCPSFunc g
 makeCPSFunc :: (Callback v m -> Value v m -> m ()) -> Value v m
 makeCPSFunc f = builtinVal $ ExternalFunc f
 
-
-parseEvalShow :: Env NoValue PureComp -> Text -> [Text]
-parseEvalShow env = (map stringifyVal) . (parseEval env)
-
-parseEval :: Env NoValue PureComp -> Text -> [Value NoValue PureComp]
-parseEval env = resultsOf . (eval env yieldResult) . mustParseVal
+evalProgram :: Env NoValue PureComp -> Value NoValue PureComp -> [Value NoValue PureComp]
+evalProgram env = resultsOf . (eval env yieldResult)
 
 fileEvalPrint :: FilePath -> IO ()
 fileEvalPrint fname = do
     txt <- TIO.readFile fname
-    let results = parseEvalShow sampleEnv txt
-    mapM_ TIO.putStrLn results
+    program <- TIT.timeIt $ do
+        let prog = (mustParseVal txt) :: Value NoValue PureComp
+        TIO.putStrLn $ "parsed program of approx size " <> (T.pack $ show $ T.length $ stringifyVal prog)
+        pure prog
+
+    _ <- TIT.timeIt $ do
+        let results = map stringifyVal $ evalProgram sampleEnv program
+        mapM_ TIO.putStrLn results
+
+    pure ()
 
 demo :: IO ()
 demo = fileEvalPrint "bootstrap.l"

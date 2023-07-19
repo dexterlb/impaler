@@ -52,12 +52,12 @@ parseMacroExpandBody = do
 
 parseSexprBody :: Parser ([AST], Maybe AST)
 parseSexprBody = do
-    els <- P.separatedByWhitespace parseAST
+    els <- P.many parseAST
     pure $ (els, Nothing)
 
 parseDotExprBody :: Parser ([AST], Maybe AST)
 parseDotExprBody = do
-    els   <- P.separatedByWhitespace parseAST
+    els   <- P.many parseAST
     _     <- P.literal "."
     after <- parseAST
     pure $ (els, Just after)

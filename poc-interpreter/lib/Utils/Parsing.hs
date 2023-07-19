@@ -7,7 +7,7 @@ module Utils.Parsing
     , Parseable, Parser, parser
     , lexeme, symbol, lambda, braces, curlyBraces, block
     , operator, word, identifier, literal, quotedString
-    , separated, separatedBy, separatedByWhitespace
+    , separated, separatedBy
     , floatNumber, whitespace
     , ps
     , pss
@@ -97,9 +97,6 @@ operator = literal
 separated :: Text -> Parser a -> Parser [a]
 separated sep = separatedBy $ literal sep
 
-separatedByWhitespace :: Parser a -> Parser [a]
-separatedByWhitespace = separatedBy whitespace
-
 separatedBy :: Parser b -> Parser a -> Parser [a]
 separatedBy sep f = sepBy f sep
 
@@ -124,7 +121,7 @@ quotedString quote = lexeme $ do
         nonEscaped = noneOf [quote, '\\']
 
 floatNumber :: Parser Float
-floatNumber = lexeme $ L.signed whitespace (lexeme (try L.float <|> (toFloat <$> L.decimal)))
+floatNumber = lexeme $ L.signed whitespace (try L.float <|> (toFloat <$> L.decimal))
     where
         toFloat :: Int -> Float
         toFloat = fromIntegral

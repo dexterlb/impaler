@@ -13,6 +13,7 @@
 
     envs.dev = {
       buildInputs = [ config.pkgs.cabal-install ];
+      profiling = true;
     };
 
     cabal = {
@@ -70,6 +71,7 @@
           "parser-combinators"
           "text"
           "transformers"
+          "timeit >= 2.0"
         ];
       };
 
