@@ -37,8 +37,7 @@ parseSexpr = do
     offBefore <- P.getOffset
 
     (els, consTail) <- P.braces
-        $   (P.try parseDotExprBody)
-        <|> parseMacroExpandBody
+        $   parseMacroExpandBody
         <|> parseSexprBody
 
     offAfter <- P.getOffset
@@ -53,14 +52,13 @@ parseMacroExpandBody = do
 parseSexprBody :: Parser ([AST], Maybe AST)
 parseSexprBody = do
     els <- P.many parseAST
-    pure $ (els, Nothing)
+    consTail <- (Just <$> parseConsTail) <|> (pure Nothing)
+    pure $ (els, consTail)
 
-parseDotExprBody :: Parser ([AST], Maybe AST)
-parseDotExprBody = do
-    els   <- P.many parseAST
-    _     <- P.literal "."
-    after <- parseAST
-    pure $ (els, Just after)
+parseConsTail :: Parser AST
+parseConsTail = do
+    _ <- P.literal "."
+    parseAST
 
 parseSymbol :: Parser AST
 parseSymbol = parseSection Symbol $ P.lexeme $ do
@@ -96,7 +94,7 @@ makeSexpr offBefore offAfter (x:xs) mtail = Pair (debugOffset offBefore offAfter
     (makeSexpr (getOffsetAfter x) offAfter xs mtail)
 
 makeList :: Int -> Int -> [AST] -> AST
-makeList offBefore offAfter l = makeSexpr offBefore offAfter l Nothing 
+makeList offBefore offAfter l = makeSexpr offBefore offAfter l Nothing
 
 getOffsetAfter :: AST -> Int
 getOffsetAfter ast = unwrapLocation info.location
