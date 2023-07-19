@@ -44,6 +44,7 @@ sampleEnv = envFromList
     , ("bool-to-k", makePureFunc boolToK)
     , ("null?", makePureFunc isNull)
     , ("pair?", makePureFunc isPair)
+    , ("make-fail", makePureFunc internalMakeFail)
     ]
 
 internalEval :: forall v m. (EvalWorld v m) => Callback v m -> Value v m -> m ()
@@ -59,6 +60,9 @@ internalApply :: forall v m. (EvalWorld v m) => Callback v m -> Value v m -> m (
 internalApply ret (Value _ (Pair f (Value _ (Pair arg (Value _ Null)))))
     = apply ret f arg
 internalApply ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-two-args" [v]
+
+internalMakeFail :: Value v m -> Value v m
+internalMakeFail v@(Value dinfo _) = makeFail dinfo v
 
 parseEnv :: Value v m -> Maybe (Env v m)
 parseEnv (Value _ Null) = Just $ emptyEnv
@@ -86,7 +90,7 @@ isNull v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-null?" [v]
 
 isPair :: Value v m -> Value v m
 isPair (Value dinfo (Pair (Value _ (Pair _ _)) (Value _ Null))) = Value dinfo $ Bool True
-isPair (Value dinfo (Pair _ _)) = Value dinfo $ Bool True
+isPair (Value dinfo (Pair _ _)) = Value dinfo $ Bool False
 isPair v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-pair?" [v]
 
 cons :: Value v m -> Value v m
