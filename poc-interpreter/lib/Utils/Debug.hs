@@ -10,6 +10,7 @@ import Data.Text (Text)
 import qualified Data.Text as T
 
 import Values
+import Stringify
 
 traceVal :: (Show v) => Text -> Value v m -> Value v m
 traceVal msg v = trace s v

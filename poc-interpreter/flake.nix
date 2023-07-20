@@ -72,6 +72,7 @@
           "text"
           "transformers"
           "timeit >= 2.0"
+          "prettyprinter >= 1.7"
         ];
       };
 

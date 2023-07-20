@@ -121,7 +121,9 @@ quotedString quote = lexeme $ do
         nonEscaped = noneOf [quote, '\\']
 
 floatNumber :: Parser Float
-floatNumber = lexeme $ L.signed whitespace (try L.float <|> (toFloat <$> L.decimal))
+floatNumber = lexeme $ L.signed whitespace (try L.float <|> (toFloat <$> parseDecimal))
     where
+        parseDecimal :: Parser Int
+        parseDecimal = ((try $ char '-') >> ((0 -) <$> L.decimal)) <|> L.decimal
         toFloat :: Int -> Float
         toFloat = fromIntegral

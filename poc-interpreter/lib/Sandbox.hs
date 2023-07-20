@@ -17,6 +17,7 @@ import Values
 import Environments
 import Evaluator
 import Utils.Parsing (ps)
+import Stringify
 
 mustParseVal :: Text -> Value v m
 mustParseVal t = astToVal $ ps t
@@ -48,6 +49,7 @@ sampleEnv = envFromList
     , ("null?", makePureFunc isNull)
     , ("pair?", makePureFunc isPair)
     , ("make-fail", makePureFunc internalMakeFail)
+    , ("<=", makePureFunc numberLE)
     ]
 
 internalEval :: forall v m. (EvalWorld v m) => Callback v m -> Value v m -> m ()
@@ -108,6 +110,11 @@ cdr :: Value v m -> Value v m
 cdr (Value _ (Pair (Value _ (Pair _ b)) (Value _ Null))) = b
 cdr arg@(Value dinfo _) = makeFailList dinfo "expected-pair" [arg]
 
+numberLE :: Value v m -> Value v m
+numberLE (Value dinfo (Pair (Value _ (Num a)) (Value _ (Pair (Value _ (Num b)) (Value _ Null)))))
+    = Value dinfo $ Bool $ a <= b
+numberLE v@(Value dinfo _) = makeFailList dinfo "expected-two-numbers" [v]
+
 makePureFunc :: (Monad m) => (Value v m -> Value v m) -> Value v m
 makePureFunc f = makeFunc (\args -> pure $ f args)
 
@@ -134,7 +141,7 @@ fileEvalPrint fname = do
         pure prog
 
     _ <- TIT.timeIt $ do
-        let results = map stringifyVal $ evalProgram sampleEnv program
+        let results = map prettyPrintVal $ evalProgram sampleEnv program
         mapM_ TIO.putStrLn results
 
     pure ()

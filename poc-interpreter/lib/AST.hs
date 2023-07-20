@@ -30,7 +30,7 @@ parseAST :: Parser AST
 parseAST = parseAtom <|> parseSexpr <|> parseQuoted
 
 parseAtom :: Parser AST
-parseAtom = (P.try parseBool) <|> parseSymbol <|> parseNum <|> parseStr
+parseAtom = (P.try parseBool) <|> parseNum <|> parseSymbol <|> parseStr
 
 parseSexpr :: Parser AST
 parseSexpr = do
