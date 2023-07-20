@@ -31,19 +31,14 @@
                       ((result-body (cons (lambda args body)
                                           (generate-element-getters flist args))))
 
-                      (list (lambda (list flist) result-body) (cons 'polyY arg-bodies)))))))
-            )
+                      (list (lambda (list flist) result-body) (cons 'polyY arg-bodies))))))))
 
-            (list
-              (list 'code (letrec
-                '((is-even? (!lambda (x) (!if (<= x 0) #t (is-odd?  (add x -1)))))
-                  (is-odd? (!lambda (x) (!if (<= x 0) #f (is-even? (add x -1))))))
-                '(is-even? 42)))
-              (list 'result (!letrec
+            (list 'result 
+              (!letrec
                 ((is-even? (!lambda (x) (!if (<= x 0) #t (is-odd?  (add x -1)))))
-                 (is-odd?  (!lambda (x) (!if (<= x 0) #f (is-even? (add x -1))))))
+                  (is-odd?  (!lambda (x) (!if (<= x 0) #f (is-even? (add x -1))))))
 
-                (is-even? 43)))))))
+                (is-even? 43))))))
 
 
         ; definition of "let"
