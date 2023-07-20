@@ -3,39 +3,47 @@
   ((!lambda (Y list cadr if)
     ((!lambda (map)
       ((!lambda (let)
-
         (!let
-          ((le-arglist
-            '((is-even? (!lambda (x) (if (= x 0) #t (is-odd?  (- x 1)))))
-              (is-odd? (!lambda (x) (if (= x 0) #f (is-even? (- x 1)))))))
-            (le-body
-              '(is-even? 42))
+          ((generate-element-getters (Y (!lambda (rec) (!lambda (list-name l)
+            (!if (null? l)
+              l
+              (!if (pair? l)
+                (cons (list 'car list-name)
+                      (map (!lambda (subl) (list (car subl) (cons 'cdr (cdr subl))))
+                          (rec list-name (cdr l))))
+                (make-fail (list 'list-of-letrec-elements-not-a-list l))))))))
+            (polyY
+              (!lambda l
+                ((!lambda (x) (x x))
+                (!lambda (p)
+                  (map (!lambda (li) (!lambda args (apply (apply li (p p)) args))) l))))))
 
-           (letrec (!lambda (defs body)
-             (!let
-               ((args (map car defs))
-                (item-bodies (map cadr defs))
-                (generate-element-getters (Y (!lambda (rec) (!lambda (list-name l)
-                  (!if (null? l)
-                    l
-                    (!if (pair? l)
-                      (cons (list 'car list-name)
-                            (map (!lambda (subl) (list (car subl) (cons 'cdr (cdr subl))))
-                                 (rec list-name (cdr l))))
-                      (make-fail (list 'list-of-letrec-elements-not-a-list l)))))))))
-
-                (!let
-                  ((arg-bodies (map (!lambda (def-body) (lambda args def-body)) item-bodies))
-                   (flist 'the-flist-symb))
-
+          (!let
+            ((letrec (!lambda (defs body)
+              (!let
+                ((args (map car defs))
+                  (item-bodies (map cadr defs)))
                   (!let
-                    ((result-body (cons (lambda args body)
-                                        (generate-element-getters flist args))))
+                    ((arg-bodies (map (!lambda (def-body) (lambda args def-body)) item-bodies))
+                    (flist 'the-flist-symb))
 
-                    (list (lambda (list flist) result-body) (cons 'Y arg-bodies)))))))
-          )
+                    (!let
+                      ((result-body (cons (lambda args body)
+                                          (generate-element-getters flist args))))
 
-          (letrec le-arglist le-body)))
+                      (list (lambda (list flist) result-body) (cons 'polyY arg-bodies)))))))
+            )
+
+            (list
+              (list 'code (letrec
+                '((is-even? (!lambda (x) (!if (<= x 0) #t (is-odd?  (add x -1)))))
+                  (is-odd? (!lambda (x) (!if (<= x 0) #f (is-even? (add x -1))))))
+                '(is-even? 42)))
+              (list 'result (!letrec
+                ((is-even? (!lambda (x) (!if (<= x 0) #t (is-odd?  (add x -1)))))
+                 (is-odd?  (!lambda (x) (!if (<= x 0) #f (is-even? (add x -1))))))
+
+                (is-even? 43)))))))
 
 
         ; definition of "let"
