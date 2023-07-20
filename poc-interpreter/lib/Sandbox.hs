@@ -42,6 +42,7 @@ sampleEnv = envFromList
     , ("eval", makeCPSFunc internalEval)
     , ("apply", makeCPSFunc internalApply)
     , ("add", makePureFunc $ vffoldr adder (builtinVal $ Num 0))
+    , ("mul", makePureFunc $ vffoldr multiplier (builtinVal $ Num 1))
     , ("cons", makePureFunc cons)
     , ("car", makePureFunc car)
     , ("cdr", makePureFunc cdr)
@@ -76,6 +77,10 @@ parseEnv _ = error "non-empty environment eval not implemented"
 adder :: Value v m -> Value v m -> Value v m
 adder (Value _ (Num a)) (Value _ (Num b)) = builtinVal $ Num $ a + b
 adder v1@(Value dinfo _) v2 = makeFailList dinfo "expected-two-numbers" [v1, v2]
+
+multiplier :: Value v m -> Value v m -> Value v m
+multiplier (Value _ (Num a)) (Value _ (Num b)) = builtinVal $ Num $ a * b
+multiplier v1@(Value dinfo _) v2 = makeFailList dinfo "expected-two-numbers" [v1, v2]
 
 boolToK :: (Monad m) => Value v m -> Value v m
 boolToK (Value _ (Pair (Value _ (Bool b)) (Value _ Null)))

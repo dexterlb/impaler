@@ -33,12 +33,16 @@
 
                       (list (lambda (list flist) result-body) (cons 'polyY arg-bodies))))))))
 
-            (list 'result 
-              (!letrec
-                ((is-even? (!lambda (x) (!if (<= x 0) #t (is-odd?  (add x -1)))))
-                  (is-odd?  (!lambda (x) (!if (<= x 0) #f (is-even? (add x -1))))))
+            (!letrec
+              ((is-even? (!lambda (x) (!if (<= x 0) #t (is-odd?  (add x -1)))))
+                (is-odd?  (!lambda (x) (!if (<= x 0) #f (is-even? (add x -1)))))
 
-                (is-even? 43))))))
+                (fact (!lambda (x)
+                  (!if (<= x 0)
+                    1
+                    (mul x (fact (add x -1)))))))
+
+              (list 'factorial-of-5-is (fact 5))))))
 
 
         ; definition of "let"
