@@ -10,8 +10,8 @@ fn answer(val_buf: &mut [u8], val_buf_max: u64) -> f64 {
     let mut first_free_val: u64 = 0;
 
     let ctx = Ctx {
-        value = |val| vals(val),
-        store_val = |vbox| {
+        value = @ |val| vals(val),
+        store_val = @ |vbox| {
             if first_free_val * val_box_size >= val_buf_max {
                 die("ran out of space for values");
                 0
@@ -44,25 +44,25 @@ struct Ctx {
     // store_symb: fn(&[u8]) -> Symbol,
 }
 
-fn cons(ctx: Ctx, l: Value, r: Value) -> Value {
+fn @cons(ctx: Ctx, l: Value, r: Value) -> Value {
     ctx.store_val(ValueBox::Pair(l, r))
 }
 
-fn car(ctx: Ctx, val: Value) -> Value {
+fn @car(ctx: Ctx, val: Value) -> Value {
     match ctx.value(val) {
         ValueBox::Pair(l, _) => l,
         _ => make_fail(ctx, "car-expected-pair", val),
     }
 }
 
-fn cdr(ctx: Ctx, val: Value) -> Value {
+fn @cdr(ctx: Ctx, val: Value) -> Value {
     match ctx.value(val) {
         ValueBox::Pair(_, r) => r,
         _ => make_fail(ctx, "cdr-expected-pair", val),
     }
 }
 
-fn get_num(ctx: Ctx, val: Value) -> f64 {
+fn @get_num(ctx: Ctx, val: Value) -> f64 {
     match ctx.value(val) {
         ValueBox::Num(f) => f,
         _ => {
@@ -72,11 +72,11 @@ fn get_num(ctx: Ctx, val: Value) -> f64 {
     }
 }
 
-fn make_num(ctx: Ctx, f: f64) -> Value {
+fn @make_num(ctx: Ctx, f: f64) -> Value {
     ctx.store_val(ValueBox::Num(f))
 }
 
-fn make_fail(_ctx: Ctx, reason: &[u8], val: Value) -> Value {
+fn @make_fail(_ctx: Ctx, reason: &[u8], val: Value) -> Value {
     die(reason);
     val
 }
