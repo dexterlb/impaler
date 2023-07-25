@@ -1,0 +1,82 @@
+#[import(cc = "C")]
+fn die(&[u8]) -> ();
+
+#[export]
+fn answer(val_buf: &mut [u8], val_buf_max: u64) -> f64 {
+    let val_box_size: u64 = 16;  // no sizeof?
+
+    let vals = val_buf as &mut [ValueBox];
+
+    let mut first_free_val: u64 = 0;
+
+    let ctx = Ctx {
+        value = |val| vals(val),
+        store_val = |vbox| {
+            if first_free_val * val_box_size >= val_buf_max {
+                die("ran out of space for values");
+                0
+            } else {
+                let result = first_free_val;
+                first_free_val = first_free_val + 1;
+                vals(result) = vbox;
+                result
+            }
+        },
+    };
+
+    get_num(ctx, car(ctx, cons(ctx, make_num(ctx, 1337), make_num(ctx, 4337))))
+}
+
+enum ValueBox {
+    Null,
+    Pair(u64, u64),
+    Num(f64),
+    Symbol(Symbol),
+}
+
+type Value = u64;
+type Symbol = u64;
+
+struct Ctx {
+    value: fn(Value) -> ValueBox,
+    // symbol_text: fn(Symbol) -> &[u8],
+    store_val: fn(ValueBox) -> Value,
+    // store_symb: fn(&[u8]) -> Symbol,
+}
+
+fn cons(ctx: Ctx, l: Value, r: Value) -> Value {
+    ctx.store_val(ValueBox::Pair(l, r))
+}
+
+fn car(ctx: Ctx, val: Value) -> Value {
+    match ctx.value(val) {
+        ValueBox::Pair(l, _) => l,
+        _ => make_fail(ctx, "car-expected-pair", val),
+    }
+}
+
+fn cdr(ctx: Ctx, val: Value) -> Value {
+    match ctx.value(val) {
+        ValueBox::Pair(_, r) => r,
+        _ => make_fail(ctx, "cdr-expected-pair", val),
+    }
+}
+
+fn get_num(ctx: Ctx, val: Value) -> f64 {
+    match ctx.value(val) {
+        ValueBox::Num(f) => f,
+        _ => {
+            die("get_num on a non-number");
+            0
+        },
+    }
+}
+
+fn make_num(ctx: Ctx, f: f64) -> Value {
+    ctx.store_val(ValueBox::Num(f))
+}
+
+fn make_fail(_ctx: Ctx, reason: &[u8], val: Value) -> Value {
+    die(reason);
+    val
+}
