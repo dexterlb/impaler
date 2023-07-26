@@ -9,7 +9,7 @@ where
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
-import Control.Monad.Trans.Writer.Lazy (Writer, tell, execWriter)
+import Control.Monad.Trans.State.Lazy (State, get, put, execState)
 
 import qualified System.TimeIt as TIT
 
@@ -17,13 +17,19 @@ import Values
 import Environments
 import Evaluator
 import Utils.Parsing (ps)
+import PrimitiveData
 import Stringify
 
 mustParseVal :: Text -> Value v m
 mustParseVal t = astToVal $ ps t
 
-newtype PureComp a = PureComp (Writer [Value NoValue PureComp] a)
+newtype PureComp a = PureComp (State PureCompState a)
     deriving newtype (Monad, Applicative, Functor)
+
+data PureCompState = PureCompState
+    { results :: [Value NoValue PureComp]
+    , firstFreeGensym :: Int
+    }
 
 data NoValue = NoValue
     deriving stock (Show)
@@ -32,13 +38,16 @@ instance (EvalWorld NoValue PureComp)
 
 instance (Computation NoValue PureComp) where
     yieldResult arg = PureComp $ do
-        tell [arg]
+        old :: PureCompState <- get
+        put $ old { results = arg : old.results }
 
-    resultsOf (PureComp w) = execWriter w
+    resultsOf (PureComp pc) = s.results
+        where s = execState pc $ PureCompState { results = [], firstFreeGensym = 0 }
 
 sampleEnv :: Env NoValue PureComp
 sampleEnv = envFromList
     [ ("yield", makeCPSFunc (\ret val -> (yieldResult val) >> (ret $ builtinVal Null)))
+    , ("gensym", makeFunc gensym)
     , ("eval", makeCPSFunc internalEval)
     , ("apply", makeCPSFunc internalApply)
     , ("add", makePureFunc $ vffoldr adder (builtinVal $ Num 0))
@@ -114,6 +123,15 @@ car arg@(Value dinfo _) = makeFailList dinfo "expected-pair" [arg]
 cdr :: Value v m -> Value v m
 cdr (Value _ (Pair (Value _ (Pair _ b)) (Value _ Null))) = b
 cdr arg@(Value dinfo _) = makeFailList dinfo "expected-pair" [arg]
+
+gensym :: Value v PureComp -> PureComp (Value v PureComp)
+gensym (Value dinfo (Pair (Value _ (Str name)) (Value _ Null))) = PureComp $ do
+    oldState <- get
+    let fullName = name <> (T.pack "-") <> (T.pack $ show oldState.firstFreeGensym)
+    put $ oldState { firstFreeGensym = oldState.firstFreeGensym + 1 }
+    pure $ Value dinfo $ Symbol $ Identifier fullName
+
+gensym arg@(Value dinfo _) = pure $ makeFailList dinfo "expected-string" [arg]
 
 numberLE :: Value v m -> Value v m
 numberLE (Value dinfo (Pair (Value _ (Num a)) (Value _ (Pair (Value _ (Num b)) (Value _ Null)))))

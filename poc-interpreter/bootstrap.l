@@ -28,7 +28,7 @@
                   (item-bodies (map cadr defs)))
                   (!let
                     ((arg-bodies (map (!lambda (def-body) (lambda args def-body)) item-bodies))
-                    (flist 'the-flist-symb))
+                    (flist (gensym "flist")))
 
                     (!let
                       ((result-body (cons (lambda args body)
@@ -36,8 +36,8 @@
 
                       (list (lambda (list flist) result-body) (cons polyY arg-bodies))))))))
 
-            (!letrec
-              ((is-even? (!lambda (x) (!if (<= x 0) #t (is-odd?  (add x -1)))))
+            (!letrec (
+                (is-even? (!lambda (x) (!if (<= x 0) #t (is-odd?  (add x -1)))))
                 (is-odd?  (!lambda (x) (!if (<= x 0) #f (is-even? (add x -1)))))
 
                 (fact (!lambda (x)
@@ -91,6 +91,28 @@
 
 ; definition of "lambda"
 (clambda ret (args body)
-         (ret
-           (cons 'clambda (cons 'the-ret-symb
-                                (cons args (cons (cons 'the-ret-symb (cons body ())) ())))))))
+  (ret
+    ((clambda ret (the-ret-symb)
+      (ret
+        ; now define "lambda" as "clambda" with a fresh "return" symbol
+        ; and a body that just executes (return <body>)
+        (cons 'clambda (cons the-ret-symb
+          (cons args (cons (cons the-ret-symb (cons body ())) ()))))))
+      ; definition of the-ret-symb: a symbol that will be used as the
+      ; continuation argument:
+      (gensym "return")))))
+
+; TODO: there's a conceptual problem with "gensym".
+; Since our macros have "runtime" semantics, given the current
+; version of gensym (which is impure and returns a new value each time)
+; the result of the macro *depends* on the context in which it is called
+; Thus, we can't expect something like (!lambda (x) (foo (!my-macro baba)))
+; to be partially evaluated to (!lambda (x) (the-result-of-applying-my-macro-to-baba)),
+; even though baba (the symbol 'baba) is a constant with respect to my-macro,
+; if my-macro contains calls to gensym (since they will return different
+; results for every value of x). We need another version of gensym
+; that will be constant in this case.
+; I propose a (gensym name . args), where the returned symbol is
+; a hash of args; Thus, we'll be able to write macros that only
+; depend on their arguments. However, is this enough to ensure
+; hygiene? To be continued!
