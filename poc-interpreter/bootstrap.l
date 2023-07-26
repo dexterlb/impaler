@@ -4,6 +4,7 @@
     ((!lambda (map)
       ((!lambda (let)
         (!let
+          ; helpers that we'll need to define letrec
           ((generate-element-getters (Y (!lambda (rec) (!lambda (list-name l)
             (!if (null? l)
               l
@@ -12,6 +13,7 @@
                       (map (!lambda (subl) (list (car subl) (cons 'cdr (cdr subl))))
                           (rec list-name (cdr l))))
                 (make-fail (list 'list-of-letrec-elements-not-a-list l))))))))
+            ; polyvariate Y combinator (operates on a list of functions instead of a single function)
             (polyY
               (!lambda l
                 ((!lambda (x) (x x))
@@ -19,6 +21,7 @@
                   (map (!lambda (li) (!lambda args (apply (apply li (p p)) args))) l))))))
 
           (!let
+            ; definition of "letrec"
             ((letrec (!lambda (defs body)
               (!let
                 ((args (map car defs))
@@ -31,7 +34,7 @@
                       ((result-body (cons (lambda args body)
                                           (generate-element-getters flist args))))
 
-                      (list (lambda (list flist) result-body) (cons 'polyY arg-bodies))))))))
+                      (list (lambda (list flist) result-body) (cons polyY arg-bodies))))))))
 
             (!letrec
               ((is-even? (!lambda (x) (!if (<= x 0) #t (is-odd?  (add x -1)))))
@@ -42,7 +45,7 @@
                     1
                     (mul x (fact (add x -1)))))))
 
-              (list 'factorial-of-5-is (fact 5))))))
+              (list 'factorial-of-5-is (fact 5) 'number-42-is-odd? (is-odd? 42))))))
 
 
         ; definition of "let"
