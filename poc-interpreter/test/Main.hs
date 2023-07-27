@@ -55,4 +55,6 @@ specExprTestGroup (ExprTestGroup { name, tests }) = do
 specExprTest :: ExprTest -> Spec
 specExprTest test@(ExprTest{ name }) = do
     it (T.unpack name) $ do
-        (runExprTest sampleEnv test) `shouldBe` TestOK
+        (runExprTest env test) `shouldBe` TestOK
+    where
+        env = sandboxEnvWithoutSources

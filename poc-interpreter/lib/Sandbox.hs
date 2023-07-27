@@ -1,7 +1,8 @@
 module Sandbox
     ( mustParseVal
     , demo
-    , sampleEnv
+    , sandboxEnv
+    , sandboxEnvWithoutSources
     )
 
 where
@@ -9,6 +10,8 @@ where
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
+import Data.Map (Map)
+import qualified Data.Map as Map
 import Control.Monad.Trans.State.Lazy (State, get, put, execState)
 
 import qualified System.TimeIt as TIT
@@ -31,6 +34,12 @@ data PureCompState = PureCompState
     , firstFreeGensym :: Int
     }
 
+type SourceMap = Map Text (Value NoValue PureComp)
+
+data PureSandbox = PureSandbox
+    { sources :: SourceMap
+    }
+
 data NoValue = NoValue
     deriving stock (Show)
 
@@ -44,12 +53,16 @@ instance (Computation NoValue PureComp) where
     resultsOf (PureComp pc) = s.results
         where s = execState pc $ PureCompState { results = [], firstFreeGensym = 0 }
 
-sampleEnv :: Env NoValue PureComp
-sampleEnv = envFromList
+sandboxEnvWithoutSources :: Env NoValue PureComp
+sandboxEnvWithoutSources = sandboxEnv $ PureSandbox { sources = Map.empty }
+
+sandboxEnv :: PureSandbox -> Env NoValue PureComp
+sandboxEnv sb = envFromList
     [ ("yield", makeCPSFunc (\ret val -> (yieldResult val) >> (ret $ builtinVal Null)))
     , ("gensym", makeFunc gensym)
     , ("eval", makeCPSFunc internalEval)
     , ("apply", makeCPSFunc internalApply)
+    , ("read-source", makePureFunc $ readSource sb)
     , ("add", makePureFunc $ vffoldr adder (builtinVal $ Num 0))
     , ("mul", makePureFunc $ vffoldr multiplier (builtinVal $ Num 1))
     , ("cons", makePureFunc cons)
@@ -80,6 +93,12 @@ internalApply ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-two-arg
 
 internalMakeFail :: Value v m -> Value v m
 internalMakeFail v@(Value dinfo _) = makeFail dinfo v
+
+readSource :: PureSandbox -> Value NoValue PureComp -> Value NoValue PureComp
+readSource (PureSandbox { sources }) (Value _ (Pair nameVal@(Value dinfo (Str name)) (Value _ Null)))
+    | (Just src) <- Map.lookup name sources = src
+    | otherwise = makeFailList dinfo "no-such-source" [nameVal]
+readSource _ v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-read-source" [v]
 
 parseEnv :: Value v m -> Maybe (Env v m)
 parseEnv (Value _ Null) = Just $ emptyEnv
@@ -166,19 +185,43 @@ makeCPSFunc f = builtinVal $ ExternalFunc f
 evalProgram :: Env NoValue PureComp -> Value NoValue PureComp -> [Value NoValue PureComp]
 evalProgram env = resultsOf . (eval env yieldResult)
 
-fileEvalPrint :: FilePath -> IO ()
-fileEvalPrint fname = do
+loadSources :: [(Text, FilePath)] -> IO SourceMap
+loadSources = (Map.fromList <$>) . (mapM go)
+    where
+        go (name, path) = do
+            sexpr <- loadSource path
+            pure (name, sexpr)
+
+loadSource :: FilePath -> IO (Value NoValue PureComp)
+loadSource fname = do
     txt <- TIO.readFile fname
-    program <- TIT.timeIt $ do
-        let prog = (mustParseVal txt) :: Value NoValue PureComp
-        TIO.putStrLn $ "parsed program of approx size " <> (T.pack $ show $ T.length $ stringifyVal prog)
-        pure prog
+    let sexpr = (mustParseVal txt) :: Value NoValue PureComp
+    TIO.putStrLn $ "parsed " <> (T.pack fname) <> " of approx size " <> (T.pack $ show $ T.length $ stringifyVal sexpr)
+    pure $ sexpr
+
+fileEvalPrint :: [(Text, FilePath)] -> IO ()
+fileEvalPrint srcFiles = do
+    srcs <- loadSources srcFiles
+
+    let program = builtinVal $ builtinList
+                    [ (Symbol $ Identifier "expand")
+                    , builtinList
+                        [ Symbol $ Identifier "read-source"
+                        , Str $ "__bootstrap"
+                        ]
+                    ]
+
+    let env = sandboxEnv (PureSandbox { sources = srcs })
 
     _ <- TIT.timeIt $ do
-        let results = map prettyPrintVal $ evalProgram sampleEnv program
+        let results = map prettyPrintVal $ evalProgram env program
         mapM_ TIO.putStrLn results
 
     pure ()
 
 demo :: IO ()
-demo = fileEvalPrint "bootstrap.l"
+demo = do
+    fileEvalPrint
+        [ ("__bootstrap", "bootstrap.l")
+        , ("__main", "main.l")
+        ]

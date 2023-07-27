@@ -9,6 +9,7 @@ module Values
     , CArgSpec(..)
     , astToVal
     , builtinVal
+    , builtinList
     , makeFail
     , makeFailList
     , makeList
@@ -116,6 +117,11 @@ weaklyEqualItems _ _ = False
 
 builtinVal :: ValueItem v m -> Value v m
 builtinVal = Value builtinDebugInfo
+
+builtinList :: [ValueItem v m] -> ValueItem v m
+builtinList [] = Null
+builtinList (x:xs) = Pair (builtinVal x) (builtinVal $ builtinList xs)
+
 
 
 makeFail :: DebugInfo -> Value v m -> Value v m
