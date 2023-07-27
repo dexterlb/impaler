@@ -58,6 +58,8 @@ sampleEnv = envFromList
     , ("bool-to-k", makePureFunc boolToK)
     , ("null?", makePureFunc isNull)
     , ("pair?", makePureFunc isPair)
+    , ("symbol?", makePureFunc isSymbol)
+    , ("sym-eq?", makePureFunc symEq)
     , ("make-fail", makePureFunc internalMakeFail)
     , ("<=", makePureFunc numberLE)
     ]
@@ -111,6 +113,15 @@ isPair :: Value v m -> Value v m
 isPair (Value dinfo (Pair (Value _ (Pair _ _)) (Value _ Null))) = Value dinfo $ Bool True
 isPair (Value dinfo (Pair _ _)) = Value dinfo $ Bool False
 isPair v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-pair?" [v]
+
+isSymbol :: Value v m -> Value v m
+isSymbol (Value dinfo (Pair (Value _ (Symbol _)) (Value _ Null))) = Value dinfo $ Bool True
+isSymbol (Value dinfo (Pair _ _)) = Value dinfo $ Bool False
+isSymbol v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-symbol?" [v]
+
+symEq :: Value v m -> Value v m
+symEq (Value dinfo (Pair (Value _ (Symbol a)) (Value _ (Pair (Value _ (Symbol b)) (Value _ Null))))) = Value dinfo $ Bool $ a == b
+symEq v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-sym-eq" [v]
 
 cons :: Value v m -> Value v m
 cons (Value dinfo (Pair a (Value _ (Pair b (Value _ Null))))) = Value dinfo (Pair a b)
