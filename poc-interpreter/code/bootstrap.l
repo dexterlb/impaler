@@ -92,11 +92,16 @@
                       #f)
                     #f)))
 
+                (load-module (!lambda (module-name)
+                  (eval-module (read-source module-name))))
+
+                (eval-module (!lambda (mod-expr)
+                  mod-expr))
 
                 (is-even? (!lambda (x) (!if (<= x 0) #t (is-odd?  (add x -1)))))
                 (is-odd?  (!lambda (x) (!if (<= x 0) #f (is-even? (add x -1)))))
 
-                (baba (!lambda () 42))
+                (baba (!lambda () (load-module "__main")))
                 (dyado (!lambda () (!or #f #f)))
 
                 (fact (!lambda (x)

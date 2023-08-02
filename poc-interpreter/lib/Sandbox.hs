@@ -222,6 +222,6 @@ fileEvalPrint srcFiles = do
 demo :: IO ()
 demo = do
     fileEvalPrint
-        [ ("__bootstrap", "bootstrap.l")
-        , ("__main", "main.l")
+        [ ("__bootstrap", "code/bootstrap.l")
+        , ("__main", "code/main.l")
         ]
