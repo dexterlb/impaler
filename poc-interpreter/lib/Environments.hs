@@ -5,6 +5,7 @@ module Environments
     , envGet
     , envUnion
     , emptyEnv
+    , specialForms
     )
 
 where
@@ -31,3 +32,11 @@ envGet dinfo i (Env e)
 
 envUnion :: Env v m -> Env v m -> Env v m
 envUnion (Env a) (Env b) = Env $ Map.union a b
+
+specialForms :: Env v m
+specialForms = envFromList
+    [ ("expand", builtinVal $ SpecialForm ExpandForm)
+    , ("macroexpand", builtinVal $ SpecialForm MacroExpandForm)
+    , ("clambda", builtinVal $ SpecialForm CLambdaForm)
+    , ("quote", builtinVal $ SpecialForm QuoteForm)
+    ]

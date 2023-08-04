@@ -5,11 +5,8 @@ module Evaluator
 
 where
 
-import qualified Data.Text as T
-
 import Values
 import Environments
-import PrimitiveData
 import DebugInfo
 -- import Utils.Debug
 
@@ -18,19 +15,19 @@ eval :: (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
 eval = eval'
 -- eval env ret v = eval' env ret (traceVal "eval" v)
 
-eval' :: (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
-eval' env ret v@(Value _ (Pair (Value _ x) xs))
-    | (Symbol sym) <- x, isSpecialForm sym = evalSpecialForm env ret sym xs
-    | otherwise = evalList env (evalSexpr ret) v
+eval' :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
+eval' env ret (Value _ (Pair x xs))
+    -- this is an S-expression. We will first evaluate its head (x),
+    -- and then pass the result to `go`, which will determine what to do next
+    = eval env go x
+    where
+        go :: Value v m -> m ()
+        go (Value _ (SpecialForm sf)) = applySpecialForm env ret sf xs
+        go xE
+            -- evaluate all arguments and then apply xE to them
+            = evalList env (apply ret xE) xs
 eval' env ret (Value dinfo (Symbol i)) = ret $ envGet dinfo i env
 eval' _   ret v = ret $ v   -- all other values evaluate to themselves
-
-evalSexpr   :: (EvalWorld v m)
-            => Callback v m
-            -> Value v m  -- ^ sexpr to call
-            -> m ()
-evalSexpr ret (Value _ (Pair f arg)) = apply ret f arg
-evalSexpr ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-sexpr" [v]
 
 -- | execute the given callable
 apply  :: (EvalWorld v m)
@@ -111,33 +108,25 @@ evalList env ret (Value dinfo (Pair x xs)) = eval env g x
                 ret' evalledXS = ret $ Value dinfo (Pair evalledX evalledXS)
 evalList _ ret v@(Value dinfo _) = ret $ makeFailList dinfo "trying-to-call-something-thats-not-list" [v]
 
-isSpecialForm :: Identifier -> Bool
-isSpecialForm "clambda" = True
-isSpecialForm "quote" = True
-isSpecialForm "expand" = True
-isSpecialForm "macroexpand" = True
-isSpecialForm _ = False
-
-evalSpecialForm :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> Identifier -> Value v m -> m ()
-evalSpecialForm env ret "clambda" (Value dinfo (Pair retname (Value _ (Pair arg bodyVal))))
+applySpecialForm :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> SpecialForm -> Value v m -> m ()
+applySpecialForm env ret CLambdaForm (Value dinfo (Pair retname (Value _ (Pair arg bodyVal))))
     | (Just body) <- valToList bodyVal = ret $ makeClambda dinfo env retname arg body
     | otherwise = ret $ makeFailList dinfo "clambda-body-not-list" [bodyVal]
-evalSpecialForm _   ret "clambda" val@(Value dinfo _)
+applySpecialForm _   ret CLambdaForm val@(Value dinfo _)
     = ret $ makeFailList dinfo "clambda-malformed" [val]
-evalSpecialForm _ ret "quote" (Value _ (Pair arg (Value _ Null))) = ret $ arg
-evalSpecialForm _ ret "quote" val@(Value dinfo _) = ret $ makeFailList dinfo "wrong-arg-to-quote" [val]
-evalSpecialForm env ret "expand" (Value _ (Pair arg (Value _ Null))) = eval env callback arg
+applySpecialForm _ ret QuoteForm (Value _ (Pair arg (Value _ Null))) = ret $ arg
+applySpecialForm _ ret QuoteForm val@(Value dinfo _) = ret $ makeFailList dinfo "wrong-arg-to-quote" [val]
+applySpecialForm env ret ExpandForm (Value _ (Pair arg (Value _ Null))) = eval env callback arg
     where
         callback :: Callback v m
         callback = eval env ret
-evalSpecialForm _ ret "expand" val@(Value dinfo _) = ret $ makeFailList dinfo "wrong-arg-to-expand" [val]
-evalSpecialForm env ret "macroexpand" (Value dinfo (Pair macro args))
-    = eval env ret $ Value dinfo (Pair (Value dinfo (Symbol "expand")) (Value dinfo (Pair (Value dinfo (Pair macro $ vfmap quoteVal args)) (Value dinfo Null))) )
+applySpecialForm _ ret ExpandForm val@(Value dinfo _) = ret $ makeFailList dinfo "wrong-arg-to-expand" [val]
+applySpecialForm env ret MacroExpandForm (Value dinfo (Pair macro args))
+    = eval env ret $ Value dinfo (Pair (Value dinfo (SpecialForm ExpandForm)) (Value dinfo (Pair (Value dinfo (Pair macro $ vfmap quoteVal args)) (Value dinfo Null))) )
     where
         quoteVal :: Value v m -> Value v m
-        quoteVal uval = Value dinfo (Pair (Value dinfo (Symbol "quote")) (Value dinfo (Pair uval (Value dinfo Null))))
-evalSpecialForm _ ret "macroexpand" val@(Value dinfo _) = ret $ makeFailList dinfo "wrong-arg-to-macroexpand" [val]
-evalSpecialForm _ _ (Identifier i) _ = error $ "no special form handler defined for '" <> (T.unpack i) <> "' - this is a bug."
+        quoteVal uval = Value dinfo (Pair (Value dinfo (SpecialForm QuoteForm)) (Value dinfo (Pair uval (Value dinfo Null))))
+applySpecialForm _ ret MacroExpandForm val@(Value dinfo _) = ret $ makeFailList dinfo "wrong-arg-to-macroexpand" [val]
 
 makeClambda
     :: DebugInfo
