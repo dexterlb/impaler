@@ -57,7 +57,7 @@ sandboxEnvWithoutSources :: Env NoValue PureComp
 sandboxEnvWithoutSources = sandboxEnv $ PureSandbox { sources = Map.empty }
 
 sandboxEnv :: PureSandbox -> Env NoValue PureComp
-sandboxEnv sb = envFromList
+sandboxEnv sb = envUnion specialForms $ envFromList
     [ ("yield", makeCPSFunc (\ret val -> (yieldResult val) >> (ret $ builtinVal Null)))
     , ("gensym", makeFunc gensym)
     , ("eval", makeCPSFunc internalEval)

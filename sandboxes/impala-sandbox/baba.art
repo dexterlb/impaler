@@ -3,7 +3,7 @@ fn die(&[u8]) -> ();
 
 #[export]
 fn answer(val_buf: &mut [u8], val_buf_max: u64) -> f64 {
-    let val_box_size: u64 = 16;  // no sizeof?
+    let val_box_size: u64 = 32;  // no sizeof?
 
     let vals = val_buf as &mut [ValueBox];
 

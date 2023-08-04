@@ -2,6 +2,7 @@ module Values
     ( Value(..)
     , ValueItem(..)
     , Computation(..)
+    , SpecialForm(..)
     , EvalWorld
     , Callback
     , Env(..)
@@ -61,6 +62,9 @@ data ValueItem v m
     | ExternalFunc      (Callback v m -> Value v m -> m ())
     | ExternalVal       v
 
+    -- the ultimate sin: special forms are first-class citizens
+    | SpecialForm       SpecialForm
+
     | CLambda   [Value v m]        -- ^ body (list of statements)
                 CArgSpec           -- ^ arg name(s)
                 (Env v m)          -- ^ closure
@@ -72,6 +76,8 @@ newtype Env v m = Env (Map Identifier (Value v m))
 data CArgSpec = CArgSpec
     Identifier      -- ^ CPS return callback
     ArgSpec
+
+data SpecialForm = QuoteForm | MacroExpandForm | ExpandForm | CLambdaForm
 
 data ArgSpec = ArgSpec
     { argNames :: [Identifier]
@@ -206,7 +212,14 @@ instance (Show v) => (Show (ValueItem v m)) where
     show Null          = "null"
     show (ExternalFunc _) = "<external func>"
     show (ExternalVal v) = show v
+    show (SpecialForm f) = show f
     show (CLambda _ _ _) = "<lambda>"
+
+instance (Show SpecialForm) where
+    show QuoteForm = "#quote"
+    show MacroExpandForm = "#macroexpand"
+    show ExpandForm = "#macroexpand"
+    show CLambdaForm = "#clambda"
 
 instance (Show v) => (Show (Value v m)) where
     show (Value dinfo v) = (show v) <> (show dinfo)
