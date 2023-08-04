@@ -102,7 +102,10 @@ readSource _ v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-read-sour
 
 parseEnv :: Value v m -> Maybe (Env v m)
 parseEnv (Value _ Null) = Just $ emptyEnv
-parseEnv _ = error "non-empty environment eval not implemented"
+parseEnv (Value _ (Pair (Value _ (Pair (Value _ (Symbol k)) v)) xs)) = do
+    rest <- parseEnv xs
+    pure $ envAdd k v rest
+parseEnv _ = fail "not a kvlist"
 
 adder :: Value v m -> Value v m -> Value v m
 adder (Value _ (Num a)) (Value _ (Num b)) = builtinVal $ Num $ a + b
