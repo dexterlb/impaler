@@ -1,12 +1,12 @@
 (!letrec (
-    (lambda (clambda ret (args body)
+    (lambda (!clambda ret (args body)
       (ret
-        ((clambda ret (the-ret-symb)
+        ((!clambda ret (the-ret-symb)
           (ret
             ; now define "lambda" as "clambda" with a fresh "return" symbol
             ; and a body that just executes (return <body>)
-            (cons 'clambda (cons the-ret-symb
-              (cons args (cons (cons the-ret-symb (cons body ())) ()))))))
+            (cons 'macroexpand (cons 'clambda (cons the-ret-symb
+              (cons args (cons (cons the-ret-symb (cons body ())) ())))))))
           ; definition of the-ret-symb: a symbol that will be used as the
           ; continuation argument:
           (gensym "return")))))

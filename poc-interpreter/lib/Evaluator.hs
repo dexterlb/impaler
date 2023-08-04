@@ -114,11 +114,6 @@ evalList env ret (Value dinfo (Pair x xs)) = eval env g x
 evalList _ ret v@(Value dinfo _) = ret $ makeFailList dinfo "trying-to-call-something-thats-not-list" [v]
 
 applySpecialForm :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> SpecialForm -> Value v m -> m ()
-applySpecialForm env ret CLambdaForm (Value dinfo (Pair retname (Value _ (Pair arg bodyVal))))
-    | (Just body) <- valToList bodyVal = ret $ makeClambda dinfo env retname arg body
-    | otherwise = ret $ makeFailList dinfo "clambda-body-not-list" [bodyVal]
-applySpecialForm _   ret CLambdaForm val@(Value dinfo _)
-    = ret $ makeFailList dinfo "clambda-malformed" [val]
 applySpecialForm _ ret QuoteForm (Value _ (Pair arg (Value _ Null))) = ret $ arg
 applySpecialForm _ ret QuoteForm val@(Value dinfo _) = ret $ makeFailList dinfo "wrong-arg-to-quote" [val]
 applySpecialForm env ret ExpandForm (Value _ (Pair arg (Value _ Null))) = eval env callback arg
@@ -132,28 +127,3 @@ applySpecialForm env ret MacroExpandForm (Value dinfo (Pair macro args))
         quoteVal :: Value v m -> Value v m
         quoteVal uval = Value dinfo (Pair (Value dinfo (SpecialForm QuoteForm)) (Value dinfo (Pair uval (Value dinfo Null))))
 applySpecialForm _ ret MacroExpandForm val@(Value dinfo _) = ret $ makeFailList dinfo "wrong-arg-to-macroexpand" [val]
-
-makeClambda
-    :: DebugInfo
-    -> Env v m
-    -> Value v m      -- ^ name of CPS return callback (symbol)
-    -> Value v m      -- ^ argument (may be a list of symbols or a single symbol)
-    -> [Value v m]    -- ^ body
-    -> Value v m      -- ^ resulting clambda object
-makeClambda dinfo env retname arg body
-    | (Right spec) <- mspec, (Value _ (Symbol retsym)) <- retname
-    = Value dinfo $ CLambda body (CArgSpec retsym spec) env
-    | (Left err) <- mspec = Value dinfo err
-    | otherwise = makeFailList dinfo "clambda-malformed" [arg]
-    where
-        mspec = makeArgSpec arg
-
-makeArgSpec :: Value v m -> CouldFail v m ArgSpec
-makeArgSpec (Value _ (Pair (Value _ (Symbol argName)) vs)) = do
-    rest <- makeArgSpec vs
-    let restTail = tailName rest
-    let restNames = argNames rest
-    pure $ ArgSpec { argNames = argName:restNames, tailName = restTail }
-makeArgSpec (Value _ Null) = pure $ ArgSpec { argNames = [], tailName = Nothing }
-makeArgSpec (Value _ (Symbol tn)) = pure $ ArgSpec {argNames = [], tailName = Just tn}
-makeArgSpec v = returnFailList "malformed-arg-list" [v]

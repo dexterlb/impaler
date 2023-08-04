@@ -56,6 +56,5 @@ specialForms :: Env v m
 specialForms = envFromList
     [ ("expand", builtinVal $ SpecialForm ExpandForm)
     , ("macroexpand", builtinVal $ SpecialForm MacroExpandForm)
-    , ("clambda", builtinVal $ SpecialForm CLambdaForm)
     , ("quote", builtinVal $ SpecialForm QuoteForm)
     ]
