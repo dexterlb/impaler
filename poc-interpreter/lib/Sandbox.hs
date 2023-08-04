@@ -83,7 +83,7 @@ internalEval ret (Value dinfo (Pair envRepr (Value _ (Pair val (Value _ Null))))
     | otherwise = ret $ makeFailList dinfo "malformed-environment-arg" [envRepr]
     where
         envResult :: Maybe (Env v m)
-        envResult = parseEnv envRepr
+        envResult = envFromKVList envRepr
 internalEval ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-two-args" [v]
 
 internalApply :: forall v m. (EvalWorld v m) => Callback v m -> Value v m -> m ()
@@ -99,13 +99,6 @@ readSource (PureSandbox { sources }) (Value _ (Pair nameVal@(Value dinfo (Str na
     | (Just src) <- Map.lookup name sources = src
     | otherwise = makeFailList dinfo "no-such-source" [nameVal]
 readSource _ v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-read-source" [v]
-
-parseEnv :: Value v m -> Maybe (Env v m)
-parseEnv (Value _ Null) = Just $ emptyEnv
-parseEnv (Value _ (Pair (Value _ (Pair (Value _ (Symbol k)) v)) xs)) = do
-    rest <- parseEnv xs
-    pure $ envAdd k v rest
-parseEnv _ = fail "not a kvlist"
 
 adder :: Value v m -> Value v m -> Value v m
 adder (Value _ (Num a)) (Value _ (Num b)) = builtinVal $ Num $ a + b
@@ -226,5 +219,6 @@ demo :: IO ()
 demo = do
     fileEvalPrint
         [ ("__bootstrap", "code/bootstrap.l")
+        , ("__bootstrap_from_letrec", "code/bootstrap_from_letrec.l")
         , ("__main", "code/main.l")
         ]

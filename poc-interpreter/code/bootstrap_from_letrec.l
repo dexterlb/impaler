@@ -1,5 +1,24 @@
 (!letrec (
+    (lambda (clambda ret (args body)
+      (ret
+        ((clambda ret (the-ret-symb)
+          (ret
+            ; now define "lambda" as "clambda" with a fresh "return" symbol
+            ; and a body that just executes (return <body>)
+            (cons 'clambda (cons the-ret-symb
+              (cons args (cons (cons the-ret-symb (cons body ())) ()))))))
+          ; definition of the-ret-symb: a symbol that will be used as the
+          ; continuation argument:
+          (gensym "return")))))
+
     (list (!lambda args args))
+
+    (if (!lambda (cond t f)       ; read this definition bottom to top
+      (list                       ; eval the result with no arguments to force the lazy value
+        (list                     ; eval the K or K*, getting one of the two lazy values
+          (list 'bool-to-k cond)  ; convert the boolean condition to K or K* to do the selection
+          (lambda '() t)          ; lazy value that evals the "true" branch
+          (lambda '() f)))))      ; lazy value that evals the "false" branch
 
     (or (!lambda items
       (!if (null? items)
@@ -71,4 +90,9 @@
         (mul x (fact (add x -1)))))))
 
   ; (list 'factorial-of-5-is (fact 5) 'number-42-is-odd? (is-odd? 42))))))
-  (list 'baba (baba) 'dyado (dyado)))
+  (list
+    (list 'baba (baba))
+    (list 'dyado (dyado))
+    (list 'factorial-of-5-is (fact 5))
+    (list 'number-26-is-odd? (is-odd? 26))
+    ))

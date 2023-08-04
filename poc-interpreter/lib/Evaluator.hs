@@ -127,6 +127,8 @@ applySpecialForm env ret MacroExpandForm (Value dinfo (Pair macro args))
         quoteVal :: Value v m -> Value v m
         quoteVal uval = Value dinfo (Pair (Value dinfo (SpecialForm QuoteForm)) (Value dinfo (Pair uval (Value dinfo Null))))
 applySpecialForm _ ret MacroExpandForm val@(Value dinfo _) = ret $ makeFailList dinfo "wrong-arg-to-macroexpand" [val]
+applySpecialForm env ret GetEnvForm (Value dinfo Null) = ret $ envToKVList dinfo env
+applySpecialForm _ ret GetEnvForm v@(Value dinfo _) = ret $ makeFailList dinfo "arg-given-to-getenv-expected-none" [v]
 
 makeClambda
     :: DebugInfo
