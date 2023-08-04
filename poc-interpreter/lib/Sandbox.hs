@@ -59,10 +59,19 @@ sandboxEnvWithoutSources = sandboxEnv $ PureSandbox { sources = Map.empty }
 sandboxEnv :: PureSandbox -> Env NoValue PureComp
 sandboxEnv sb = envUnion specialForms $ envFromList
     [ ("yield", makeCPSFunc (\ret val -> (yieldResult val) >> (ret $ builtinVal Null)))
-    , ("gensym", makeFunc gensym)
+
+    -- core stuff
     , ("eval", makeCPSFunc internalEval)
     , ("apply", makeCPSFunc internalApply)
+
+    -- metaprogramming utils
+    , ("gensym", makeFunc gensym)
+    , ("get-env", makeEnvAwarePureFunc getEnv)
+
+    -- module utils
     , ("read-source", makePureFunc $ readSource sb)
+
+    -- data utils
     , ("add", makePureFunc $ vffoldr adder (builtinVal $ Num 0))
     , ("mul", makePureFunc $ vffoldr multiplier (builtinVal $ Num 1))
     , ("cons", makePureFunc cons)
@@ -141,6 +150,10 @@ isSymbol v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-symbol?" [v]
 symEq :: Value v m -> Value v m
 symEq (Value dinfo (Pair (Value _ (Symbol a)) (Value _ (Pair (Value _ (Symbol b)) (Value _ Null))))) = Value dinfo $ Bool $ a == b
 symEq v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-sym-eq" [v]
+
+getEnv :: Env v m -> Value v m -> Value v m
+getEnv env (Value dinfo Null) = envToKVList dinfo env
+getEnv _ v@(Value dinfo _) = makeFailList dinfo "args-given-to-get-env" [v]
 
 cons :: Value v m -> Value v m
 cons (Value dinfo (Pair a (Value _ (Pair b (Value _ Null))))) = Value dinfo (Pair a b)

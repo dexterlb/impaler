@@ -79,7 +79,7 @@ data CArgSpec = CArgSpec
     Identifier      -- ^ CPS return callback
     ArgSpec
 
-data SpecialForm = QuoteForm | MacroExpandForm | ExpandForm | CLambdaForm | GetEnvForm
+data SpecialForm = QuoteForm | MacroExpandForm | ExpandForm | CLambdaForm
 
 data ArgSpec = ArgSpec
     { argNames :: [Identifier]
@@ -222,7 +222,6 @@ instance (Show SpecialForm) where
     show MacroExpandForm = "#macroexpand"
     show ExpandForm = "#macroexpand"
     show CLambdaForm = "#clambda"
-    show GetEnvForm = "#getenv"
 
 instance (Show v) => (Show (Value v m)) where
     show (Value dinfo v) = (show v) <> (show dinfo)

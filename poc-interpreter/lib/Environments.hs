@@ -58,5 +58,4 @@ specialForms = envFromList
     , ("macroexpand", builtinVal $ SpecialForm MacroExpandForm)
     , ("clambda", builtinVal $ SpecialForm CLambdaForm)
     , ("quote", builtinVal $ SpecialForm QuoteForm)
-    , ("get-env", builtinVal $ SpecialForm GetEnvForm)
     ]
