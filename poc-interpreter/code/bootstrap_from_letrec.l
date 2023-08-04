@@ -66,11 +66,7 @@
           (kv-valid? (cdr kvl))))))
 
     (is-kv? (!lambda (item)
-      (!if (pair? item)
-        (!if (symbol? (car item))
-          #t
-          #f)
-        #f)))
+      (!and (pair? item) (symbol? (car item)))))
 
     (load-module (!lambda (module-name)
       (eval-module (read-source module-name))))
