@@ -58,8 +58,10 @@ data ValueItem v m
     -- | encapsulates failure
     | Fail              (Value v m)
 
-    -- this is a rather stupid way to allow side effects, but will do for now
-    | ExternalFunc      (Callback v m -> Value v m -> m ())
+    -- external functions are powerful:
+    --      - they can do side effects (via m)
+    --      - they can see the calling environment (this should not be abused, though)
+    | ExternalFunc      (Env v m -> Callback v m -> Value v m -> m ())
     | ExternalVal       v
 
     -- the ultimate sin: special forms are first-class citizens

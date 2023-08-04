@@ -22,30 +22,35 @@ eval' env ret (Value _ (Pair x xs))
     = eval env go x
     where
         go :: Value v m -> m ()
-        go (Value _ (SpecialForm sf)) = applySpecialForm env ret sf xs
+        go (Value _ (SpecialForm sf))
+            -- the "special" in SpecialForm refers to the fact that
+            -- special forms don't evaluate their arguments
+            = applySpecialForm env ret sf xs
         go xE
             -- evaluate all arguments and then apply xE to them
-            = evalList env (apply ret xE) xs
+            = evalList env (apply env ret xE) xs
 eval' env ret (Value dinfo (Symbol i)) = ret $ envGet dinfo i env
 eval' _   ret v = ret $ v   -- all other values evaluate to themselves
 
 -- | execute the given callable
-apply  :: (EvalWorld v m)
-       => Callback v m -- ^ callback to call with result
-       -> Value v m    -- ^ callable
-       -> Value v m    -- ^ argument
-       -> m ()
-apply = apply'
--- apply ret callable arg = apply' ret callable ((traceVals "apply" [callable, arg]) !! 1)
-
-apply'   :: (EvalWorld v m)
-         => Callback v m -- ^ callback to call with result
+apply    :: (EvalWorld v m)
+         => Env v m      -- ^ the calling environment (because some special functions want to see it)
+         -> Callback v m -- ^ callback to call with result
          -> Value v m    -- ^ callable
          -> Value v m    -- ^ argument
          -> m ()
-apply' ret (Value _ (ExternalFunc f)) arg = f ret arg
-apply' ret (Value dinfo (CLambda body argn env)) arg = callCLambda dinfo ret env argn arg body
-apply' ret expr@(Value dinfo _) _ = ret $ makeFailList dinfo "dont-know-how-to-call" [expr]
+apply = apply'
+-- apply env ret callable arg = apply' env ret callable ((traceVals "apply" [callable, arg]) !! 1)
+
+apply'   :: (EvalWorld v m)
+         => Env v m      -- ^ the calling environment (because some special functions want to see it)
+         -> Callback v m -- ^ callback to call with result
+         -> Value v m    -- ^ callable
+         -> Value v m    -- ^ argument
+         -> m ()
+apply' env ret (Value _ (ExternalFunc f)) arg = f env ret arg
+apply' _ ret (Value dinfo (CLambda body argn env)) arg = callCLambda dinfo ret env argn arg body
+apply' _ ret expr@(Value dinfo _) _ = ret $ makeFailList dinfo "dont-know-how-to-call" [expr]
 
 callCLambda :: forall v m. (EvalWorld v m)
             => DebugInfo
@@ -82,10 +87,10 @@ makeCLambdaEnv (CArgSpec retname argspec) ret arg closure = do
 makeCallableFromReturnCallback :: forall v m. () => Callback v m -> Value v m
 makeCallableFromReturnCallback f = builtinVal $ ExternalFunc g
     where
-        g :: Callback v m -> Value v m -> m ()
-        g _ (Value _ (Pair arg (Value _ Null)))
+        g :: Env v m -> Callback v m -> Value v m -> m ()
+        g _ _ (Value _ (Pair arg (Value _ Null)))
             = f arg -- ignore the callback's callback - code after "return" is not executed
-        g _ val@(Value dinfo _) = f $ makeFailList dinfo "expected-one-arg-to-return" [val]
+        g _ _ val@(Value dinfo _) = f $ makeFailList dinfo "expected-one-arg-to-return" [val]
 
 bindArgs :: ArgSpec -> Value v m -> CouldFail v m (Env v m)
 bindArgs (ArgSpec { argNames, tailName }) val

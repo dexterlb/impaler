@@ -88,7 +88,11 @@ internalEval ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-two-args
 
 internalApply :: forall v m. (EvalWorld v m) => Callback v m -> Value v m -> m ()
 internalApply ret (Value _ (Pair f (Value _ (Pair arg (Value _ Null)))))
-    = apply ret f arg
+    -- note that apply rejects the current environment and substitutes its own:
+    -- an empty one. This means that things like (apply get-env) don't work
+    -- I am making this decision arbitrarily - it looks safer this way to me,
+    -- and I don't see a proper use case.
+    = apply emptyEnv ret f arg
 internalApply ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-two-args" [v]
 
 internalMakeFail :: Value v m -> Value v m
@@ -165,18 +169,27 @@ numberLE (Value dinfo (Pair (Value _ (Num a)) (Value _ (Pair (Value _ (Num b)) (
 numberLE v@(Value dinfo _) = makeFailList dinfo "expected-two-numbers" [v]
 
 makePureFunc :: (Monad m) => (Value v m -> Value v m) -> Value v m
-makePureFunc f = makeFunc (\args -> pure $ f args)
+makePureFunc f = makeEnvAwarePureFunc (\_env -> f)
+
+makeEnvAwarePureFunc :: (Monad m) => (Env v m -> Value v m -> Value v m) -> Value v m
+makeEnvAwarePureFunc f = makeEnvAwareFunc (\env args -> pure $ f env args)
 
 makeFunc :: (Monad m) => (Value v m -> m (Value v m)) -> Value v m
-makeFunc f = makeCPSFunc g
+makeFunc f = makeEnvAwareFunc (\_env -> f)
+
+makeEnvAwareFunc :: (Monad m) => (Env v m -> Value v m -> m (Value v m)) -> Value v m
+makeEnvAwareFunc f = makeEnvAwareCPSFunc g
     where
-        g ret (val@(Value dinfo _)) = do
-            (Value _ resV) <- f val
+        g env ret (val@(Value dinfo _)) = do
+            (Value _ resV) <- f env val
             let res = Value dinfo resV  -- maybe we need another way to pass the dinfo
             ret res
 
 makeCPSFunc :: (Callback v m -> Value v m -> m ()) -> Value v m
-makeCPSFunc f = builtinVal $ ExternalFunc f
+makeCPSFunc f = makeEnvAwareCPSFunc (\_env -> f)
+
+makeEnvAwareCPSFunc :: (Env v m -> Callback v m -> Value v m -> m ()) -> Value v m
+makeEnvAwareCPSFunc f = builtinVal $ ExternalFunc f
 
 evalProgram :: Env NoValue PureComp -> Value NoValue PureComp -> [Value NoValue PureComp]
 evalProgram env = resultsOf . (eval env yieldResult)
