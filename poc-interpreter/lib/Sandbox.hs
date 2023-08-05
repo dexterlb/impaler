@@ -62,7 +62,7 @@ sandboxEnv sb = envUnion specialForms $ envFromList
     [ ("yield", makeCPSFunc (\ret val -> (yieldResult val) >> (ret $ builtinVal Null)))
 
     -- core stuff
-    , ("clambda", makeEnvAwareCPSFunc internalCLambda)
+    , ("lambda-cps", makeEnvAwareCPSFunc internalLambdaCPS)
     , ("eval", makeCPSFunc internalEval)
     , ("apply", makeCPSFunc internalApply)
 
@@ -109,12 +109,12 @@ internalApply ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-two-arg
 internalMakeFail :: Value v m -> Value v m
 internalMakeFail v@(Value dinfo _) = makeFail dinfo v
 
-internalCLambda :: Env v m -> Callback v m -> Value v m -> m ()
-internalCLambda env ret (Value dinfo (Pair retname (Value _ (Pair arg bodyVal))))
-    | (Just body) <- valToList bodyVal = ret $ makeCLambda dinfo env retname arg body
-    | otherwise = ret $ makeFailList dinfo "clambda-body-not-list" [bodyVal]
-internalCLambda _   ret val@(Value dinfo _)
-    = ret $ makeFailList dinfo "clambda-malformed" [val]
+internalLambdaCPS :: Env v m -> Callback v m -> Value v m -> m ()
+internalLambdaCPS env ret (Value dinfo (Pair retname (Value _ (Pair arg bodyVal))))
+    | (Just body) <- valToList bodyVal = ret $ makeLambdaCPS dinfo env retname arg body
+    | otherwise = ret $ makeFailList dinfo "lambda-cps-body-not-list" [bodyVal]
+internalLambdaCPS _   ret val@(Value dinfo _)
+    = ret $ makeFailList dinfo "lambda-cps-malformed" [val]
 
 readSource :: PureSandbox -> Value NoValue PureComp -> Value NoValue PureComp
 readSource (PureSandbox { sources }) (Value _ (Pair nameVal@(Value dinfo (Str name)) (Value _ Null)))

@@ -1,5 +1,5 @@
 module ValueBuilders
-    ( makeCLambda
+    ( makeLambdaCPS
     )
 
 where
@@ -7,18 +7,18 @@ where
 import Values
 import DebugInfo
 
-makeCLambda
+makeLambdaCPS
     :: DebugInfo
     -> Env v m
     -> Value v m      -- ^ name of CPS return callback (symbol)
     -> Value v m      -- ^ argument (may be a list of symbols or a single symbol)
     -> [Value v m]    -- ^ body
-    -> Value v m      -- ^ resulting clambda object
-makeCLambda dinfo env retname arg body
+    -> Value v m      -- ^ resulting lambda-cps object
+makeLambdaCPS dinfo env retname arg body
     | (Right spec) <- mspec, (Value _ (Symbol retsym)) <- retname
-    = Value dinfo $ CLambda body (CArgSpec retsym spec) env
+    = Value dinfo $ LambdaCPS body (CArgSpec retsym spec) env
     | (Left err) <- mspec = Value dinfo err
-    | otherwise = makeFailList dinfo "clambda-malformed" [arg]
+    | otherwise = makeFailList dinfo "lambda-cps-malformed" [arg]
     where
         mspec = makeArgSpec arg
 

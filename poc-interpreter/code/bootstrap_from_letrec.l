@@ -1,11 +1,11 @@
 (!letrec (
-    (lambda (!clambda ret (args body)
+    (lambda (!lambda-cps ret (args body)
       (ret
-        ((!clambda ret (the-ret-symb)
+        ((!lambda-cps ret (the-ret-symb)
           (ret
-            ; now define "lambda" as "clambda" with a fresh "return" symbol
+            ; now define "lambda" as "lambda-cps" with a fresh "return" symbol
             ; and a body that just executes (return <body>)
-            (cons macroexpand (cons clambda (cons the-ret-symb
+            (cons macroexpand (cons lambda-cps (cons the-ret-symb
               (cons args (cons (cons the-ret-symb (cons body ())) ())))))))
           ; definition of the-ret-symb: a symbol that will be used as the
           ; continuation argument:

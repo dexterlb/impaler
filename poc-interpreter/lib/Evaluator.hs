@@ -49,10 +49,10 @@ apply'   :: (EvalWorld v m)
          -> Value v m    -- ^ argument
          -> m ()
 apply' env ret (Value _ (ExternalFunc f)) arg = f env ret arg
-apply' _ ret (Value dinfo (CLambda body argn env)) arg = callCLambda dinfo ret env argn arg body
+apply' _ ret (Value dinfo (LambdaCPS body argn env)) arg = callLambdaCPS dinfo ret env argn arg body
 apply' _ ret expr@(Value dinfo _) _ = ret $ makeFailList dinfo "dont-know-how-to-call" [expr]
 
-callCLambda :: forall v m. (EvalWorld v m)
+callLambdaCPS :: forall v m. (EvalWorld v m)
             => DebugInfo
             -> Callback v m   -- ^ callback to call with result
             -> Env v m        -- ^ closure that comes with lambda
@@ -60,12 +60,12 @@ callCLambda :: forall v m. (EvalWorld v m)
             -> Value v m      -- ^ arguments
             -> [Value v m]    -- ^ body (list of statements)
             -> m ()
-callCLambda dinfo ret closure argspec arg body
+callLambdaCPS dinfo ret closure argspec arg body
     | (Right env) <- envOrErr = mapM_ (eval env void) body
     | (Left err)  <- envOrErr = ret $ Value dinfo err
     where
         envOrErr :: CouldFail v m (Env v m)
-        envOrErr = makeCLambdaEnv argspec ret arg closure
+        envOrErr = makeLambdaCPSEnv argspec ret arg closure
 
 
 -- | callback that discards its argument
@@ -73,13 +73,13 @@ callCLambda dinfo ret closure argspec arg body
 void :: Callback v m
 void = error "not implemented"
 
-makeCLambdaEnv
+makeLambdaCPSEnv
     :: CArgSpec
     -> Callback v m   -- ^ CPS callback
     -> Value v m      -- ^ argument
     -> Env v m        -- ^ closure
     -> CouldFail v m (Env v m)
-makeCLambdaEnv (CArgSpec retname argspec) ret arg closure = do
+makeLambdaCPSEnv (CArgSpec retname argspec) ret arg closure = do
     argEnv <- bindArgs argspec arg
     let retEnv = envFromList [(retname, makeCallableFromReturnCallback ret)]
     pure $ foldr envUnion emptyEnv [argEnv, retEnv, closure]

@@ -67,7 +67,7 @@ data ValueItem v m
     -- the ultimate sin: special forms are first-class citizens
     | SpecialForm       SpecialForm
 
-    | CLambda   [Value v m]        -- ^ body (list of statements)
+    | LambdaCPS [Value v m]        -- ^ body (list of statements)
                 CArgSpec           -- ^ arg name(s)
                 (Env v m)          -- ^ closure
 
@@ -215,7 +215,7 @@ instance (Show v) => (Show (ValueItem v m)) where
     show (ExternalFunc _) = "<external func>"
     show (ExternalVal v) = show v
     show (SpecialForm f) = show f
-    show (CLambda _ _ _) = "<lambda>"
+    show (LambdaCPS _ _ _) = "<lambda>"
 
 instance (Show SpecialForm) where
     show QuoteForm = "#quote"
