@@ -6,12 +6,15 @@ where
 
 import Data.Text (Text)
 import qualified Data.Text as T
+import Data.Maybe (catMaybes)
 
 import Prettyprinter
 import Prettyprinter.Render.Text (renderStrict)
 
 import Values (Value(..), ValTree(..), ValueItem(..), toValTree)
 import PrimitiveData
+
+import DebugInfo
 
 stringifyVal :: (Show v) => Value v m -> Text
 stringifyVal = stringifyValTree . toValTree
@@ -39,9 +42,9 @@ prettifyValue = prettifyValTree . toValTree
 prettifyValTree :: forall v m ann. (Show v) => ValTree v m -> Doc ann
 prettifyValTree (L _ items) = prettifyBracketList $ map prettifyValTree items
 prettifyValTree (V _ (Pair a b)) = prettifyBracketList
-    [ prettifyValue a, pretty ("." :: Text), prettifyValue b ]
-prettifyValTree (V _ (Fail v)) = prettifyBracketList
-    [ pretty ("#fail" :: Text), prettifyValue v ]
+    [ prettifyValue a, txt ".", prettifyValue b ]
+prettifyValTree (V dinfo (Fail v)) = prettifyBracketList
+    [ txt "#fail", prettifyDebugInfo dinfo, prettifyValue v ]
 prettifyValTree vt = pretty $ stringifyValTree vt
 
 prettifyBracketList :: [Doc ann] -> Doc ann
@@ -51,3 +54,15 @@ prettifyBracketList items = "(" <> (nest 2 $ group $ go items) <> ")"
         go [] = emptyDoc
         go [x] = x
         go (x:y:xs) = x <> line <> (go (y:xs))
+
+prettifyDebugInfo :: DebugInfo -> Doc ann
+prettifyDebugInfo dinfo = prettifyBracketList $ catMaybes
+    [ Just $ txt "#info"
+    , ((kv "loc") . pretty . show) <$> dinfo.location
+    ]
+
+txt :: Text -> Doc ann
+txt = pretty
+
+kv :: Text -> Doc ann -> Doc ann
+kv k v = prettifyBracketList [txt k, v]
