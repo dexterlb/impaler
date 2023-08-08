@@ -34,13 +34,13 @@ parseAtom = (P.try parseBool) <|> parseNum <|> parseSymbol <|> parseStr
 
 parseSexpr :: Parser AST
 parseSexpr = do
-    offBefore <- P.getOffset
+    offBefore <- P.getSourcePos
 
     (els, consTail) <- P.braces
         $   parseMacroExpandBody
         <|> parseSexprBody
 
-    offAfter <- P.getOffset
+    offAfter <- P.getSourcePos
     pure $ makeSexpr offBefore offAfter els consTail
 
 parseMacroExpandBody :: Parser ([AST], Maybe AST)
@@ -68,10 +68,10 @@ parseSymbol = parseSection Symbol $ P.lexeme $ do
 
 parseQuoted :: Parser AST
 parseQuoted = do
-    before <- P.getOffset
+    before <- P.getSourcePos
     quote <- parseSection (\dinfo _ -> Symbol dinfo "quote") $ P.char '\''
     ast <- parseAST
-    after <- P.getOffset
+    after <- P.getSourcePos
     pure $ makeList before after [quote, ast]
 
 specialChar :: Parser Char
@@ -86,28 +86,28 @@ parseBool = parseSection Bool $ ((P.literal "#t" $> True) <|> (P.literal "#f" $>
 parseStr :: Parser AST
 parseStr = parseSection Str $ P.quotedString '"'
 
-makeSexpr :: Int -> Int -> [AST] -> Maybe AST -> AST
+makeSexpr :: P.SourcePos -> P.SourcePos -> [AST] -> Maybe AST -> AST
 makeSexpr _ _ [] (Just t) = t
 makeSexpr offBefore offAfter [] Nothing = Null $ debugOffset offBefore offAfter
 makeSexpr offBefore offAfter (x:xs) mtail = Pair (debugOffset offBefore offAfter)
     x
     (makeSexpr (getOffsetAfter x) offAfter xs mtail)
 
-makeList :: Int -> Int -> [AST] -> AST
+makeList :: P.SourcePos -> P.SourcePos -> [AST] -> AST
 makeList offBefore offAfter l = makeSexpr offBefore offAfter l Nothing
 
-getOffsetAfter :: AST -> Int
+getOffsetAfter :: AST -> P.SourcePos
 getOffsetAfter ast = unwrapLocation info.location
     where
         info = getDebugInfo ast
-        unwrapLocation Nothing = -1
+        unwrapLocation Nothing = P.initialPos "<nowhere>"
         unwrapLocation (Just loc) = loc.offsetAfter
 
 parseSection :: (DebugInfo -> a -> b) -> Parser a -> Parser b
 parseSection f par = do
-    offBefore <- P.getOffset
+    offBefore <- P.getSourcePos
     inside <- par
-    offAfter <- P.getOffset
+    offAfter <- P.getSourcePos
     let dinfo = debugOffset offBefore offAfter
     pure $ (f dinfo inside)
 

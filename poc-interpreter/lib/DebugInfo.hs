@@ -7,6 +7,8 @@ module DebugInfo
     )
 where
 
+import qualified Utils.Parsing as P
+
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Maybe (fromMaybe)
@@ -20,32 +22,50 @@ noDebugInfo = DebugInfo
     { location = Nothing
     }
 
-debugOffset :: Int -> Int -> DebugInfo
+debugOffset :: P.SourcePos -> P.SourcePos -> DebugInfo
 debugOffset offBefore offAfter = DebugInfo
     { location = Just $ LocationInfo
         { offsetBefore = offBefore
         , offsetAfter = offAfter
-        , fileName = ""
         }
     }
 
 data LocationInfo = LocationInfo
-    { offsetBefore :: Int
-    , offsetAfter :: Int
-    , fileName :: Text
+    { offsetBefore :: P.SourcePos
+    , offsetAfter :: P.SourcePos
     }
 
 builtinDebugInfo :: DebugInfo
 builtinDebugInfo = DebugInfo
     { location = Just $ LocationInfo
-        { offsetBefore = 0
-        , offsetAfter = 0
-        , fileName = "<builtin>"
+        { offsetBefore = P.initialPos fn
+        , offsetAfter = P.initialPos fn
         }
     }
+    where
+        fn = "<builtin>"
 
 instance (Show DebugInfo) where
     show d = "{" <> (fromMaybe "" $ show <$> d.location) <> "}"
 
 instance (Show LocationInfo) where
-    show l = (T.unpack l.fileName) <> ":" <> (show l.offsetBefore) <> ":" <> (show l.offsetAfter)
+    show = T.unpack . stringifyLocationInfo
+
+stringifyLocationInfo :: LocationInfo -> Text
+stringifyLocationInfo
+    (LocationInfo
+        { offsetBefore = (P.SourcePos { sourceName = ssn1, sourceLine = pl1, sourceColumn = pc1 })
+        , offsetAfter  = (P.SourcePos { sourceName = ssn2, sourceLine = pl2, sourceColumn = pc2 })
+        }
+    )
+    | sn1 == sn2 && l1 == l2 = left <> c2
+    | sn1 == sn2 = left <> l2 <> ":" <> c2
+    | otherwise = left <> sn2 <> ":" <> l2 <> ":" <> c2
+    where
+        left = sn1 <> ":" <> l1 <> ":" <> c1 <> "-"
+        sn1 = T.pack $ ssn1
+        sn2 = T.pack $ ssn2
+        l1 = T.pack $ show $ P.unPos pl1
+        l2 = T.pack $ show $ P.unPos pl2
+        c1 = T.pack $ show $ P.unPos pc1
+        c2 = T.pack $ show $ P.unPos pc2

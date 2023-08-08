@@ -41,6 +41,7 @@ import qualified AST
 import AST (AST)
 import DebugInfo
 import PrimitiveData
+import Utils.Parsing (Parseable, parser)
 
 data Value v m = Value DebugInfo (ValueItem v m)
 
@@ -116,6 +117,8 @@ astToVal (AST.Num dinfo x)       = Value dinfo $ Num x
 astToVal (AST.Str dinfo s)       = Value dinfo $ Str s
 astToVal (AST.Bool dinfo b)      = Value dinfo $ Bool b
 
+instance (Parseable (Value v m)) where
+    parser = astToVal <$> parser
 
 weaklyEqual :: Value v m -> Value v m -> Bool
 weaklyEqual (Value _ a) (Value _ b) = weaklyEqualItems a b

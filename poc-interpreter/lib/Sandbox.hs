@@ -1,6 +1,5 @@
 module Sandbox
-    ( mustParseVal
-    , demo
+    ( demo
     , sandboxEnv
     , sandboxEnvWithoutSources
     )
@@ -19,13 +18,10 @@ import qualified System.TimeIt as TIT
 import Values
 import Environments
 import Evaluator
-import Utils.Parsing (ps)
+import Utils.Parsing (parseFile)
 import PrimitiveData
 import Stringify
 import ValueBuilders
-
-mustParseVal :: Text -> Value v m
-mustParseVal t = astToVal $ ps t
 
 newtype PureComp a = PureComp (State PureCompState a)
     deriving newtype (Monad, Applicative, Functor)
@@ -225,8 +221,7 @@ loadSources = (Map.fromList <$>) . (mapM go)
 
 loadSource :: FilePath -> IO (Value NoValue PureComp)
 loadSource fname = do
-    txt <- TIO.readFile fname
-    let sexpr = (mustParseVal txt) :: Value NoValue PureComp
+    sexpr <- parseFile fname
     TIO.putStrLn $ "parsed " <> (T.pack fname) <> " of approx size " <> (T.pack $ show $ T.length $ stringifyVal sexpr)
     pure $ sexpr
 
