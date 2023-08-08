@@ -107,12 +107,10 @@ internalMakeFail v@(Value dinfo _) = makeFail dinfo v
 
 internalLambda :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
 internalLambda env ret (Value dinfo (Pair arg bodyVal))
-    | (Just body) <- valToList bodyVal = ret $ makeLambdaCPS dinfo env retname arg body
-    | otherwise = ret $ makeFailList dinfo "lambda-cps-body-not-list" [bodyVal]
-    where
-        retname = builtinVal $ Symbol $ "baba"
+    | (Just body) <- valToList bodyVal = ret $ makeLambda dinfo env arg body
+    | otherwise = ret $ makeFailList dinfo "lambda-body-not-list" [bodyVal]
 internalLambda _   ret val@(Value dinfo _)
-    = ret $ makeFailList dinfo "lambda-cps-malformed" [val]
+    = ret $ makeFailList dinfo "lambda-malformed" [val]
 
 readSource :: PureSandbox -> Value NoValue PureComp -> Value NoValue PureComp
 readSource (PureSandbox { sources }) (Value _ (Pair nameVal@(Value dinfo (Str name)) (Value _ Null)))
