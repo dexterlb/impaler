@@ -1,5 +1,6 @@
 module ValueBuilders
     ( makeLambda
+    , makeCallableFromReturnCallback
     )
 
 where
@@ -42,18 +43,16 @@ lambdaCallable body argspec closure _ ret arg
     | (Left err)  <- envOrErr = ret $ builtinVal err    -- TODO: pass debug info to here
     where
         envOrErr :: CouldFail v m (Env v m)
-        envOrErr = makeLambdaCPSEnv (CArgSpec "baba" argspec) ret arg closure
+        envOrErr = makeLambdaEnv argspec arg closure
 
-makeLambdaCPSEnv
-    :: CArgSpec
-    -> Callback v m   -- ^ CPS callback
+makeLambdaEnv
+    :: ArgSpec
     -> Value v m      -- ^ argument
     -> Env v m        -- ^ closure
     -> CouldFail v m (Env v m)
-makeLambdaCPSEnv (CArgSpec retname argspec) ret arg closure = do
+makeLambdaEnv argspec arg closure = do
     argEnv <- bindArgs argspec arg
-    let retEnv = envFromList [(retname, makeCallableFromReturnCallback ret)]
-    pure $ foldr envUnion emptyEnv [argEnv, retEnv, closure]
+    pure $ envUnion closure argEnv
 
 bindArgs :: ArgSpec -> Value v m -> CouldFail v m (Env v m)
 bindArgs (ArgSpec { argNames, tailName }) val
