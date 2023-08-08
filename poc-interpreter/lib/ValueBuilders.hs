@@ -40,7 +40,7 @@ lambdaCallable :: forall v m. (EvalWorld v m)
     -> Env v m      -- ^ closure that comes with the lambda
     -> Env v m -> Callback v m -> Value v m -> m ()
 lambdaCallable body argspec closure _ ret arg
-    | (Right env) <- envOrErr = mapM_ (eval env void) body
+    | (Right env) <- envOrErr = mapM_ (eval env ret) body
     | (Left err)  <- envOrErr = ret $ builtinVal err    -- TODO: pass debug info to here
     where
         envOrErr :: CouldFail v m (Env v m)
@@ -66,11 +66,6 @@ bindArgs (ArgSpec { argNames, tailName }) val
     | [] <- argNames, Nothing <- tailName, Value _ Null <- val = pure $ emptyEnv
     | [] <- argNames = returnFailList "too-many-arguments" [val]
     | otherwise = returnFailList "incorrect-arguments" []
-
--- | callback that discards its argument
--- | (expressions in body are interpreted as statements and their results are discarded)
-void :: Callback v m
-void = error "not implemented"
 
 makeCallableFromReturnCallback :: forall v m. () => Callback v m -> Value v m
 makeCallableFromReturnCallback f = builtinVal $ Func g

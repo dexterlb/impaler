@@ -1,4 +1,4 @@
-((!lambda-cps ret (lambda builtins) (ret
+((!lambda-cps ret (lambda builtins)
   ((!lambda (Y list cadr if)
     ((!lambda (map)
       ((!lambda (let)
@@ -80,7 +80,7 @@
 
         ()))
 
-      )))
+      ))
 
 ; definition of "lambda"
 (!lambda-cps ret (args body)
