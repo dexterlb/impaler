@@ -97,7 +97,7 @@ internalEval ret (Value dinfo (Pair envRepr (Value _ (Pair val (Value _ Null))))
         envResult = envFromKVList envRepr
 internalEval ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-two-args" [v]
 
-internalApply :: forall v m. (EvalWorld v m) => Callback v m -> Value v m -> m ()
+internalApply :: Callback v m -> Value v m -> m ()
 internalApply ret (Value _ (Pair f (Value _ (Pair arg (Value _ Null)))))
     -- note that apply rejects the current environment and substitutes its own:
     -- an empty one. This means that things like (apply get-env) don't work
@@ -109,7 +109,7 @@ internalApply ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-two-arg
 internalMakeFail :: Value v m -> Value v m
 internalMakeFail v@(Value dinfo _) = makeFail dinfo v
 
-internalLambdaCPS :: Env v m -> Callback v m -> Value v m -> m ()
+internalLambdaCPS :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
 internalLambdaCPS env ret (Value dinfo (Pair retname (Value _ (Pair arg bodyVal))))
     | (Just body) <- valToList bodyVal = ret $ makeLambdaCPS dinfo env retname arg body
     | otherwise = ret $ makeFailList dinfo "lambda-cps-body-not-list" [bodyVal]
@@ -211,7 +211,7 @@ makeCPSFunc :: (Callback v m -> Value v m -> m ()) -> Value v m
 makeCPSFunc f = makeEnvAwareCPSFunc (\_env -> f)
 
 makeEnvAwareCPSFunc :: (Env v m -> Callback v m -> Value v m -> m ()) -> Value v m
-makeEnvAwareCPSFunc f = builtinVal $ ExternalFunc f
+makeEnvAwareCPSFunc f = builtinVal $ Func f
 
 evalProgram :: Env NoValue PureComp -> Value NoValue PureComp -> [Value NoValue PureComp]
 evalProgram env = resultsOf . (eval env yieldResult)

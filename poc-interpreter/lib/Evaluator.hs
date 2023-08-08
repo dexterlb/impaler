@@ -7,7 +7,6 @@ where
 
 import Values
 import Environments
-import DebugInfo
 -- import Utils.Debug
 
 -- | eval the given value under the given environment
@@ -33,8 +32,7 @@ eval' env ret (Value dinfo (Symbol i)) = ret $ envGet dinfo i env
 eval' _   ret v = ret $ v   -- all other values evaluate to themselves
 
 -- | execute the given callable
-apply    :: (EvalWorld v m)
-         => Env v m      -- ^ the calling environment (because some special functions want to see it)
+apply    :: Env v m      -- ^ the calling environment (because some special functions want to see it)
          -> Callback v m -- ^ callback to call with result
          -> Value v m    -- ^ callable
          -> Value v m    -- ^ argument
@@ -42,65 +40,13 @@ apply    :: (EvalWorld v m)
 apply = apply'
 -- apply env ret callable arg = apply' env ret callable ((traceVals "apply" [callable, arg]) !! 1)
 
-apply'   :: (EvalWorld v m)
-         => Env v m      -- ^ the calling environment (because some special functions want to see it)
+apply'   :: Env v m      -- ^ the calling environment (because some special functions want to see it)
          -> Callback v m -- ^ callback to call with result
          -> Value v m    -- ^ callable
          -> Value v m    -- ^ argument
          -> m ()
-apply' env ret (Value _ (ExternalFunc f)) arg = f env ret arg
-apply' _ ret (Value dinfo (LambdaCPS body argn env)) arg = callLambdaCPS dinfo ret env argn arg body
+apply' env ret (Value _ (Func f)) arg = f env ret arg
 apply' _ ret expr@(Value dinfo _) _ = ret $ makeFailList dinfo "dont-know-how-to-call" [expr]
-
-callLambdaCPS :: forall v m. (EvalWorld v m)
-            => DebugInfo
-            -> Callback v m   -- ^ callback to call with result
-            -> Env v m        -- ^ closure that comes with lambda
-            -> CArgSpec     -- ^ formal arguments (argument names)
-            -> Value v m      -- ^ arguments
-            -> [Value v m]    -- ^ body (list of statements)
-            -> m ()
-callLambdaCPS dinfo ret closure argspec arg body
-    | (Right env) <- envOrErr = mapM_ (eval env void) body
-    | (Left err)  <- envOrErr = ret $ Value dinfo err
-    where
-        envOrErr :: CouldFail v m (Env v m)
-        envOrErr = makeLambdaCPSEnv argspec ret arg closure
-
-
--- | callback that discards its argument
--- | (expressions in body are interpreted as statements and their results are discarded)
-void :: Callback v m
-void = error "not implemented"
-
-makeLambdaCPSEnv
-    :: CArgSpec
-    -> Callback v m   -- ^ CPS callback
-    -> Value v m      -- ^ argument
-    -> Env v m        -- ^ closure
-    -> CouldFail v m (Env v m)
-makeLambdaCPSEnv (CArgSpec retname argspec) ret arg closure = do
-    argEnv <- bindArgs argspec arg
-    let retEnv = envFromList [(retname, makeCallableFromReturnCallback ret)]
-    pure $ foldr envUnion emptyEnv [argEnv, retEnv, closure]
-
-makeCallableFromReturnCallback :: forall v m. () => Callback v m -> Value v m
-makeCallableFromReturnCallback f = builtinVal $ ExternalFunc g
-    where
-        g :: Env v m -> Callback v m -> Value v m -> m ()
-        g _ _ (Value _ (Pair arg (Value _ Null)))
-            = f arg -- ignore the callback's callback - code after "return" is not executed
-        g _ _ val@(Value dinfo _) = f $ makeFailList dinfo "expected-one-arg-to-return" [val]
-
-bindArgs :: ArgSpec -> Value v m -> CouldFail v m (Env v m)
-bindArgs (ArgSpec { argNames, tailName }) val
-    | (Value _ (Pair arg vs)) <- val, (argName:ns) <- argNames = do
-        rest <- bindArgs (ArgSpec { argNames = ns, tailName = tailName }) vs
-        pure $ envAdd argName arg rest
-    | [] <- argNames, (Just tn) <- tailName = pure $ envFromList [(tn, val)]
-    | [] <- argNames, Nothing <- tailName, Value _ Null <- val = pure $ emptyEnv
-    | [] <- argNames = returnFailList "too-many-arguments" [val]
-    | otherwise = returnFailList "incorrect-arguments" []
 
 -- | evaluate all elements in a given list
 -- | afterwards, pass a list of evaluated items to the callback

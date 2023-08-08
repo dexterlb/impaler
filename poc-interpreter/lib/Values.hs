@@ -45,31 +45,37 @@ import PrimitiveData
 data Value v m = Value DebugInfo (ValueItem v m)
 
 data ValueItem v m
-    -- at some point symbols need to be interned, but for now Text will do
+    -- | A symbol is a basic atom
     = Symbol            Identifier
+    -- at some point symbols need to be interned, but for now Text will do
 
+    -- | S-expression building blocks
+    | Pair              (Value v m) (Value v m)
+    | Null
+
+    -- | The ultimate sin: special forms are first-class citizens
+    | SpecialForm       SpecialForm
+
+    -- | A callable object that may optionally have side effects and/or
+    -- | Look at the environment (the latter should really not be abused)
+    | Func              (Env v m -> Callback v m -> Value v m -> m ())
+
+    -- | Since we don't have things like panics or exceptions,
+    -- | we encapsulate failure as a separate value type, which makes
+    -- | handling errors easier
+    | Fail              (Value v m)
+
+    -- | Encapsulate user-defined data structures (the user being
+    -- | the one who embeds the language). Things like lazy lists,
+    -- | hash maps, file handles, etc, will all go here
+    | ExternalVal       v
+
+    -- | Some data types that can be parsed directly as part of the
+    -- | S-expressions
     | Str               Text
     | Num               Float
     | Bool              Bool
 
-    | Pair              (Value v m) (Value v m)
-    | Null
-
-    -- | encapsulates failure
-    | Fail              (Value v m)
-
-    -- external functions are powerful:
-    --      - they can do side effects (via m)
-    --      - they can see the calling environment (this should not be abused, though)
-    | ExternalFunc      (Env v m -> Callback v m -> Value v m -> m ())
-    | ExternalVal       v
-
-    -- the ultimate sin: special forms are first-class citizens
-    | SpecialForm       SpecialForm
-
-    | LambdaCPS [Value v m]        -- ^ body (list of statements)
-                CArgSpec           -- ^ arg name(s)
-                (Env v m)          -- ^ closure
 
 type Callback v m = (Value v m) -> m ()
 
@@ -212,10 +218,9 @@ instance (Show v) => (Show (ValueItem v m)) where
     show (Pair a b)    = "(" <> (show a) <> " . " <> (show b) <> ")"
     show (Fail err)    = "FAIL<" <> (show err) <> ">"
     show Null          = "null"
-    show (ExternalFunc _) = "<external func>"
+    show (Func _) = "<external func>"
     show (ExternalVal v) = show v
     show (SpecialForm f) = show f
-    show (LambdaCPS _ _ _) = "<lambda>"
 
 instance (Show SpecialForm) where
     show QuoteForm = "#quote"

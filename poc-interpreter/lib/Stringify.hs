@@ -29,10 +29,9 @@ stringifyValTree (V _ (Str s)) = "\"" <> s <>  "\""
 stringifyValTree (V _ (Bool True)) = "#t"
 stringifyValTree (V _ (Bool False)) = "#f"
 stringifyValTree (V _ (Fail v)) = "(fail " <> stringifyVal v <> ")"
-stringifyValTree (V _ (ExternalFunc _)) = "<func>"
+stringifyValTree (V _ (Func _)) = "<func>"
 stringifyValTree (V _ (ExternalVal v)) = T.pack $ show v
 stringifyValTree (V _ (SpecialForm f)) = T.pack $ show f
-stringifyValTree (V _ (LambdaCPS _ _ _)) = "<lambda>"
 
 prettifyValue :: (Show v) => Value v m -> Doc ann
 prettifyValue = prettifyValTree . toValTree
