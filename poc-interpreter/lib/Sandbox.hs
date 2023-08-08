@@ -58,7 +58,6 @@ sandboxEnv sb = envUnion specialForms $ envFromList
     [ ("yield", makeCPSFunc (\ret val -> (yieldResult val) >> (ret $ builtinVal Null)))
 
     -- core stuff
-    , ("lambda-cps", makeEnvAwareCPSFunc internalLambdaCPS)
     , ("lambda-actual", makeEnvAwareCPSFunc internalLambda)
     , ("eval", makeCPSFunc internalEval)
     , ("apply", makeCPSFunc internalApply)
@@ -105,13 +104,6 @@ internalApply ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-two-arg
 
 internalMakeFail :: Value v m -> Value v m
 internalMakeFail v@(Value dinfo _) = makeFail dinfo v
-
-internalLambdaCPS :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
-internalLambdaCPS env ret (Value dinfo (Pair retname (Value _ (Pair arg bodyVal))))
-    | (Just body) <- valToList bodyVal = ret $ makeLambdaCPS dinfo env retname arg body
-    | otherwise = ret $ makeFailList dinfo "lambda-cps-body-not-list" [bodyVal]
-internalLambdaCPS _   ret val@(Value dinfo _)
-    = ret $ makeFailList dinfo "lambda-cps-malformed" [val]
 
 internalLambda :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
 internalLambda env ret (Value dinfo (Pair arg bodyVal))
