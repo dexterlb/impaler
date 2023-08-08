@@ -28,7 +28,7 @@ stringifyValTree (V _ (Num x)) = T.pack $ show x
 stringifyValTree (V _ (Str s)) = "\"" <> s <>  "\""
 stringifyValTree (V _ (Bool True)) = "#t"
 stringifyValTree (V _ (Bool False)) = "#f"
-stringifyValTree (V _ (Fail v)) = "(fail " <> stringifyVal v <> ")"
+stringifyValTree (V _ (Fail v)) = "(#fail " <> stringifyVal v <> ")"
 stringifyValTree (V _ (Func _)) = "<func>"
 stringifyValTree (V _ (ExternalVal v)) = T.pack $ show v
 stringifyValTree (V _ (SpecialForm f)) = T.pack $ show f
@@ -37,12 +37,17 @@ prettifyValue :: (Show v) => Value v m -> Doc ann
 prettifyValue = prettifyValTree . toValTree
 
 prettifyValTree :: forall v m ann. (Show v) => ValTree v m -> Doc ann
-prettifyValTree (L _ items) = "(" <> (nest 2 $ group $ go $ map prettifyValTree items) <> ")"
+prettifyValTree (L _ items) = prettifyBracketList $ map prettifyValTree items
+prettifyValTree (V _ (Pair a b)) = prettifyBracketList
+    [ prettifyValue a, pretty ("." :: Text), prettifyValue b ]
+prettifyValTree (V _ (Fail v)) = prettifyBracketList
+    [ pretty ("#fail" :: Text), prettifyValue v ]
+prettifyValTree vt = pretty $ stringifyValTree vt
+
+prettifyBracketList :: [Doc ann] -> Doc ann
+prettifyBracketList items = "(" <> (nest 2 $ group $ go items) <> ")"
     where
         go :: [Doc ann] -> Doc ann
         go [] = emptyDoc
         go [x] = x
         go (x:y:xs) = x <> line <> (go (y:xs))
-
-prettifyValTree (V _ (Pair a b)) = "(" <> prettifyValue a <> "." <> prettifyValue b <> ")"
-prettifyValTree vt = pretty $ stringifyValTree vt
