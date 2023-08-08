@@ -70,6 +70,15 @@
     (baba (!lambda () (load-module "__main")))
     (dyado (!lambda () (!or #f #f)))
 
+    (try-map (!lambda (f l) ((call/cc try-map-wc) f l)))
+
+    (try-map-wc (!lambda (return) (!lambda (f l)
+      (return (map
+        (!lambda (x)
+          (!if (fail? (f x))
+            (return (make-fail (list 'fail-in-element x (f x))))
+            (f x))))))))
+
     (fact (!lambda (x)
       (!if (<= x 0)
         1
@@ -81,4 +90,6 @@
     (list 'dyado (dyado))
     (list 'factorial-of-5-is (fact 5))
     (list 'number-26-is-odd? (is-odd? 26))
+    (list 'broken-map (try-map reciprocate (list 1 2 3 0 4)))
+    (list 'successful-map (try-map reciprocate (list 1 2 3 4)))
     ))
