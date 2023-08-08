@@ -58,7 +58,7 @@ sandboxEnv sb = envUnion specialForms $ envFromList
     [ ("yield", makeCPSFunc (\ret val -> (yieldResult val) >> (ret $ builtinVal Null)))
 
     -- core stuff
-    , ("lambda-actual", makeEnvAwareCPSFunc internalLambda)
+    , ("lambda", makeEnvAwareCPSFunc internalLambda)
     , ("eval", makeCPSFunc internalEval)
     , ("apply", makeCPSFunc internalApply)
 

@@ -1,14 +1,14 @@
 (!letrec (
-    (list (!lambda-actual args args))
+    (list (!lambda args args))
 
-    (if (!lambda-actual (cond t f)              ; read this definition bottom to top
+    (if (!lambda (cond t f)              ; read this definition bottom to top
       (list                                           ; eval the result with no arguments to force the lazy value
         (list                                         ; eval the K or K*, getting one of the two lazy values
           (list bool-to-k cond)                       ; convert the boolean condition to K or K* to do the selection
-          (list macroexpand lambda-actual '() t)      ; lazy value that evals the "true" branch
-          (list macroexpand lambda-actual '() f)))))  ; lazy value that evals the "false" branch
+          (list macroexpand lambda '() t)      ; lazy value that evals the "true" branch
+          (list macroexpand lambda '() f)))))  ; lazy value that evals the "false" branch
 
-    (or (!lambda-actual items
+    (or (!lambda items
       (!if (null? items)
         #f
         (!if (pair? items)
@@ -17,7 +17,7 @@
             (apply or (cdr items)))
           (make-fail (list 'unexpected-arg-to-or items))))))
 
-    (and (!lambda-actual items
+    (and (!lambda items
       (!if (null? items)
         #t
         (!if (pair? items)
@@ -28,7 +28,7 @@
 
     ; some functions for dealing with key-value lists
     ; (only supporting symbols as keys)
-    (kv-find (!lambda-actual (k kvl empty f)
+    (kv-find (!lambda (k kvl empty f)
       (!if (null? kvl)
         empty
         (!if (pair? kvl)
@@ -40,11 +40,11 @@
               (make-fail (list 'not-a-kv-pair kv))))
           (make-fail (list 'not-a-list kvl))))))
 
-    (kv-has? (!lambda-actual (k kvl)
+    (kv-has? (!lambda (k kvl)
       (kv-find k kvl #f
-        (!lambda-actual (_kv) #t))))
+        (!lambda (_kv) #t))))
 
-    (kv-valid? (!lambda-actual (kvl)
+    (kv-valid? (!lambda (kvl)
       (!or
         (null? kvl)
         (!and
@@ -53,22 +53,22 @@
           (symbol? (car (car kvl)))
           (kv-valid? (cdr kvl))))))
 
-    (is-kv? (!lambda-actual (item)
+    (is-kv? (!lambda (item)
       (!and (pair? item) (symbol? (car item)))))
 
-    (load-module (!lambda-actual (module-name)
+    (load-module (!lambda (module-name)
       (eval-module (read-source module-name))))
 
-    (eval-module (!lambda-actual (mod-expr)
+    (eval-module (!lambda (mod-expr)
       mod-expr))
 
-    (is-even? (!lambda-actual (x) (!if (<= x 0) #t (is-odd?  (add x -1)))))
-    (is-odd?  (!lambda-actual (x) (!if (<= x 0) #f (is-even? (add x -1)))))
+    (is-even? (!lambda (x) (!if (<= x 0) #t (is-odd?  (add x -1)))))
+    (is-odd?  (!lambda (x) (!if (<= x 0) #f (is-even? (add x -1)))))
 
-    (baba (!lambda-actual () (load-module "__main")))
-    (dyado (!lambda-actual () (!or #f #f)))
+    (baba (!lambda () (load-module "__main")))
+    (dyado (!lambda () (!or #f #f)))
 
-    (fact (!lambda-actual (x)
+    (fact (!lambda (x)
       (!if (<= x 0)
         1
         (mul x (fact (add x -1)))))))
