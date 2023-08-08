@@ -1,26 +1,14 @@
 (!letrec (
-    (lambda (!lambda-cps ret (args body)
-      (ret
-        ((!lambda-cps ret (the-ret-symb)
-          (ret
-            ; now define "lambda" as "lambda-cps" with a fresh "return" symbol
-            ; and a body that just executes (return <body>)
-            (cons macroexpand (cons lambda-cps (cons the-ret-symb
-              (cons args (cons (cons the-ret-symb (cons body ())) ())))))))
-          ; definition of the-ret-symb: a symbol that will be used as the
-          ; continuation argument:
-          (gensym "return")))))
+    (list (!lambda-actual args args))
 
-    (list (!lambda args args))
+    (if (!lambda-actual (cond t f)              ; read this definition bottom to top
+      (list                                           ; eval the result with no arguments to force the lazy value
+        (list                                         ; eval the K or K*, getting one of the two lazy values
+          (list bool-to-k cond)                       ; convert the boolean condition to K or K* to do the selection
+          (list macroexpand lambda-actual '() t)      ; lazy value that evals the "true" branch
+          (list macroexpand lambda-actual '() f)))))  ; lazy value that evals the "false" branch
 
-    (if (!lambda (cond t f)       ; read this definition bottom to top
-      (list                       ; eval the result with no arguments to force the lazy value
-        (list                     ; eval the K or K*, getting one of the two lazy values
-          (list 'bool-to-k cond)  ; convert the boolean condition to K or K* to do the selection
-          (lambda '() t)          ; lazy value that evals the "true" branch
-          (lambda '() f)))))      ; lazy value that evals the "false" branch
-
-    (or (!lambda items
+    (or (!lambda-actual items
       (!if (null? items)
         #f
         (!if (pair? items)
@@ -29,7 +17,7 @@
             (apply or (cdr items)))
           (make-fail (list 'unexpected-arg-to-or items))))))
 
-    (and (!lambda items
+    (and (!lambda-actual items
       (!if (null? items)
         #t
         (!if (pair? items)
@@ -40,7 +28,7 @@
 
     ; some functions for dealing with key-value lists
     ; (only supporting symbols as keys)
-    (kv-find (!lambda (k kvl empty f)
+    (kv-find (!lambda-actual (k kvl empty f)
       (!if (null? kvl)
         empty
         (!if (pair? kvl)
@@ -52,11 +40,11 @@
               (make-fail (list 'not-a-kv-pair kv))))
           (make-fail (list 'not-a-list kvl))))))
 
-    (kv-has? (!lambda (k kvl)
+    (kv-has? (!lambda-actual (k kvl)
       (kv-find k kvl #f
-        (!lambda (_kv) #t))))
+        (!lambda-actual (_kv) #t))))
 
-    (kv-valid? (!lambda (kvl)
+    (kv-valid? (!lambda-actual (kvl)
       (!or
         (null? kvl)
         (!and
@@ -65,22 +53,22 @@
           (symbol? (car (car kvl)))
           (kv-valid? (cdr kvl))))))
 
-    (is-kv? (!lambda (item)
+    (is-kv? (!lambda-actual (item)
       (!and (pair? item) (symbol? (car item)))))
 
-    (load-module (!lambda (module-name)
+    (load-module (!lambda-actual (module-name)
       (eval-module (read-source module-name))))
 
-    (eval-module (!lambda (mod-expr)
+    (eval-module (!lambda-actual (mod-expr)
       mod-expr))
 
-    (is-even? (!lambda (x) (!if (<= x 0) #t (is-odd?  (add x -1)))))
-    (is-odd?  (!lambda (x) (!if (<= x 0) #f (is-even? (add x -1)))))
+    (is-even? (!lambda-actual (x) (!if (<= x 0) #t (is-odd?  (add x -1)))))
+    (is-odd?  (!lambda-actual (x) (!if (<= x 0) #f (is-even? (add x -1)))))
 
-    (baba (!lambda () (load-module "__main")))
-    (dyado (!lambda () (!or #f #f)))
+    (baba (!lambda-actual () (load-module "__main")))
+    (dyado (!lambda-actual () (!or #f #f)))
 
-    (fact (!lambda (x)
+    (fact (!lambda-actual (x)
       (!if (<= x 0)
         1
         (mul x (fact (add x -1)))))))

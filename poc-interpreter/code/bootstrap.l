@@ -1,40 +1,40 @@
-((!lambda-cps ret (lambda builtins)
-  ((!lambda (Y list cadr if)
-    ((!lambda (map)
-      ((!lambda (let)
+((!lambda-cps ret (expand-lambda builtins)
+  ((!lambda-actual (Y list cadr if)
+    ((!lambda-actual (map)
+      ((!lambda-actual (let)
         (!let
           ; helpers that we'll need to define letrec
-          ((generate-element-getters (Y (!lambda (rec) (!lambda (list-name l)
+          ((generate-element-getters (Y (!lambda-actual (rec) (!lambda-actual (list-name l)
             (!if (null? l)
               l
               (!if (pair? l)
                 (cons (list 'car list-name)
-                      (map (!lambda (subl) (list (car subl) (cons 'cdr (cdr subl))))
+                      (map (!lambda-actual (subl) (list (car subl) (cons 'cdr (cdr subl))))
                           (rec list-name (cdr l))))
                 (make-fail (list 'list-of-letrec-elements-not-a-list l))))))))
             ; polyvariate Y combinator (operates on a list of functions instead of a single function)
             (polyY
-              (!lambda l
-                ((!lambda (x) (x x))
-                (!lambda (p)
-                  (map (!lambda (li) (!lambda args (apply (apply li (p p)) args))) l))))))
+              (!lambda-actual l
+                ((!lambda-actual (x) (x x))
+                (!lambda-actual (p)
+                  (map (!lambda-actual (li) (!lambda-actual args (apply (apply li (p p)) args))) l))))))
 
           (!let
             ; definition of "letrec"
-            ((letrec (!lambda (defs body)
+            ((letrec (!lambda-actual (defs body)
               (!let
                 ((args (map car defs))
                   (item-bodies (map cadr defs)))
                   (!let (
-                    (arg-bodies (map (!lambda (def-body) (lambda args def-body)) item-bodies))
+                    (arg-bodies (map (!lambda-actual (def-body) (expand-lambda args def-body)) item-bodies))
                     (flist (gensym "flist")))
 
                     (!let (
                       (result-body (cons
-                        (lambda args body)
+                        (expand-lambda args body)
                         (generate-element-getters flist args))))
 
-                      (list (lambda (list flist) result-body) (cons polyY arg-bodies))))))))
+                      (list (expand-lambda (list flist) result-body) (cons polyY arg-bodies))))))))
 
                 ; we have now defined letrec and can continue bootstrapping from there
                 (eval
@@ -42,14 +42,14 @@
                   (read-source "__bootstrap_from_letrec")))))
 
         ; definition of "let"
-        (!lambda (letlist body)
+        (!lambda-actual (letlist body)
           (cons
-            (lambda (map car letlist) body)
+            (expand-lambda (map car letlist) body)
             (map cadr letlist)))))
 
       ; definition of "map"
-      (Y (!lambda (map)
-          (!lambda (f l)
+      (Y (!lambda-actual (map)
+          (!lambda-actual (f l)
             (!if (null? l)
               l
               (!if (pair? l)
@@ -57,43 +57,33 @@
                 (make-fail (list 'not-a-list l)))))))))
 
     ; definition of "Y"
-    (!lambda (f)
-      ((!lambda (x)
-        (f (!lambda args (apply (x x) args))))
-      (!lambda (x)
-        (f (!lambda args (apply (x x) args))))))
+    (!lambda-actual (f)
+      ((!lambda-actual (x)
+        (f (!lambda-actual args (apply (x x) args))))
+      (!lambda-actual (x)
+        (f (!lambda-actual args (apply (x x) args))))))
 
     ; definition of "list"
-    (!lambda args args)
+    (!lambda-actual args args)
 
     ; definition of "cadr"
-    (!lambda (p) (car (cdr p)))
+    (!lambda-actual (p) (car (cdr p)))
 
     ; definition of "if"
-    ; (if cond foo bar) -> (((bool-to-k cond) (!lambda () foo) (!lambda () bar)))
-    (!lambda (cond a b)
+    ; (if cond foo bar) -> (((bool-to-k cond) (!lambda-actual () foo) (!lambda-actual () bar)))
+    (!lambda-actual (cond a b)
       (cons
         (cons (cons 'bool-to-k (cons cond ()))
-        (cons (lambda '() a)
-        (cons (lambda '() b)
+        (cons (expand-lambda '() a)
+        (cons (expand-lambda '() b)
         ())))
 
         ()))
 
       ))
 
-; definition of "lambda"
-(!lambda-cps ret (args body)
-  (ret
-    ((!lambda-cps ret (the-ret-symb)
-      (ret
-        ; now define "lambda" as "lambda-cps" with a fresh "return" symbol
-        ; and a body that just executes (return <body>)
-        (cons macroexpand (cons lambda-cps (cons the-ret-symb
-          (cons args (cons (cons the-ret-symb (cons body ())) ())))))))
-      ; definition of the-ret-symb: a symbol that will be used as the
-      ; continuation argument:
-      (gensym "return"))))
+; definition of "expand-lambda"
+(!lambda-actual (args body) (cons macroexpand (cons lambda-actual (cons args (cons body ())))))
 
 ; definition of "builtins"
 (get-env))
@@ -102,8 +92,8 @@
 ; Since our macros have "runtime" semantics, given the current
 ; version of gensym (which is impure and returns a new value each time)
 ; the result of the macro *depends* on the context in which it is called
-; Thus, we can't expect something like (!lambda (x) (foo (!my-macro baba)))
-; to be partially evaluated to (!lambda (x) (the-result-of-applying-my-macro-to-baba)),
+; Thus, we can't expect something like (!lambda-actual (x) (foo (!my-macro baba)))
+; to be partially evaluated to (!lambda-actual (x) (the-result-of-applying-my-macro-to-baba)),
 ; even though baba (the symbol 'baba) is a constant with respect to my-macro,
 ; if my-macro contains calls to gensym (since they will return different
 ; results for every value of x). We need another version of gensym

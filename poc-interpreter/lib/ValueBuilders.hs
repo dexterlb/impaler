@@ -1,5 +1,6 @@
 module ValueBuilders
     ( makeLambdaCPS
+    , makeLambda
     )
 
 where
@@ -8,6 +9,19 @@ import Values
 import DebugInfo
 import Evaluator
 import Environments
+
+makeLambda :: forall v m. (EvalWorld v m)
+    => DebugInfo
+    -> Env v m        -- ^ closure
+    -> Value v m      -- ^ argument (may be a list of symbols or a single symbol)
+    -> [Value v m]    -- ^ body
+    -> Value v m      -- ^ resulting function object
+makeLambda dinfo env arg body
+    | (Right spec) <- mspec
+    = Value dinfo $ Func $ lambdaCallable body spec env
+    | (Left err) <- mspec = Value dinfo err
+    where
+        mspec = makeArgSpec arg
 
 makeLambdaCPS :: forall v m. (EvalWorld v m)
     => DebugInfo
@@ -18,7 +32,7 @@ makeLambdaCPS :: forall v m. (EvalWorld v m)
     -> Value v m      -- ^ resulting lambda-cps object
 makeLambdaCPS dinfo env retname arg body
     | (Right spec) <- mspec, (Value _ (Symbol retsym)) <- retname
-    = Value dinfo $ Func $ lambdaCallable body (CArgSpec retsym spec) env
+    = Value dinfo $ Func $ lambdaCallableCPS body (CArgSpec retsym spec) env
     | (Left err) <- mspec = Value dinfo err
     | otherwise = makeFailList dinfo "lambda-cps-malformed" [arg]
     where
@@ -36,10 +50,22 @@ makeArgSpec v = returnFailList "malformed-arg-list" [v]
 
 lambdaCallable :: forall v m. (EvalWorld v m)
     => [Value v m]  -- ^ body
-    -> CArgSpec     -- ^ formal arguments (argument names)
+    -> ArgSpec      -- ^ formal arguments (argument names)
     -> Env v m      -- ^ closure that comes with the lambda
     -> Env v m -> Callback v m -> Value v m -> m ()
 lambdaCallable body argspec closure _ ret arg
+    | (Right env) <- envOrErr = mapM_ (eval env ret) body
+    | (Left err)  <- envOrErr = ret $ builtinVal err    -- TODO: pass debug info to here
+    where
+        envOrErr :: CouldFail v m (Env v m)
+        envOrErr = makeLambdaCPSEnv (CArgSpec "baba" argspec) ret arg closure
+
+lambdaCallableCPS :: forall v m. (EvalWorld v m)
+    => [Value v m]  -- ^ body
+    -> CArgSpec     -- ^ formal arguments (argument names)
+    -> Env v m      -- ^ closure that comes with the lambda
+    -> Env v m -> Callback v m -> Value v m -> m ()
+lambdaCallableCPS body argspec closure _ ret arg
     | (Right env) <- envOrErr = mapM_ (eval env ret) body
     | (Left err)  <- envOrErr = ret $ builtinVal err    -- TODO: pass debug info to here
     where
