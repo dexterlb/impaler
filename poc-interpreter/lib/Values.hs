@@ -7,7 +7,6 @@ module Values
     , Callback
     , Env(..)
     , ArgSpec(..)
-    , CArgSpec(..)
     , astToVal
     , builtinVal
     , builtinList
@@ -81,10 +80,6 @@ data ValueItem v m
 type Callback v m = (Value v m) -> m ()
 
 newtype Env v m = Env (Map Identifier (Value v m))
-
-data CArgSpec = CArgSpec
-    Identifier      -- ^ CPS return callback
-    ArgSpec
 
 data SpecialForm = QuoteForm | MacroExpandForm | ExpandForm
 

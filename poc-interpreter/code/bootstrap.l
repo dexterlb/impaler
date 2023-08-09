@@ -1,4 +1,4 @@
-((!lambda-cps ret (lambda builtins) (ret
+((!lambda (expand-lambda builtins)
   ((!lambda (Y list cadr if)
     ((!lambda (map)
       ((!lambda (let)
@@ -26,15 +26,15 @@
                 ((args (map car defs))
                   (item-bodies (map cadr defs)))
                   (!let (
-                    (arg-bodies (map (!lambda (def-body) (lambda args def-body)) item-bodies))
+                    (arg-bodies (map (!lambda (def-body) (expand-lambda args def-body)) item-bodies))
                     (flist (gensym "flist")))
 
                     (!let (
                       (result-body (cons
-                        (lambda args body)
+                        (expand-lambda args body)
                         (generate-element-getters flist args))))
 
-                      (list (lambda (list flist) result-body) (cons polyY arg-bodies))))))))
+                      (list (expand-lambda (list flist) result-body) (cons polyY arg-bodies))))))))
 
                 ; we have now defined letrec and can continue bootstrapping from there
                 (eval
@@ -44,7 +44,7 @@
         ; definition of "let"
         (!lambda (letlist body)
           (cons
-            (lambda (map car letlist) body)
+            (expand-lambda (map car letlist) body)
             (map cadr letlist)))))
 
       ; definition of "map"
@@ -74,26 +74,16 @@
     (!lambda (cond a b)
       (cons
         (cons (cons 'bool-to-k (cons cond ()))
-        (cons (lambda '() a)
-        (cons (lambda '() b)
+        (cons (expand-lambda '() a)
+        (cons (expand-lambda '() b)
         ())))
 
         ()))
 
-      )))
+      ))
 
-; definition of "lambda"
-(!lambda-cps ret (args body)
-  (ret
-    ((!lambda-cps ret (the-ret-symb)
-      (ret
-        ; now define "lambda" as "lambda-cps" with a fresh "return" symbol
-        ; and a body that just executes (return <body>)
-        (cons macroexpand (cons lambda-cps (cons the-ret-symb
-          (cons args (cons (cons the-ret-symb (cons body ())) ())))))))
-      ; definition of the-ret-symb: a symbol that will be used as the
-      ; continuation argument:
-      (gensym "return"))))
+; definition of "expand-lambda"
+(!lambda (args body) (cons macroexpand (cons lambda (cons args (cons body ())))))
 
 ; definition of "builtins"
 (get-env))

@@ -58,9 +58,10 @@ sandboxEnv sb = envUnion specialForms $ envFromList
     [ ("yield", makeCPSFunc (\ret val -> (yieldResult val) >> (ret $ builtinVal Null)))
 
     -- core stuff
-    , ("lambda-cps", makeEnvAwareCPSFunc internalLambdaCPS)
+    , ("lambda", makeEnvAwareCPSFunc internalLambda)
     , ("eval", makeCPSFunc internalEval)
     , ("apply", makeCPSFunc internalApply)
+    , ("call/cc", makeCPSFunc internalCallCC)
 
     -- metaprogramming utils
     , ("gensym", makeFunc gensym)
@@ -72,11 +73,13 @@ sandboxEnv sb = envUnion specialForms $ envFromList
     -- data utils
     , ("add", makePureFunc $ vffoldr adder (builtinVal $ Num 0))
     , ("mul", makePureFunc $ vffoldr multiplier (builtinVal $ Num 1))
+    , ("div", makePureFunc $ divide)
     , ("cons", makePureFunc cons)
     , ("car", makePureFunc car)
     , ("cdr", makePureFunc cdr)
     , ("bool-to-k", makePureFunc boolToK)
     , ("null?", makePureFunc isNull)
+    , ("fail?", makePureFunc isFail)
     , ("pair?", makePureFunc isPair)
     , ("symbol?", makePureFunc isSymbol)
     , ("sym-eq?", makePureFunc symEq)
@@ -93,6 +96,14 @@ internalEval ret (Value dinfo (Pair envRepr (Value _ (Pair val (Value _ Null))))
         envResult = envFromKVList envRepr
 internalEval ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-two-args" [v]
 
+internalCallCC :: Callback v m -> Value v m -> m ()
+internalCallCC ret (Value dinfo (Pair f (Value _ Null)))
+    = apply emptyEnv void f $ (Value dinfo (Pair (makeCallableFromReturnCallback ret) (builtinVal Null)))
+internalCallCC ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-function" [v]
+
+void :: Callback v m
+void = error "someone called void"
+
 internalApply :: Callback v m -> Value v m -> m ()
 internalApply ret (Value _ (Pair f (Value _ (Pair arg (Value _ Null)))))
     -- note that apply rejects the current environment and substitutes its own:
@@ -105,12 +116,12 @@ internalApply ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-two-arg
 internalMakeFail :: Value v m -> Value v m
 internalMakeFail v@(Value dinfo _) = makeFail dinfo v
 
-internalLambdaCPS :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
-internalLambdaCPS env ret (Value dinfo (Pair retname (Value _ (Pair arg bodyVal))))
-    | (Just body) <- valToList bodyVal = ret $ makeLambdaCPS dinfo env retname arg body
-    | otherwise = ret $ makeFailList dinfo "lambda-cps-body-not-list" [bodyVal]
-internalLambdaCPS _   ret val@(Value dinfo _)
-    = ret $ makeFailList dinfo "lambda-cps-malformed" [val]
+internalLambda :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
+internalLambda env ret (Value dinfo (Pair arg bodyVal))
+    | (Just body) <- valToList bodyVal = ret $ makeLambda dinfo env arg body
+    | otherwise = ret $ makeFailList dinfo "lambda-body-not-list" [bodyVal]
+internalLambda _   ret val@(Value dinfo _)
+    = ret $ makeFailList dinfo "lambda-malformed" [val]
 
 readSource :: PureSandbox -> Value NoValue PureComp -> Value NoValue PureComp
 readSource (PureSandbox { sources }) (Value _ (Pair nameVal@(Value dinfo (Str name)) (Value _ Null)))
@@ -142,6 +153,11 @@ isNull (Value dinfo (Pair (Value _ Null) (Value _ Null))) = Value dinfo $ Bool T
 isNull (Value dinfo (Pair _ (Value _ Null))) = Value dinfo $ Bool False
 isNull v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-null?" [v]
 
+isFail :: Value v m -> Value v m
+isFail (Value dinfo (Pair (Value _ (Fail _)) (Value _ Null))) = Value dinfo $ Bool True
+isFail (Value dinfo (Pair _ _)) = Value dinfo $ Bool False
+isFail v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-fail?" [v]
+
 isPair :: Value v m -> Value v m
 isPair (Value dinfo (Pair (Value _ (Pair _ _)) (Value _ Null))) = Value dinfo $ Bool True
 isPair (Value dinfo (Pair _ _)) = Value dinfo $ Bool False
@@ -163,6 +179,13 @@ getEnv _ v@(Value dinfo _) = makeFailList dinfo "args-given-to-get-env" [v]
 cons :: Value v m -> Value v m
 cons (Value dinfo (Pair a (Value _ (Pair b (Value _ Null))))) = Value dinfo (Pair a b)
 cons arg@(Value dinfo _) = makeFailList dinfo "expected-two-values" [arg]
+
+divide :: Value v m -> Value v m
+divide (Value dinfo (Pair (Value _ (Num a)) (Value _ (Pair (Value _ (Num b)) (Value _ Null)))))
+    | b == 0 = makeFailList dinfo "division-by-zero" []
+    | otherwise = Value dinfo (Num $ a / b)
+divide arg@(Value dinfo _) = makeFailList dinfo "expected-two-numbers" [arg]
+
 
 car :: Value v m -> Value v m
 car (Value _ (Pair (Value _ (Pair a _)) (Value _ Null))) = a

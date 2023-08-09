@@ -1,5 +1,6 @@
 module ValueBuilders
-    ( makeLambdaCPS
+    ( makeLambda
+    , makeCallableFromReturnCallback
     )
 
 where
@@ -9,18 +10,16 @@ import DebugInfo
 import Evaluator
 import Environments
 
-makeLambdaCPS :: forall v m. (EvalWorld v m)
+makeLambda :: forall v m. (EvalWorld v m)
     => DebugInfo
-    -> Env v m
-    -> Value v m      -- ^ name of CPS return callback (symbol)
+    -> Env v m        -- ^ closure
     -> Value v m      -- ^ argument (may be a list of symbols or a single symbol)
     -> [Value v m]    -- ^ body
-    -> Value v m      -- ^ resulting lambda-cps object
-makeLambdaCPS dinfo env retname arg body
-    | (Right spec) <- mspec, (Value _ (Symbol retsym)) <- retname
-    = Value dinfo $ Func $ lambdaCallable body (CArgSpec retsym spec) env
+    -> Value v m      -- ^ resulting function object
+makeLambda dinfo env arg body
+    | (Right spec) <- mspec
+    = Value dinfo $ Func $ lambdaCallable body spec env
     | (Left err) <- mspec = Value dinfo err
-    | otherwise = makeFailList dinfo "lambda-cps-malformed" [arg]
     where
         mspec = makeArgSpec arg
 
@@ -36,26 +35,24 @@ makeArgSpec v = returnFailList "malformed-arg-list" [v]
 
 lambdaCallable :: forall v m. (EvalWorld v m)
     => [Value v m]  -- ^ body
-    -> CArgSpec     -- ^ formal arguments (argument names)
+    -> ArgSpec      -- ^ formal arguments (argument names)
     -> Env v m      -- ^ closure that comes with the lambda
     -> Env v m -> Callback v m -> Value v m -> m ()
 lambdaCallable body argspec closure _ ret arg
-    | (Right env) <- envOrErr = mapM_ (eval env void) body
+    | (Right env) <- envOrErr = mapM_ (eval env ret) body
     | (Left err)  <- envOrErr = ret $ builtinVal err    -- TODO: pass debug info to here
     where
         envOrErr :: CouldFail v m (Env v m)
-        envOrErr = makeLambdaCPSEnv argspec ret arg closure
+        envOrErr = makeLambdaEnv argspec arg closure
 
-makeLambdaCPSEnv
-    :: CArgSpec
-    -> Callback v m   -- ^ CPS callback
+makeLambdaEnv
+    :: ArgSpec
     -> Value v m      -- ^ argument
     -> Env v m        -- ^ closure
     -> CouldFail v m (Env v m)
-makeLambdaCPSEnv (CArgSpec retname argspec) ret arg closure = do
+makeLambdaEnv argspec arg closure = do
     argEnv <- bindArgs argspec arg
-    let retEnv = envFromList [(retname, makeCallableFromReturnCallback ret)]
-    pure $ foldr envUnion emptyEnv [argEnv, retEnv, closure]
+    pure $ envUnion closure argEnv
 
 bindArgs :: ArgSpec -> Value v m -> CouldFail v m (Env v m)
 bindArgs (ArgSpec { argNames, tailName }) val
@@ -66,11 +63,6 @@ bindArgs (ArgSpec { argNames, tailName }) val
     | [] <- argNames, Nothing <- tailName, Value _ Null <- val = pure $ emptyEnv
     | [] <- argNames = returnFailList "too-many-arguments" [val]
     | otherwise = returnFailList "incorrect-arguments" []
-
--- | callback that discards its argument
--- | (expressions in body are interpreted as statements and their results are discarded)
-void :: Callback v m
-void = error "not implemented"
 
 makeCallableFromReturnCallback :: forall v m. () => Callback v m -> Value v m
 makeCallableFromReturnCallback f = builtinVal $ Func g

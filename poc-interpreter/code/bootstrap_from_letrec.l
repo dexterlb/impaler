@@ -1,24 +1,14 @@
 (!letrec (
-    (lambda (!lambda-cps ret (args body)
-      (ret
-        ((!lambda-cps ret (the-ret-symb)
-          (ret
-            ; now define "lambda" as "lambda-cps" with a fresh "return" symbol
-            ; and a body that just executes (return <body>)
-            (cons macroexpand (cons lambda-cps (cons the-ret-symb
-              (cons args (cons (cons the-ret-symb (cons body ())) ())))))))
-          ; definition of the-ret-symb: a symbol that will be used as the
-          ; continuation argument:
-          (gensym "return")))))
-
     (list (!lambda args args))
 
-    (if (!lambda (cond t f)       ; read this definition bottom to top
-      (list                       ; eval the result with no arguments to force the lazy value
-        (list                     ; eval the K or K*, getting one of the two lazy values
-          (list 'bool-to-k cond)  ; convert the boolean condition to K or K* to do the selection
-          (lambda '() t)          ; lazy value that evals the "true" branch
-          (lambda '() f)))))      ; lazy value that evals the "false" branch
+    (expand-lambda (!lambda (args body) (list macroexpand lambda args body)))
+
+    (if (!lambda (cond t f)     ; read this definition bottom to top
+      (list                          ; eval the result with no arguments to force the lazy value
+        (list                        ; eval the K or K*, getting one of the two lazy values
+          (list bool-to-k cond)      ; convert the boolean condition to K or K* to do the selection
+          (expand-lambda '() t)      ; lazy value that evals the "true" branch
+          (expand-lambda '() f)))))  ; lazy value that evals the "false" branch
 
     (or (!lambda items
       (!if (null? items)
@@ -80,6 +70,24 @@
     (baba (!lambda () (load-module "__main")))
     (dyado (!lambda () (!or #f #f)))
 
+    (map (!lambda (f l)
+      (!if (null? l)
+        l
+        (!if (pair? l)
+          (cons (f (car l)) (map f (cdr l)))
+          (make-fail (list 'not-a-list l))))))
+
+    (try-map (!lambda (f l)
+      (call/cc (!lambda (return)
+        (return (map
+          (!lambda (x)
+            (!if (fail? (f x))
+              (return (make-fail (list 'fail-in-element x (f x))))
+              (f x))) l))))))
+
+    (reciprocate (!lambda (x) (div 1 x)))
+
+
     (fact (!lambda (x)
       (!if (<= x 0)
         1
@@ -91,4 +99,9 @@
     (list 'dyado (dyado))
     (list 'factorial-of-5-is (fact 5))
     (list 'number-26-is-odd? (is-odd? 26))
+    (list 'broken-map
+      (!if (fail? (try-map reciprocate (list 1 2 3 0 4)))
+        'broken-map-failed-successfully
+        'oh-no-broken-map-not-broken))
+    (list 'successful-map (try-map reciprocate (list 1 2 3 4)))
     ))
