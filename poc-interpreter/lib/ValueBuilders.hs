@@ -18,7 +18,7 @@ makeLambda :: forall v m. (EvalWorld v m)
     -> Value v m      -- ^ resulting function object
 makeLambda dinfo env arg body
     | (Right spec) <- mspec
-    = Value dinfo $ Func $ lambdaCallable body spec env
+    = Value dinfo $ Func $ lambdaCallable dinfo body spec env
     | (Left err) <- mspec = Value dinfo err
     where
         mspec = makeArgSpec arg
@@ -34,13 +34,14 @@ makeArgSpec (Value _ (Symbol tn)) = pure $ ArgSpec {argNames = [], tailName = Ju
 makeArgSpec v = returnFailList "malformed-arg-list" [v]
 
 lambdaCallable :: forall v m. (EvalWorld v m)
-    => [Value v m]  -- ^ body
+    => DebugInfo
+    -> [Value v m]  -- ^ body
     -> ArgSpec      -- ^ formal arguments (argument names)
     -> Env v m      -- ^ closure that comes with the lambda
     -> Env v m -> Callback v m -> Value v m -> m ()
-lambdaCallable body argspec closure _ ret arg
+lambdaCallable dinfoDef body argspec closure _ ret arg@(Value dinfoCallsite _)
     | (Right env) <- envOrErr = mapM_ (eval env ret) body
-    | (Left err)  <- envOrErr = ret $ builtinVal err    -- TODO: pass debug info to here
+    | (Left err)  <- envOrErr = ret $ Value dinfoCallsite $ Fail $ Value dinfoDef $ err
     where
         envOrErr :: CouldFail v m (Env v m)
         envOrErr = makeLambdaEnv argspec arg closure
