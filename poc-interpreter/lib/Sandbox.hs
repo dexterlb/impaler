@@ -82,6 +82,7 @@ sandboxEnv sb = envUnion specialForms $ envFromList
     , ("fail?", makePureFunc isFail)
     , ("pair?", makePureFunc isPair)
     , ("symbol?", makePureFunc isSymbol)
+    , ("func?", makePureFunc isFunc)
     , ("sym-eq?", makePureFunc symEq)
     , ("make-fail", makePureFunc internalMakeFail)
     , ("<=", makePureFunc numberLE)
@@ -167,6 +168,11 @@ isSymbol :: Value v m -> Value v m
 isSymbol (Value dinfo (Pair (Value _ (Symbol _)) (Value _ Null))) = Value dinfo $ Bool True
 isSymbol (Value dinfo (Pair _ _)) = Value dinfo $ Bool False
 isSymbol v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-symbol?" [v]
+
+isFunc :: Value v m -> Value v m
+isFunc (Value dinfo (Pair (Value _ (Func _)) (Value _ Null))) = Value dinfo $ Bool True
+isFunc (Value dinfo (Pair _ _)) = Value dinfo $ Bool False
+isFunc v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-symbol?" [v]
 
 symEq :: Value v m -> Value v m
 symEq (Value dinfo (Pair (Value _ (Symbol a)) (Value _ (Pair (Value _ (Symbol b)) (Value _ Null))))) = Value dinfo $ Bool $ a == b
