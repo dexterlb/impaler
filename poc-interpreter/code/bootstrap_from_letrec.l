@@ -34,13 +34,15 @@
       (!if (null? kvl)
         empty
         (!if (pair? kvl)
-          (!let ((kv (car kvl)))
-            (!if (is-kv? kv)
-              (!if (sym-eq? (car kv) k)
-                (f kv)
-                (kv-has? k (cdr kvl)))
-              (make-fail (list 'not-a-kv-pair kv))))
+          (!if (is-kv? (car kvl))
+            (!if (sym-eq? (car (car kvl)) k)
+              (f (car kvl))
+              (kv-find k (cdr kvl) empty f))
+            (make-fail (list 'not-a-kv-pair (car kvl))))
           (make-fail (list 'not-a-list kvl))))))
+
+    (kv-fetch (!lambda (k dflt kvl)
+      (kv-find k kvl dflt cdr)))
 
     (kv-has? (!lambda (k kvl)
       (kv-find k kvl #f
@@ -62,7 +64,14 @@
       (eval-module (read-source module-name))))
 
     (eval-module (!lambda (mod-expr)
-      mod-expr))
+      (!letrec (
+        (items (!delay (cdr mod-expr)))
+        (defs (kv-fetch 'defs (list) (force items))))
+
+        (list (defs car) (force items)))))
+
+    (delay (!lambda (ast) (expand-lambda () ast)))
+    (force (!lambda (d) (d)))
 
     (is-even? (!lambda (x) (!if (<= x 0) #t (is-odd?  (add x -1)))))
     (is-odd?  (!lambda (x) (!if (<= x 0) #f (is-even? (add x -1)))))
