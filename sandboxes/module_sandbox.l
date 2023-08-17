@@ -7,6 +7,8 @@
     (module "foo/qq.l")                         ; import everything from this module
     (module "module-utils" (const fn fn-cps)))
 
+  (exports add1 bar)
+
   (defs     ; this is a list of key-value pairs that get eval'd
     '(answer . 42)
 

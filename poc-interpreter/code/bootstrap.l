@@ -8,8 +8,8 @@
             (!if (null? l)
               l
               (!if (pair? l)
-                (cons (list 'car list-name)
-                      (map (!lambda (subl) (list (car subl) (cons 'cdr (cdr subl))))
+                (cons (list car list-name)
+                      (map (!lambda (subl) (list (car subl) (cons cdr (cdr subl))))
                           (rec list-name (cdr l))))
                 (make-fail (list 'list-of-letrec-elements-not-a-list l))))))))
             ; polyvariate Y combinator (operates on a list of functions instead of a single function)

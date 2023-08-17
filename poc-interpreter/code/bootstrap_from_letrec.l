@@ -65,10 +65,20 @@
 
     (eval-module (!lambda (mod-expr)
       (!letrec (
-        (items (!delay (cdr mod-expr)))
-        (defs (kv-fetch 'defs (list) (force items))))
+        (env (!delay (list (cons 'quote quote) (cons 'lambda lambda))))
 
-        (list (defs car) (force items)))))
+        (items (!delay (cdr mod-expr)))
+        (defs (!delay (kv-fetch 'defs (list) (force items))))
+        (exports (!delay (kv-fetch 'exports (list) (force items))))
+        (eval-def (!lambda (def)
+          (eval (force env) def)))
+        (def-items (!delay (map eval-def (force defs)))))
+
+        (eval (force env)
+          (letrec (force def-items) (cons list (map sym-item-pair (force exports))))))))
+
+    (sym-item-pair (!lambda (sym)
+      (list cons (list 'quote sym) sym)))
 
     (delay (!lambda (ast) (expand-lambda () ast)))
     (force (!lambda (d) (d)))
