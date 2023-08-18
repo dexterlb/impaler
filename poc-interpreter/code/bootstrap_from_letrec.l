@@ -28,6 +28,23 @@
             #f)
           (make-fail (list 'unexpected-arg-to-and items))))))
 
+    (cadr (!lambda (p) (car (cdr p))))
+    (caar (!lambda (p) (car (car p))))
+
+    (let (!lambda (defs body)
+      (cons
+        (expand-lambda (map car defs) body)
+        (map cadr defs))))
+
+    (let* (!lambda (defs body)
+      (!if (null? defs)
+        body
+        (list
+          (expand-lambda
+            (list (caar defs))
+            (let* (cdr defs) body))
+          (cadr (car defs))))))
+
     ; some functions for dealing with key-value lists
     ; (only supporting symbols as keys)
     (kv-find (!lambda (k kvl empty f)
@@ -64,24 +81,21 @@
       (eval-module (read-source module-name))))
 
     (eval-module (!lambda (mod-expr)
-      (!letrec (
-        (env (!delay (list (cons 'quote quote) (cons 'lambda lambda))))
+      (!let* (
+        (env (list (cons 'quote quote) (cons 'lambda lambda)))
 
-        (items (!delay (cdr mod-expr)))
-        (defs (!delay (kv-fetch 'defs (list) (force items))))
-        (exports (!delay (kv-fetch 'exports (list) (force items))))
+        (items (cdr mod-expr))
+        (defs (kv-fetch 'defs (list) items))
+        (exports (kv-fetch 'exports (list) items))
         (eval-def (!lambda (def)
-          (eval (force env) def)))
-        (def-items (!delay (map eval-def (force defs)))))
+          (eval env def)))
+        (def-items (map eval-def defs)))
 
-        (eval (force env)
-          (letrec (force def-items) (cons list (map sym-item-pair (force exports))))))))
+        (eval env
+          (letrec def-items (cons list (map sym-item-pair exports)))))))
 
     (sym-item-pair (!lambda (sym)
-      (list cons (list 'quote sym) sym)))
-
-    (delay (!lambda (ast) (expand-lambda () ast)))
-    (force (!lambda (d) (d)))
+      (list cons (list quote sym) sym)))
 
     (is-even? (!lambda (x) (!if (<= x 0) #t (is-odd?  (add x -1)))))
     (is-odd?  (!lambda (x) (!if (<= x 0) #f (is-even? (add x -1)))))
@@ -113,14 +127,18 @@
         (mul x (fact (add x -1)))))))
 
   ; (list 'factorial-of-5-is (fact 5) 'number-42-is-odd? (is-odd? 42))))))
-  (list
-    (list 'baba (baba))
-    (list 'dyado (dyado))
-    (list 'factorial-of-5-is (fact 5))
-    (list 'number-26-is-odd? (is-odd? 26))
-    (list 'broken-map
-      (!if (fail? (try-map reciprocate (list 1 2 3 0 4)))
-        'broken-map-failed-successfully
-        'oh-no-broken-map-not-broken))
-    (list 'successful-map (try-map reciprocate (list 1 2 3 4)))
-    ))
+  (!let*
+    ( (fact5 (fact 5))
+      (odd26 (is-odd? 26)))
+
+    (list
+      (list 'baba (baba))
+      (list 'dyado (dyado))
+      (list 'factorial-of-5-is fact5)
+      (list 'number-26-is-odd? odd26)
+      (list 'broken-map
+        (!if (fail? (try-map reciprocate (list 1 2 3 0 4)))
+          'broken-map-failed-successfully
+          'oh-no-broken-map-not-broken))
+      (list 'successful-map (try-map reciprocate (list 1 2 3 4)))
+      )))
