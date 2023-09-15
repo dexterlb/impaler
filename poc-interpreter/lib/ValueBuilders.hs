@@ -5,6 +5,8 @@ module ValueBuilders
 
 where
 
+import Data.List.Extra (unsnoc)
+
 import Values
 import DebugInfo
 import Evaluator
@@ -49,24 +51,19 @@ lambdaCallable dinfoDef body argspec closure _ ret arg@(Value dinfoCallsite _)
 evalLambdaBody :: forall v m. (EvalWorld v m)
     => DebugInfo
     -> Env v m 
-    -> Callback v m 
-    -> [Value v m]
+    -> Callback v m     -- CPS callback
+    -> [Value v m]      -- body (list of expressions)
     -> m ()
 evalLambdaBody dinfo env ret body
-    | Just (allButLastExpr, lastExpr) <- splitOnLast body = do 
+    | Just (allButLastExpr, lastExpr) <- unsnoc body = do 
+        -- evaluate all exprs except the last one and discard their results
         mapM_ (eval env void) allButLastExpr
+        -- evaluate the last expr and pass its result to ret
         eval env ret lastExpr
     | otherwise = ret $ makeFailList dinfo "empty-lambda-body" []
 
 void :: (Monad m) => Callback v m
 void _ = pure ()    -- do nothing
-
-splitOnLast :: [a] -> Maybe ([a], a)
-splitOnLast []      = Nothing
-splitOnLast [x]     = pure ([], x)
-splitOnLast (x:xs)  = do
-    (lxs, l) <- splitOnLast xs
-    pure $ (x:lxs, l)
 
 makeLambdaEnv
     :: ArgSpec

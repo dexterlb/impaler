@@ -68,6 +68,7 @@
           "base >=4.7 && <5"
           "containers"
           "megaparsec"
+          "extra"
           "parser-combinators"
           "text"
           "transformers"

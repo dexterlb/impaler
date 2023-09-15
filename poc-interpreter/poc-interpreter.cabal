@@ -23,9 +23,11 @@ library
       Evaluator
       PrimitiveData
       Sandbox
+      Stringify
       Testing
       Utils.Debug
       Utils.Parsing
+      ValueBuilders
       Values
   other-modules:
       Paths_poc_interpreter
@@ -59,8 +61,10 @@ library
   build-depends:
       base >=4.7 && <5
     , containers
+    , extra
     , megaparsec
     , parser-combinators
+    , prettyprinter >=1.7
     , text
     , timeit >=2.0
     , transformers
