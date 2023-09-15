@@ -1,9 +1,14 @@
 (module
   (doc "this is a test module")
-  (exports answer)
+  (exports main)
+  (imports
+    (builtin (car cdr cons lambda macroexpand quote))
+    ; ("baba.l" (baba))
+    )
   (defs
+    ; (!const answer (!lambda () 42))
+    ; '(const (!lambda (name definition) (list (list quote name) definition)))
 
-    '(answer (lambda () 42))
-    '(qux (lambda () 26))
+    '(main (!lambda () 26))
 
   ))

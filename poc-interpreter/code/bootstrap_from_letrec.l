@@ -82,17 +82,23 @@
 
     (eval-module (!lambda (mod-expr)
       (!let* (
-        (env (list (cons 'quote quote) (cons 'lambda lambda)))
-
         (items (cdr mod-expr))
-        (defs (kv-fetch 'defs (list) items))
-        (exports (kv-fetch 'exports (list) items))
+
+        (imports  (kv-fetch 'imports  (list) items))
+        (defs     (kv-fetch 'defs     (list) items))
+        (exports  (kv-fetch 'exports  (list) items))
+
+        (env (process-imports imports))
         (eval-def (!lambda (def)
           (eval env def)))
         (def-items (map eval-def defs)))
 
         (eval env
           (letrec def-items (cons list (map sym-item-pair exports)))))))
+
+    (process-imports (!lambda (import-list)
+      (yield import-list)
+      (list (cons 'quote quote) (cons 'lambda lambda) (cons 'macroexpand macroexpand))))
 
     (sym-item-pair (!lambda (sym)
       (list cons (list quote sym) sym)))

@@ -40,11 +40,33 @@ lambdaCallable :: forall v m. (EvalWorld v m)
     -> Env v m      -- ^ closure that comes with the lambda
     -> Env v m -> Callback v m -> Value v m -> m ()
 lambdaCallable dinfoDef body argspec closure _ ret arg@(Value dinfoCallsite _)
-    | (Right env) <- envOrErr = mapM_ (eval env ret) body
+    | (Right env) <- envOrErr = evalLambdaBody dinfoDef env ret body
     | (Left err)  <- envOrErr = ret $ Value dinfoCallsite $ Fail $ Value dinfoDef $ err
     where
         envOrErr :: CouldFail v m (Env v m)
         envOrErr = makeLambdaEnv argspec arg closure
+
+evalLambdaBody :: forall v m. (EvalWorld v m)
+    => DebugInfo
+    -> Env v m 
+    -> Callback v m 
+    -> [Value v m]
+    -> m ()
+evalLambdaBody dinfo env ret body
+    | Just (allButLastExpr, lastExpr) <- splitOnLast body = do 
+        mapM_ (eval env void) allButLastExpr
+        eval env ret lastExpr
+    | otherwise = ret $ makeFailList dinfo "empty-lambda-body" []
+
+void :: (Monad m) => Callback v m
+void _ = pure ()    -- do nothing
+
+splitOnLast :: [a] -> Maybe ([a], a)
+splitOnLast []      = Nothing
+splitOnLast [x]     = pure ([], x)
+splitOnLast (x:xs)  = do
+    (lxs, l) <- splitOnLast xs
+    pure $ (x:lxs, l)
 
 makeLambdaEnv
     :: ArgSpec

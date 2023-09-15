@@ -99,11 +99,11 @@ internalEval ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-two-args
 
 internalCallCC :: Callback v m -> Value v m -> m ()
 internalCallCC ret (Value dinfo (Pair f (Value _ Null)))
-    = apply emptyEnv void f $ (Value dinfo (Pair (makeCallableFromReturnCallback ret) (builtinVal Null)))
+    = apply emptyEnv discardContinuation f $ (Value dinfo (Pair (makeCallableFromReturnCallback ret) (builtinVal Null)))
 internalCallCC ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-function" [v]
 
-void :: Callback v m
-void = error "someone called void"
+discardContinuation :: Callback v m
+discardContinuation = error "a continuation was discarded"
 
 internalApply :: Callback v m -> Value v m -> m ()
 internalApply ret (Value _ (Pair f (Value _ (Pair arg (Value _ Null)))))
