@@ -82,6 +82,7 @@ sandboxEnv sb = envUnion specialForms $ envFromList
     , ("fail?", makePureFunc isFail)
     , ("pair?", makePureFunc isPair)
     , ("symbol?", makePureFunc isSymbol)
+    , ("string?", makePureFunc isString)
     , ("func?", makePureFunc isFunc)
     , ("sym-eq?", makePureFunc symEq)
     , ("make-fail", makePureFunc internalMakeFail)
@@ -168,6 +169,11 @@ isSymbol :: Value v m -> Value v m
 isSymbol (Value dinfo (Pair (Value _ (Symbol _)) (Value _ Null))) = Value dinfo $ Bool True
 isSymbol (Value dinfo (Pair _ _)) = Value dinfo $ Bool False
 isSymbol v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-symbol?" [v]
+
+isString :: Value v m -> Value v m
+isString (Value dinfo (Pair (Value _ (Str _)) (Value _ Null))) = Value dinfo $ Bool True
+isString (Value dinfo (Pair _ _)) = Value dinfo $ Bool False
+isString v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-symbol?" [v]
 
 isFunc :: Value v m -> Value v m
 isFunc (Value dinfo (Pair (Value _ (Func _)) (Value _ Null))) = Value dinfo $ Bool True
@@ -280,4 +286,6 @@ demo = do
         [ ("__bootstrap", "code/bootstrap.l")
         , ("__bootstrap_from_letrec", "code/bootstrap_from_letrec.l")
         , ("__main", "code/main.l")
+        , ("fact.l", "code/fact.l")
+        , ("libs/core.l", "code/libs/core.l")
         ]

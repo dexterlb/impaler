@@ -1,150 +1,202 @@
-(!letrec (
-    (list (!lambda args args))
+((!lambda (builtins)
+  (!letrec (
+      (list (!lambda args args))
 
-    (expand-lambda (!lambda (args body) (list macroexpand lambda args body)))
+      (expand-lambda (!lambda (args body) (list macroexpand lambda args body)))
 
-    (if (!lambda (cond t f)     ; read this definition bottom to top
-      (list                          ; eval the result with no arguments to force the lazy value
-        (list                        ; eval the K or K*, getting one of the two lazy values
-          (list bool-to-k cond)      ; convert the boolean condition to K or K* to do the selection
-          (expand-lambda '() t)      ; lazy value that evals the "true" branch
-          (expand-lambda '() f)))))  ; lazy value that evals the "false" branch
+      (if (!lambda (cond t f)     ; read this definition bottom to top
+        (list                          ; eval the result with no arguments to force the lazy value
+          (list                        ; eval the K or K*, getting one of the two lazy values
+            (list bool-to-k cond)      ; convert the boolean condition to K or K* to do the selection
+            (expand-lambda '() t)      ; lazy value that evals the "true" branch
+            (expand-lambda '() f)))))  ; lazy value that evals the "false" branch
 
-    (or (!lambda items
-      (!if (null? items)
-        #f
-        (!if (pair? items)
-          (if (car items)
-            #t
-            (apply or (cdr items)))
-          (make-fail (list 'unexpected-arg-to-or items))))))
+      (not (!lambda (b)
+        (!if b
+          #f
+          #t)))
 
-    (and (!lambda items
-      (!if (null? items)
-        #t
-        (!if (pair? items)
-          (if (car items)
-            (apply and (cdr items))
-            #f)
-          (make-fail (list 'unexpected-arg-to-and items))))))
+      (or (!lambda items
+        (!if (null? items)
+          #f
+          (!if (pair? items)
+            (if (car items)
+              #t
+              (apply or (cdr items)))
+            (make-fail (list 'unexpected-arg-to-or items))))))
 
-    (cadr (!lambda (p) (car (cdr p))))
-    (caar (!lambda (p) (car (car p))))
+      (and (!lambda items
+        (!if (null? items)
+          #t
+          (!if (pair? items)
+            (if (car items)
+              (apply and (cdr items))
+              #f)
+            (make-fail (list 'unexpected-arg-to-and items))))))
 
-    (let (!lambda (defs body)
-      (cons
-        (expand-lambda (map car defs) body)
-        (map cadr defs))))
+      (cadr (!lambda (p) (car (cdr p))))
+      (caar (!lambda (p) (car (car p))))
 
-    (let* (!lambda (defs body)
-      (!if (null? defs)
-        body
-        (list
-          (expand-lambda
-            (list (caar defs))
-            (let* (cdr defs) body))
-          (cadr (car defs))))))
+      (let (!lambda (defs body)
+        (cons
+          (expand-lambda (map car defs) body)
+          (map cadr defs))))
 
-    ; some functions for dealing with key-value lists
-    ; (only supporting symbols as keys)
-    (kv-find (!lambda (k kvl empty f)
-      (!if (null? kvl)
-        empty
-        (!if (pair? kvl)
-          (!if (is-kv? (car kvl))
-            (!if (sym-eq? (car (car kvl)) k)
-              (f (car kvl))
-              (kv-find k (cdr kvl) empty f))
-            (make-fail (list 'not-a-kv-pair (car kvl))))
-          (make-fail (list 'not-a-list kvl))))))
+      (let* (!lambda (defs body)
+        (!if (null? defs)
+          body
+          (list
+            (expand-lambda
+              (list (caar defs))
+              (let* (cdr defs) body))
+            (cadr (car defs))))))
 
-    (kv-fetch (!lambda (k dflt kvl)
-      (kv-find k kvl dflt cdr)))
+      ; some functions for dealing with key-value lists
+      ; (only supporting symbols as keys)
+      (kv-find (!lambda (k kvl empty f)
+        (!if (null? kvl)
+          empty
+          (!if (pair? kvl)
+            (!if (is-kv? (car kvl))
+              (!if (sym-eq? (car (car kvl)) k)
+                (f (car kvl))
+                (kv-find k (cdr kvl) empty f))
+              (make-fail (list 'not-a-kv-pair (car kvl))))
+            (make-fail (list 'not-a-list kvl))))))
 
-    (kv-has? (!lambda (k kvl)
-      (kv-find k kvl #f
-        (!lambda (_kv) #t))))
+      (kv-fetch (!lambda (k dflt kvl)
+        (kv-find k kvl dflt cdr)))
 
-    (kv-valid? (!lambda (kvl)
-      (!or
-        (null? kvl)
-        (!and
-          (pair? kvl)
-          (pair? (car kvl))
-          (symbol? (car (car kvl)))
-          (kv-valid? (cdr kvl))))))
+      (kv-get (!lambda (k kvl)
+        (kv-fetch k (make-fail (list 'key-not-found (list 'key k) (list 'kv-list kvl))) kvl)))
 
-    (is-kv? (!lambda (item)
-      (!and (pair? item) (symbol? (car item)))))
+      (kv-has? (!lambda (k kvl)
+        (kv-find k kvl #f
+          (!lambda (_kv) #t))))
 
-    (load-module (!lambda (module-name)
-      (eval-module (read-source module-name))))
+      (kv-valid? (!lambda (kvl)
+        (!or
+          (null? kvl)
+          (!and
+            (pair? kvl)
+            (pair? (car kvl))
+            (symbol? (car (car kvl)))
+            (kv-valid? (cdr kvl))))))
 
-    (eval-module (!lambda (mod-expr)
-      (!let* (
-        (items (cdr mod-expr))
+      (is-kv? (!lambda (item)
+        (!and (pair? item) (symbol? (car item)))))
 
-        (imports  (kv-fetch 'imports  (list) items))
-        (defs     (kv-fetch 'defs     (list) items))
-        (exports  (kv-fetch 'exports  (list) items))
+      (load-module (!lambda (module-name)
+        (eval-module (read-source module-name))))
 
-        (env (process-imports imports))
-        (eval-def (!lambda (def)
-          (eval env def)))
-        (def-items (map eval-def defs)))
+      (eval-module (!lambda (mod-expr)
+        (!let* (
+          (items (cdr mod-expr))
 
-        (eval env
-          (letrec def-items (cons list (map sym-item-pair exports)))))))
+          (imports  (kv-fetch 'imports  (list) items))
+          (defs     (kv-fetch 'defs     (list) items))
+          (exports  (kv-fetch 'exports  (list) items))
 
-    (process-imports (!lambda (import-list)
-      (yield import-list)
-      (list (cons 'quote quote) (cons 'lambda lambda) (cons 'macroexpand macroexpand))))
+          (env (process-imports imports))
+          (eval-def (!lambda (def)
+            (eval env def)))
+          (def-items (map eval-def defs)))
 
-    (sym-item-pair (!lambda (sym)
-      (list cons (list quote sym) sym)))
+          (eval env
+            (letrec def-items (cons list (map sym-item-pair exports)))))))
 
-    (is-even? (!lambda (x) (!if (<= x 0) #t (is-odd?  (add x -1)))))
-    (is-odd?  (!lambda (x) (!if (<= x 0) #f (is-even? (add x -1)))))
+      (process-imports (!lambda (import-list)
+        (concat (map process-import import-list))))
 
-    (baba (!lambda () (load-module "__main")))
-    (dyado (!lambda () (!or #f #f)))
+      (process-import (!lambda (import-spec)
+        (!if (not (pair? import-spec))
+          (make-fail (list 'import-spec-must-be-list import-spec))
+          (!if (!and (symbol? (car import-spec)) (sym-eq? (car import-spec) 'builtin))
+            (process-import-items builtins (cdr import-spec))
+            (!if (string? (car import-spec))
+              (process-import-items (load-module (car import-spec)) (cdr import-spec))
+              (make-fail (list 'import-spec-invalid import-spec)))))))
 
-    (map (!lambda (f l)
-      (!if (null? l)
-        l
-        (!if (pair? l)
-          (cons (f (car l)) (map f (cdr l)))
-          (make-fail (list 'not-a-list l))))))
+      (process-import-items (!lambda (items spec-tail)
+        (!if (!and
+          (pair? spec-tail)
+          (null? (cdr spec-tail))
+          (pair? (car spec-tail)))
 
-    (try-map (!lambda (f l)
-      (call/cc (!lambda (return)
-        (return (map
-          (!lambda (x)
-            (!if (fail? (f x))
-              (return (make-fail (list 'fail-in-element x (f x))))
-              (f x))) l))))))
+          (concat (map (!lambda (picker) (debug-trace 'picked (execute-picker picker items))) (car spec-tail)))
+          (make-fail (list 'expected-picker-list spec-tail)))))
 
-    (reciprocate (!lambda (x) (div 1 x)))
+      (execute-picker (!lambda (picker items)
+        (!if (symbol? picker)
+          ; symbol pickers refer a single exported object
+          (list (cons picker (kv-get picker items)))
+          'not-implemented)))
+
+      (sym-item-pair (!lambda (sym)
+        (list cons (list quote sym) sym)))
+
+      (is-even? (!lambda (x) (!if (<= x 0) #t (is-odd?  (add x -1)))))
+      (is-odd?  (!lambda (x) (!if (<= x 0) #f (is-even? (add x -1)))))
+
+      (baba (!lambda () (load-module "__main")))
+      (execute-main (!lambda () 
+        ((kv-get 'main (load-module "__main")))))
+      (dyado (!lambda () (!or #f #f)))
+
+      (debug-trace (!lambda (name val)
+        (yield (list 'trace name val))
+        val))
+
+      (concat (!lambda (l)
+        (!if (null? l)
+          l
+          (!if (not (pair? l))
+            (make-fail (list 'expected-list-of-lists l))
+            (!if (null? (car l))
+              (concat (cdr l))
+              (!if (not (pair? (car l)))
+                (make-fail (list 'expected-list (car l)))
+                (cons (car (car l)) (concat (cons (cdr (car l)) (cdr l))))))))))
+
+      (map (!lambda (f l)
+        (!if (null? l)
+          l
+          (!if (pair? l)
+            (cons (f (car l)) (map f (cdr l)))
+            (make-fail (list 'not-a-list l))))))
+
+      (try-map (!lambda (f l)
+        (call/cc (!lambda (return)
+          (return (map
+            (!lambda (x)
+              (!if (fail? (f x))
+                (return (make-fail (list 'fail-in-element x (f x))))
+                (f x))) l))))))
+
+      (reciprocate (!lambda (x) (div 1 x)))
 
 
-    (fact (!lambda (x)
-      (!if (<= x 0)
-        1
-        (mul x (fact (add x -1)))))))
+      (fact (!lambda (x)
+        (!if (<= x 0)
+          1
+          (mul x (fact (add x -1)))))))
 
-  ; (list 'factorial-of-5-is (fact 5) 'number-42-is-odd? (is-odd? 42))))))
-  (!let*
-    ( (fact5 (fact 5))
-      (odd26 (is-odd? 26)))
+    ; (list 'factorial-of-5-is (fact 5) 'number-42-is-odd? (is-odd? 42))))))
+    (!let*
+      ( (fact5 (fact 5))
+        (odd26 (is-odd? 26)))
 
-    (list
-      (list 'baba (baba))
-      (list 'dyado (dyado))
-      (list 'factorial-of-5-is fact5)
-      (list 'number-26-is-odd? odd26)
-      (list 'broken-map
-        (!if (fail? (try-map reciprocate (list 1 2 3 0 4)))
-          'broken-map-failed-successfully
-          'oh-no-broken-map-not-broken))
-      (list 'successful-map (try-map reciprocate (list 1 2 3 4)))
-      )))
+      (list
+        (list 'baba (baba))
+        (list 'main (execute-main))
+        ; (list 'dyado (dyado))
+        ; (list 'factorial-of-5-is fact5)
+        ; (list 'number-26-is-odd? odd26)
+        ; (list 'broken-map
+        ;   (!if (fail? (try-map reciprocate (list 1 2 3 0 4)))
+        ;     'broken-map-failed-successfully
+        ;     'oh-no-broken-map-not-broken))
+        ; (list 'successful-map (try-map reciprocate (list 1 2 3 4)))
+        ))))
+
+  (get-env))

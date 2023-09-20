@@ -3,12 +3,11 @@
   (exports main)
   (imports
     (builtin (car cdr cons lambda macroexpand quote))
-    ; ("baba.l" (baba))
+    ("fact.l" (fact))
     )
   (defs
     ; (!const answer (!lambda () 42))
     ; '(const (!lambda (name definition) (list (list quote name) definition)))
 
-    '(main (!lambda () 26))
-
+    '(main (!lambda () (fact 5)))
   ))

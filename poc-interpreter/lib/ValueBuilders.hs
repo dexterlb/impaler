@@ -50,12 +50,12 @@ lambdaCallable dinfoDef body argspec closure _ ret arg@(Value dinfoCallsite _)
 
 evalLambdaBody :: forall v m. (EvalWorld v m)
     => DebugInfo
-    -> Env v m 
+    -> Env v m
     -> Callback v m     -- CPS callback
     -> [Value v m]      -- body (list of expressions)
     -> m ()
 evalLambdaBody dinfo env ret body
-    | Just (allButLastExpr, lastExpr) <- unsnoc body = do 
+    | Just (allButLastExpr, lastExpr) <- unsnoc body = do
         -- evaluate all exprs except the last one and discard their results
         mapM_ (eval env void) allButLastExpr
         -- evaluate the last expr and pass its result to ret
