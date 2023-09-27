@@ -26,6 +26,7 @@ library
       Stringify
       Testing
       Utils.Debug
+      Utils.Files
       Utils.Parsing
       ValueBuilders
       Values
@@ -64,6 +65,7 @@ library
     , extra
     , megaparsec
     , parser-combinators
+    , path-io >=1.8
     , prettyprinter >=1.7
     , text
     , timeit >=2.0

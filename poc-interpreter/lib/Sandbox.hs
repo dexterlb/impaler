@@ -19,6 +19,7 @@ import Values
 import Environments
 import Evaluator
 import Utils.Parsing (parseFile)
+import Utils.Files (browseCode)
 import PrimitiveData
 import Stringify
 import ValueBuilders
@@ -282,6 +283,9 @@ fileEvalPrint srcFiles = do
 
 demo :: IO ()
 demo = do
+    let lib_dir = "./code"
+    files <- browseCode lib_dir
+    mapM_ putStrLn files
     fileEvalPrint
         [ ("__bootstrap", "code/bootstrap.l")
         , ("__bootstrap_from_letrec", "code/bootstrap_from_letrec.l")
