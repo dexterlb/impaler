@@ -1,6 +1,10 @@
 module AST
     ( AST(..)
     , DebugInfo(..)
+    , builtinASTList
+    , builtinASTSymbol
+    , builtinASTStr
+    , getDebugInfo
     )
 where
 
@@ -118,3 +122,13 @@ getDebugInfo (Null info) = info
 getDebugInfo (Num info _) = info
 getDebugInfo (Str info _) = info
 getDebugInfo (Bool info _) = info
+
+builtinASTSymbol :: Identifier -> AST
+builtinASTSymbol i = Symbol builtinDebugInfo i
+
+builtinASTStr :: Text -> AST
+builtinASTStr s = Str builtinDebugInfo s
+
+builtinASTList :: [AST] -> AST
+builtinASTList [] = Null builtinDebugInfo
+builtinASTList (x:xs) = Pair builtinDebugInfo x (builtinASTList xs)

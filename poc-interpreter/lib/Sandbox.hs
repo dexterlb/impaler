@@ -6,23 +6,22 @@ module Sandbox
 
 where
 
-import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
-import Data.Map (Map)
 import qualified Data.Map as Map
 import Control.Monad.Trans.State.Lazy (State, get, put, execState)
+import Control.Monad.Except (runExceptT)
 
 import qualified System.TimeIt as TIT
 
 import Values
 import Environments
 import Evaluator
-import Utils.Parsing (parseFile)
-import Utils.Files (browseCode)
+import qualified Utils.Files as F
 import PrimitiveData
 import Stringify
 import ValueBuilders
+import Loader
 
 newtype PureComp a = PureComp (State PureCompState a)
     deriving newtype (Monad, Applicative, Functor)
@@ -32,10 +31,9 @@ data PureCompState = PureCompState
     , firstFreeGensym :: Int
     }
 
-type SourceMap = Map Text (Value NoValue PureComp)
 
 data PureSandbox = PureSandbox
-    { sources :: SourceMap
+    { sources :: Sources
     }
 
 data NoValue = NoValue
@@ -128,7 +126,7 @@ internalLambda _   ret val@(Value dinfo _)
 
 readSource :: PureSandbox -> Value NoValue PureComp -> Value NoValue PureComp
 readSource (PureSandbox { sources }) (Value _ (Pair nameVal@(Value dinfo (Str name)) (Value _ Null)))
-    | (Just src) <- Map.lookup name sources = src
+    | (Just src) <- Map.lookup (SourceName name) sources = astToVal src
     | otherwise = makeFailList dinfo "no-such-source" [nameVal]
 readSource _ v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-read-source" [v]
 
@@ -245,51 +243,34 @@ makeCPSFunc f = makeEnvAwareCPSFunc (\_env -> f)
 makeEnvAwareCPSFunc :: (Env v m -> Callback v m -> Value v m -> m ()) -> Value v m
 makeEnvAwareCPSFunc f = builtinVal $ Func f
 
-evalProgram :: Env NoValue PureComp -> Value NoValue PureComp -> [Value NoValue PureComp]
-evalProgram env = resultsOf . (eval env yieldResult)
-
-loadSources :: [(Text, FilePath)] -> IO SourceMap
-loadSources = (Map.fromList <$>) . (mapM go)
+evalPureProgram :: Program -> [Value NoValue PureComp]
+evalPureProgram prog = resultsOf $ eval env yieldResult progExpr
     where
-        go (name, path) = do
-            sexpr <- loadSource path
-            pure (name, sexpr)
+        progExpr = astToVal prog.entryPoint
+        env = sandboxEnv (PureSandbox { sources = prog.sources })
 
-loadSource :: FilePath -> IO (Value NoValue PureComp)
-loadSource fname = do
-    sexpr <- parseFile fname
-    TIO.putStrLn $ "parsed " <> (T.pack fname) <> " of approx size " <> (T.pack $ show $ T.length $ stringifyVal sexpr)
-    pure $ sexpr
 
-fileEvalPrint :: [(Text, FilePath)] -> IO ()
-fileEvalPrint srcFiles = do
-    srcs <- loadSources srcFiles
-
-    let program = builtinVal $ builtinList
-                    [ (Symbol $ Identifier "expand")
-                    , builtinList
-                        [ Symbol $ Identifier "read-source"
-                        , Str $ "__bootstrap"
-                        ]
-                    ]
-
-    let env = sandboxEnv (PureSandbox { sources = srcs })
-
+evalAndPrintPureProgram :: Program -> IO ()
+evalAndPrintPureProgram prog = do
     _ <- TIT.timeIt $ do
-        let results = map prettyPrintVal $ evalProgram env program
+        let results = map prettyPrintVal $ evalPureProgram prog
         mapM_ TIO.putStrLn results
 
     pure ()
 
 demo :: IO ()
 demo = do
-    let lib_dir = "./code"
-    files <- browseCode lib_dir
-    mapM_ putStrLn files
-    fileEvalPrint
-        [ ("__bootstrap", "code/bootstrap.l")
-        , ("__bootstrap_from_letrec", "code/bootstrap_from_letrec.l")
-        , ("__main", "code/main.l")
-        , ("fact.l", "code/fact.l")
-        , ("libs/core.l", "code/libs/core.l")
-        ]
+    lib_dir <- F.resolveDir' "./code"
+    progOrErr <- runExceptT $ loadModuleBasedProgram $ ModuleBasedProgramInfo
+        { rootDirs = [lib_dir]
+        , moduleLoaderSrc = "core/bootstrap/module_loader.l"
+        , entryPointModule = "main.l"
+        , entryPointExpr = "(main)"
+        }
+
+    case progOrErr of
+        (Left err) -> do
+            TIO.putStrLn $ "error loading program:"
+            prettyPrintLoadingError err
+        (Right prog) -> do
+            evalAndPrintPureProgram prog

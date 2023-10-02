@@ -15,6 +15,7 @@ eval = eval'
 -- eval env ret v = eval' env ret (traceVal "eval" v)
 
 eval' :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
+eval' _ _ (Value _ (Fail x)) = error $ "instant crash on fail is enabled, so crashing: " <> (show x)
 eval' env ret (Value _ (Pair x xs))
     -- this is an S-expression. We will first evaluate its head (x),
     -- and then pass the result to `go`, which will determine what to do next

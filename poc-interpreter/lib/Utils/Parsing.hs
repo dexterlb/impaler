@@ -13,6 +13,8 @@ module Utils.Parsing
     , pss
     , forceParse
     , parseFile, parseFiles
+    , parseFullText
+    , Error, ErrorBundle
     ) where
 
 import Text.Megaparsec
@@ -28,6 +30,7 @@ import Control.Applicative (liftA2)
 import Control.Monad (forM)
 
 data Error = Error deriving stock (Eq, Ord, Show)
+type ErrorBundle = ParseErrorBundle Text Error
 
 type Parser = Parsec Error Text
 
@@ -42,6 +45,9 @@ pss = ps . T.pack
 
 ps :: Parseable t => Text -> t
 ps = forceParse parser
+
+parseFullText :: Parseable t => Text -> Text -> Either ErrorBundle t
+parseFullText name = parse (parser <* eof) (T.unpack name)
 
 parseFiles :: (Parseable t, Monoid t) => [FilePath] -> IO t
 parseFiles = (mconcat <$>) . (`forM` parseFile)

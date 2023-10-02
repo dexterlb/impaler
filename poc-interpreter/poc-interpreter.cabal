@@ -21,6 +21,7 @@ library
       DebugInfo
       Environments
       Evaluator
+      Loader
       PrimitiveData
       Sandbox
       Stringify
@@ -64,6 +65,7 @@ library
     , containers
     , extra
     , megaparsec
+    , mtl >=2.3.1
     , parser-combinators
     , path-io >=1.8
     , prettyprinter >=1.7

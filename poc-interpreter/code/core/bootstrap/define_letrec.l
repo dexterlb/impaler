@@ -39,7 +39,7 @@
                 ; we have now defined letrec and can continue bootstrapping from there
                 (eval
                   (cons (cons 'letrec letrec) builtins)
-                  (read-source "__bootstrap_from_letrec")))))
+                  (read-source "core/bootstrap/define_module_loader.l")))))
 
         ; definition of "let"
         (!lambda (letlist body)

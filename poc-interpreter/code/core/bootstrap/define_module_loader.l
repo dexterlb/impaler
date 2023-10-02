@@ -138,10 +138,13 @@
       (is-even? (!lambda (x) (!if (<= x 0) #t (is-odd?  (add x -1)))))
       (is-odd?  (!lambda (x) (!if (<= x 0) #f (is-even? (add x -1)))))
 
-      (baba (!lambda () (load-module "__main")))
-      (execute-main (!lambda () 
-        ((kv-get 'main (load-module "__main")))))
+      (baba (!lambda () (load-module "main.l")))
+      (execute-main (!lambda ()
+        ((kv-get 'main (load-module "main.l")))))
       (dyado (!lambda () (!or #f #f)))
+
+      (module-loader (!lambda (entrypoint-module-name entrypoint-expr)
+        ((kv-get 'main (load-module entrypoint-module-name)))))
 
       (debug-trace (!lambda (name val)
         (yield (list 'trace name val))
@@ -182,21 +185,22 @@
           (mul x (fact (add x -1)))))))
 
     ; (list 'factorial-of-5-is (fact 5) 'number-42-is-odd? (is-odd? 42))))))
-    (!let*
-      ( (fact5 (fact 5))
-        (odd26 (is-odd? 26)))
-
-      (list
-        (list 'baba (baba))
-        (list 'main (execute-main))
-        ; (list 'dyado (dyado))
-        ; (list 'factorial-of-5-is fact5)
-        ; (list 'number-26-is-odd? odd26)
-        ; (list 'broken-map
-        ;   (!if (fail? (try-map reciprocate (list 1 2 3 0 4)))
-        ;     'broken-map-failed-successfully
-        ;     'oh-no-broken-map-not-broken))
-        ; (list 'successful-map (try-map reciprocate (list 1 2 3 4)))
-        ))))
+    module-loader))
+    ; (!let*
+    ;   ( (fact5 (fact 5))
+    ;     (odd26 (is-odd? 26)))
+    ;
+    ;   (list
+    ;     ; (list 'baba (baba))
+    ;     (list 'main (execute-main))
+    ;     ; (list 'dyado (dyado))
+    ;     ; (list 'factorial-of-5-is fact5)
+    ;     ; (list 'number-26-is-odd? odd26)
+    ;     ; (list 'broken-map
+    ;     ;   (!if (fail? (try-map reciprocate (list 1 2 3 0 4)))
+    ;     ;     'broken-map-failed-successfully
+    ;     ;     'oh-no-broken-map-not-broken))
+    ;     ; (list 'successful-map (try-map reciprocate (list 1 2 3 4)))
+    ;     ))))
 
   (get-env))
