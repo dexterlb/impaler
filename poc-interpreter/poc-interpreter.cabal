@@ -21,11 +21,13 @@ library
       DebugInfo
       Environments
       Evaluator
+      Loader
       PrimitiveData
       Sandbox
       Stringify
       Testing
       Utils.Debug
+      Utils.Files
       Utils.Parsing
       ValueBuilders
       Values
@@ -63,7 +65,9 @@ library
     , containers
     , extra
     , megaparsec
+    , mtl >=2.3.1
     , parser-combinators
+    , path-io >=1.8
     , prettyprinter >=1.7
     , text
     , timeit >=2.0

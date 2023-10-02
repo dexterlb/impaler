@@ -36,10 +36,8 @@
 
                       (list (expand-lambda (list flist) result-body) (cons polyY arg-bodies))))))))
 
-                ; we have now defined letrec and can continue bootstrapping from there
-                (eval
-                  (cons (cons 'letrec letrec) builtins)
-                  (read-source "__bootstrap_from_letrec")))))
+                ; we have now defined letrec - return it!
+                letrec)))
 
         ; definition of "let"
         (!lambda (letlist body)

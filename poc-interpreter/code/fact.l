@@ -2,7 +2,7 @@
   (doc "this module calculates factorials :)")
   (exports fact)
   (imports
-    (builtin (lambda macroexpand quote mul add))
+    (builtin (lambda macroexpand quote <= mul add))
     ("libs/core.l" (if))
     )
   (defs
