@@ -265,7 +265,8 @@ demo = do
         { rootDirs = [lib_dir]
         , moduleLoaderSrc = "core/bootstrap/module_loader.l"
         , entryPointModule = "main.l"
-        , entryPointExpr = "(main)"
+        , entryPointFuncName = "main"
+        , entryPointFuncArgs = []
         }
 
     case progOrErr of

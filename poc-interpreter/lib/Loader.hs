@@ -18,7 +18,7 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import qualified Data.Map.Merge.Lazy as MM
 import Path.Posix (Path, Rel, Abs, Dir, File, toFilePath)
-import Control.Monad.Except (ExceptT, liftEither, liftIO)
+import Control.Monad.Except (ExceptT, liftEither, liftIO, throwError)
 import Data.Either.Extra (mapLeft)
 
 import AST
@@ -39,20 +39,23 @@ data ModuleBasedProgram = ModuleBasedProgram
     { sources :: Sources
     , moduleLoaderSrc :: SourceName
     , entryPointModule :: SourceName
-    , entryPointExpr :: AST
+    , entryPointFuncName :: Identifier
+    , entryPointFuncArgs :: [AST]
     }
 
 data ModuleBasedProgramInfo = ModuleBasedProgramInfo
     { rootDirs :: [Path Abs Dir]
     , moduleLoaderSrc :: Text
     , entryPointModule :: Text
-    , entryPointExpr :: Text
+    , entryPointFuncName :: Text
+    , entryPointFuncArgs :: [Text]
     }
 
 type LoadingErrorOrIO = ExceptT LoadingError IO
 
 data LoadingError
     = LoadingErrorWhileParsing Parsing.ErrorBundle
+    | InvalidFuncName AST
     deriving stock (Show)
 
 loadModuleBasedProgram :: ModuleBasedProgramInfo -> LoadingErrorOrIO (Program)
@@ -65,25 +68,34 @@ prepareModuleBasedProgram mbpi = do
     sources <- loadSourcesFromDirs mbpi.rootDirs
     let moduleLoaderSrc = SourceName mbpi.moduleLoaderSrc
     let entryPointModule = SourceName mbpi.entryPointModule
-    entryPointExpr <- liftEither $ mapLeft parseErrToLoadingErr $ Parsing.parseFullText "<entry point expression>" mbpi.entryPointExpr
+    entryPointFuncNameAST <- parseTextIO "<entrypoint function name>" mbpi.entryPointFuncName
+    entryPointFuncName <- ensureIdentifier entryPointFuncNameAST
+    entryPointFuncArgs <- mapM (parseTextIO "<entrypoint function argument>") mbpi.entryPointFuncArgs
     pure $ ModuleBasedProgram
         { sources = sources
         , moduleLoaderSrc = moduleLoaderSrc
         , entryPointModule = entryPointModule
-        , entryPointExpr = entryPointExpr
+        , entryPointFuncName = entryPointFuncName
+        , entryPointFuncArgs = entryPointFuncArgs
         }
+
+    where
+        ensureIdentifier :: AST -> LoadingErrorOrIO Identifier
+        ensureIdentifier (Symbol _ i) = pure i
+        ensureIdentifier ast = throwError $ InvalidFuncName ast
 
 parseErrToLoadingErr :: Parsing.ErrorBundle -> LoadingError
 parseErrToLoadingErr = LoadingErrorWhileParsing
 
 unModulise :: ModuleBasedProgram -> Program
-unModulise (ModuleBasedProgram { entryPointModule = (SourceName epm), entryPointExpr = epe, moduleLoaderSrc = (SourceName loader), sources })
+unModulise (ModuleBasedProgram { entryPointModule = (SourceName epm), entryPointFuncName = epfunc, entryPointFuncArgs = epargs, moduleLoaderSrc = (SourceName loader), sources })
     = Program { entryPoint = entryPoint, sources = sources }
     where
         -- the entrypoint looks like this:
         -- ((expand (read-source <loader>)) ; the loader evaluates to a function of 2 arguments:
         --      <entrypoint module>             ; the name of the entry-point module
-        --      (quote <entrypoint expr>))      ; quoted entry-point expression
+        --      (quote <entrypoint func name>)  ; quoted entry-point function name
+        --      (quote <entrypoint func args>)) ; quoted entry-point function name
         entryPoint =
             builtinASTList
                 [ builtinASTList
@@ -96,7 +108,11 @@ unModulise (ModuleBasedProgram { entryPointModule = (SourceName epm), entryPoint
                 , builtinASTStr epm
                 , builtinASTList
                     [ (builtinASTSymbol $ Identifier "quote")
-                    , epe
+                    , (builtinASTSymbol epfunc)
+                    ]
+                , builtinASTList
+                    [ (builtinASTSymbol $ Identifier "quote")
+                    , builtinASTList epargs
                     ]
                 ]
 
@@ -120,7 +136,7 @@ loadSource :: Text -> Path Abs File -> LoadingErrorOrIO AST
 loadSource name f = do
     -- TODO: capture exceptions as errors
     txt <- liftIO $ TIO.readFile $ toFilePath f
-    ast <- liftEither $ mapLeft parseErrToLoadingErr $ Parsing.parseFullText name txt
+    ast <- parseTextIO name txt
     pure ast
 
 
@@ -131,8 +147,15 @@ mergeSources = MM.merge MM.preserveMissing MM.preserveMissing
 noSources :: Sources
 noSources = Map.empty
 
+parseTextIO
+    :: Text -- ^ name of the expression
+    -> Text -- ^ the expression
+    -> LoadingErrorOrIO AST
+parseTextIO name txt = liftEither $ mapLeft parseErrToLoadingErr $ Parsing.parseFullText name txt
+
 prettyPrintLoadingError :: LoadingError -> IO ()
 prettyPrintLoadingError = TIO.putStrLn . prettifyLoadingError
 
 prettifyLoadingError :: LoadingError -> Text
 prettifyLoadingError (LoadingErrorWhileParsing p) = Text.pack $ Parsing.errorBundlePretty p
+prettifyLoadingError (InvalidFuncName v) = "invalid function name: " <> (Text.pack $ show v)

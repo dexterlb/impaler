@@ -143,8 +143,10 @@
         ((kv-get 'main (load-module "main.l")))))
       (dyado (!lambda () (!or #f #f)))
 
-      (module-loader (!lambda (entrypoint-module-name entrypoint-expr)
-        ((kv-get 'main (load-module entrypoint-module-name)))))
+      (module-loader (!lambda (entrypoint-module-name entrypoint-func-name entrypoint-func-args)
+        (apply
+          (kv-get entrypoint-func-name (load-module entrypoint-module-name))
+          entrypoint-func-args)))
 
       (debug-trace (!lambda (name val)
         (yield (list 'trace name val))
