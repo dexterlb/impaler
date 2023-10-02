@@ -184,23 +184,8 @@
           1
           (mul x (fact (add x -1)))))))
 
-    ; (list 'factorial-of-5-is (fact 5) 'number-42-is-odd? (is-odd? 42))))))
+    ;finally, return the module loader
     module-loader))
-    ; (!let*
-    ;   ( (fact5 (fact 5))
-    ;     (odd26 (is-odd? 26)))
-    ;
-    ;   (list
-    ;     ; (list 'baba (baba))
-    ;     (list 'main (execute-main))
-    ;     ; (list 'dyado (dyado))
-    ;     ; (list 'factorial-of-5-is fact5)
-    ;     ; (list 'number-26-is-odd? odd26)
-    ;     ; (list 'broken-map
-    ;     ;   (!if (fail? (try-map reciprocate (list 1 2 3 0 4)))
-    ;     ;     'broken-map-failed-successfully
-    ;     ;     'oh-no-broken-map-not-broken))
-    ;     ; (list 'successful-map (try-map reciprocate (list 1 2 3 4)))
-    ;     ))))
 
+  ; definition of 'builtins':
   (get-env))
