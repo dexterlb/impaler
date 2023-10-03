@@ -17,7 +17,7 @@ import Test.Hspec
 
 import Utils.Parsing (parseFile)
 
-sandboxDemo :: IO ()
+sandboxDemo :: Text -> IO ()
 sandboxDemo = demo
 
 -- TODO: instead of reading the files at runtime,

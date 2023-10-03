@@ -6,6 +6,7 @@ module Sandbox
 
 where
 
+import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import qualified Data.Map as Map
@@ -258,13 +259,13 @@ evalAndPrintPureProgram prog = do
 
     pure ()
 
-demo :: IO ()
-demo = do
+demo :: Text -> IO ()
+demo entryPointModule = do
     lib_dir <- F.resolveDir' "./code"
     progOrErr <- runExceptT $ loadModuleBasedProgram $ ModuleBasedProgramInfo
         { rootDirs = [lib_dir]
         , moduleLoaderSrc = "core/bootstrap/module_loader.l"
-        , entryPointModule = "main.l"
+        , entryPointModule = entryPointModule
         , entryPointFuncName = "main"
         , entryPointFuncArgs = []
         }
