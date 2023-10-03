@@ -123,7 +123,7 @@
           (null? (cdr spec-tail))
           (pair? (car spec-tail)))
 
-          (concat (map (!lambda (picker) (debug-trace 'picked (execute-picker picker items))) (car spec-tail)))
+          (concat (map (!lambda (picker) (execute-picker picker items)) (car spec-tail)))
           (make-fail (list 'expected-picker-list spec-tail)))))
 
       (execute-picker (!lambda (picker items)
@@ -134,14 +134,6 @@
 
       (sym-item-pair (!lambda (sym)
         (list cons (list quote sym) sym)))
-
-      (is-even? (!lambda (x) (!if (<= x 0) #t (is-odd?  (add x -1)))))
-      (is-odd?  (!lambda (x) (!if (<= x 0) #f (is-even? (add x -1)))))
-
-      (baba (!lambda () (load-module "main.l")))
-      (execute-main (!lambda ()
-        ((kv-get 'main (load-module "main.l")))))
-      (dyado (!lambda () (!or #f #f)))
 
       (module-loader (!lambda (entrypoint-module-name entrypoint-func-name entrypoint-func-args)
         (apply
@@ -178,13 +170,8 @@
                 (return (make-fail (list 'fail-in-element x (f x))))
                 (f x))) l))))))
 
-      (reciprocate (!lambda (x) (div 1 x)))
+      (reciprocate (!lambda (x) (div 1 x))))
 
-
-      (fact (!lambda (x)
-        (!if (<= x 0)
-          1
-          (mul x (fact (add x -1)))))))
 
     ;finally, return the module loader
     module-loader))
