@@ -17,8 +17,8 @@ import Test.Hspec
 
 import Utils.Parsing (parseFile)
 
-sandboxDemo :: Text -> IO ()
-sandboxDemo = demo
+sandboxDemo :: IO ()
+sandboxDemo = demo "demos/fact.l"
 
 -- TODO: instead of reading the files at runtime,
 -- use embedDir from here: https://hackage.haskell.org/package/file-embed-0.0.15.0/docs/Data-FileEmbed.html
