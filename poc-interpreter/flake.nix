@@ -75,7 +75,6 @@
           "timeit >= 2.0"
           "prettyprinter >= 1.7"
           "path-io >= 1.8"
-          "mtl >= 2.3.1"
         ];
       };
 
