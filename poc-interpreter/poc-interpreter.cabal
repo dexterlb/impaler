@@ -65,7 +65,9 @@ library
     , containers
     , extra
     , megaparsec
+    , mtl
     , parser-combinators
+    , path
     , path-io >=1.8
     , prettyprinter >=1.7
     , text

@@ -74,6 +74,8 @@
           "transformers"
           "timeit >= 2.0"
           "prettyprinter >= 1.7"
+          "path"
+          "mtl"
           "path-io >= 1.8"
         ];
       };
