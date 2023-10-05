@@ -1,7 +1,7 @@
 module ValueBuilders
     ( makeLambda
     , makeCallableFromReturnCallback
-    , doTheTruckersHitch
+    , polyFix
     )
 
 where
@@ -93,11 +93,18 @@ makeCallableFromReturnCallback f = builtinVal $ Func g
             = f arg -- ignore the callback's callback - code after "return" is not executed
         g _ _ val@(Value dinfo _) = f $ makeFailList dinfo "expected-one-arg-to-return" [val]
 
+-- | find the fixed point of a list of functions
+polyFix :: Callback v m -> Value v m -> m ()
+polyFix ret vListOfFuncs@(Value dinfo _)
+    | (Just listOfFuncs) <- valToList vListOfFuncs = doTheTruckersHitch dinfo ret listOfFuncs
+    | otherwise = ret $ makeFailList dinfo "expected-list-of-funcs" [vListOfFuncs]
+
 doTheTruckersHitch :: forall v m. () => DebugInfo -> Callback v m -> [Value v m] -> m ()
 doTheTruckersHitch dinfo ret fs = ret gsList
     where
         gs = map tie fs
         gsList = makeList dinfo gs
+
         tie :: Value v m -> Value v m
         tie f = Value dinfo $ Func $ \genv gret garg ->
             apply emptyEnv (\g -> apply genv gret g garg) f gsList

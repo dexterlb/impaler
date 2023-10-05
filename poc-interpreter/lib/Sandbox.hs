@@ -127,10 +127,7 @@ internalLambda _   val@(Value dinfo _)
     = makeFailList dinfo "lambda-malformed" [val]
 
 internalPolyFix :: Env v m -> Callback v m -> Value v m -> m ()
-internalPolyFix _ ret vListOfFuncs@(Value dinfo _)
---    | (Just listOfFuncs) <- valToList vListOfFuncs = ret $ doThePolyFix dinfo listOfFuncs
-    | (Just listOfFuncs) <- valToList vListOfFuncs = doTheTruckersHitch dinfo ret listOfFuncs
-    | otherwise = ret $ makeFailList dinfo "expected-list-of-funcs" [vListOfFuncs]
+internalPolyFix _ = polyFix
 
 readSource :: PureSandbox -> Value NoValue PureComp -> Value NoValue PureComp
 readSource (PureSandbox { sources }) (Value _ (Pair nameVal@(Value dinfo (Str name)) (Value _ Null)))
