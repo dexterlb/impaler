@@ -14,10 +14,14 @@
                 (make-fail (list 'list-of-letrec-elements-not-a-list l))))))))
             ; polyvariate Y combinator (operates on a list of functions instead of a single function)
             (polyY
-              (!lambda l
-                ((!lambda (x) (x x))
-                (!lambda (p)
-                  (map (!lambda (li) (!lambda args (apply (apply li (p p)) args))) l))))))
+              ; if poly-fix is already available, use it
+              ; TODO: more civilised way to check that this exists
+              (!if (func? poly-fix)
+                poly-fix
+                (!lambda l
+                  ((!lambda (x) (x x))
+                  (!lambda (p)
+                    (map (!lambda (li) (!lambda args (apply (apply li (p p)) args))) l)))))))
 
           (!let
             ; definition of "letrec"

@@ -1,6 +1,7 @@
 module ValueBuilders
     ( makeLambda
     , makeCallableFromReturnCallback
+    , doTheTruckersHitch
     )
 
 where
@@ -91,4 +92,14 @@ makeCallableFromReturnCallback f = builtinVal $ Func g
         g _ _ (Value _ (Pair arg (Value _ Null)))
             = f arg -- ignore the callback's callback - code after "return" is not executed
         g _ _ val@(Value dinfo _) = f $ makeFailList dinfo "expected-one-arg-to-return" [val]
+
+doTheTruckersHitch :: forall v m. () => DebugInfo -> Callback v m -> [Value v m] -> m ()
+doTheTruckersHitch dinfo ret fs = ret gsList
+    where
+        gs = map tie fs
+        gsList = makeList dinfo gs
+        tie :: Value v m -> Value v m
+        tie f = Value dinfo $ Func $ \genv gret garg ->
+            apply emptyEnv (\g -> apply genv gret g garg) f gsList
+
 

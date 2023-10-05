@@ -58,7 +58,8 @@ sandboxEnv sb = envUnion specialForms $ envFromList
     [ ("yield", makeCPSFunc (\ret val -> (yieldResult val) >> (ret $ builtinVal Null)))
 
     -- core stuff
-    , ("lambda", makeEnvAwareCPSFunc internalLambda)
+    , ("lambda", makeEnvAwarePureFunc internalLambda)
+    , ("poly-fix", makeEnvAwareCPSFunc internalPolyFix)
     , ("eval", makeCPSFunc internalEval)
     , ("apply", makeCPSFunc internalApply)
     , ("call/cc", makeCPSFunc internalCallCC)
@@ -118,12 +119,18 @@ internalApply ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-two-arg
 internalMakeFail :: Value v m -> Value v m
 internalMakeFail v@(Value dinfo _) = makeFail dinfo v
 
-internalLambda :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
-internalLambda env ret (Value dinfo (Pair arg bodyVal))
-    | (Just body) <- valToList bodyVal = ret $ makeLambda dinfo env arg body
-    | otherwise = ret $ makeFailList dinfo "lambda-body-not-list" [bodyVal]
-internalLambda _   ret val@(Value dinfo _)
-    = ret $ makeFailList dinfo "lambda-malformed" [val]
+internalLambda :: forall v m. (EvalWorld v m) => Env v m -> Value v m -> Value v m
+internalLambda env (Value dinfo (Pair arg bodyVal))
+    | (Just body) <- valToList bodyVal = makeLambda dinfo env arg body
+    | otherwise = makeFailList dinfo "lambda-body-not-list" [bodyVal]
+internalLambda _   val@(Value dinfo _)
+    = makeFailList dinfo "lambda-malformed" [val]
+
+internalPolyFix :: Env v m -> Callback v m -> Value v m -> m ()
+internalPolyFix _ ret vListOfFuncs@(Value dinfo _)
+--    | (Just listOfFuncs) <- valToList vListOfFuncs = ret $ doThePolyFix dinfo listOfFuncs
+    | (Just listOfFuncs) <- valToList vListOfFuncs = doTheTruckersHitch dinfo ret listOfFuncs
+    | otherwise = ret $ makeFailList dinfo "expected-list-of-funcs" [vListOfFuncs]
 
 readSource :: PureSandbox -> Value NoValue PureComp -> Value NoValue PureComp
 readSource (PureSandbox { sources }) (Value _ (Pair nameVal@(Value dinfo (Str name)) (Value _ Null)))
