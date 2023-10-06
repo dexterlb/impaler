@@ -96,18 +96,3 @@
 
 ; definition of "builtins"
 (get-env))
-
-; TODO: there's a conceptual problem with "gensym".
-; Since our macros have "runtime" semantics, given the current
-; version of gensym (which is impure and returns a new value each time)
-; the result of the macro *depends* on the context in which it is called
-; Thus, we can't expect something like (!lambda (x) (foo (!my-macro baba)))
-; to be partially evaluated to (!lambda (x) (the-result-of-applying-my-macro-to-baba)),
-; even though baba (the symbol 'baba) is a constant with respect to my-macro,
-; if my-macro contains calls to gensym (since they will return different
-; results for every value of x). We need another version of gensym
-; that will be constant in this case.
-; I propose a (gensym name . args), where the returned symbol is
-; a hash of args; Thus, we'll be able to write macros that only
-; depend on their arguments. However, is this enough to ensure
-; hygiene? To be continued!
