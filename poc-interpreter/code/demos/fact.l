@@ -3,7 +3,7 @@
   (exports main)
   (imports
     (builtin (lambda macroexpand quote <= mul add))
-    ("libs/core.l" (if))
+    ("core/prelude.l" (if))
     )
   (defs
     '(main (!lambda () (fact 5)))
