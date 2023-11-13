@@ -18,6 +18,9 @@ build-type:     Simple
 library
   exposed-modules:
       AST
+      Cli.Main
+      Cli.Parser
+      Cli.Runner
       DebugInfo
       Environments
       Evaluator
@@ -39,6 +42,7 @@ library
       lib
   default-extensions:
       BlockArguments
+      DataKinds
       DeriveAnyClass
       DeriveGeneric
       DerivingStrategies
@@ -66,6 +70,8 @@ library
     , extra
     , megaparsec
     , mtl
+    , optparse-applicative
+    , optparse-generic
     , parser-combinators
     , path
     , path-io >=1.8
@@ -85,6 +91,7 @@ executable poc-interpreter
       app
   default-extensions:
       BlockArguments
+      DataKinds
       DeriveAnyClass
       DeriveGeneric
       DerivingStrategies
@@ -122,6 +129,7 @@ test-suite poc-interpreter-test
       test
   default-extensions:
       BlockArguments
+      DataKinds
       DeriveAnyClass
       DeriveGeneric
       DerivingStrategies

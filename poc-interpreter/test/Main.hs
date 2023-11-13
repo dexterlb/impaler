@@ -1,7 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Main
     ( main
-    , sandboxDemo )
+    , sandboxDemo
+    , exprTestMain )
 where
 
 import PseudoMacros
@@ -17,14 +18,21 @@ import Test.Hspec
 
 import Utils.Parsing (parseFile)
 
+import Cli.Main (runCli)
+
 sandboxDemo :: IO ()
 sandboxDemo = demo "demos/fact.l"
 
 -- TODO: instead of reading the files at runtime,
 -- use embedDir from here: https://hackage.haskell.org/package/file-embed-0.0.15.0/docs/Data-FileEmbed.html
 -- this will make it work under nix, etc
+
 main :: IO ()
-main = do
+-- main = sandboxDemo
+main = runCli
+
+exprTestMain :: IO ()
+exprTestMain = do
     let dir = (takeDirectory $ $__FILE__) </> "expr-tests"
     testFiles <- listDirectory dir
     let testPaths = map (dir </>) testFiles

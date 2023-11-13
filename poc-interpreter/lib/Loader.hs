@@ -2,9 +2,11 @@ module Loader
     ( ModuleBasedProgramInfo(..)
     , ModuleBasedProgram(..)
     , Program(..)
+    , ProgramInfo(..)
     , Sources
     , SourceName(..)
     , loadModuleBasedProgram
+    , loadProgram
     , prepareModuleBasedProgram
     , prettyPrintLoadingError
     , prettifyLoadingError
@@ -34,6 +36,11 @@ data Program = Program
     , entryPoint :: AST   -- ^ expression to evaluate
     }
 
+data ProgramInfo = ProgramInfo
+    { rootDirs :: [Path Abs Dir]
+    , entryPointExpr :: Text
+    }
+
 
 data ModuleBasedProgram = ModuleBasedProgram
     { sources :: Sources
@@ -57,6 +64,15 @@ data LoadingError
     = LoadingErrorWhileParsing Parsing.ErrorBundle
     | InvalidFuncName AST
     deriving stock (Show)
+
+loadProgram :: ProgramInfo -> LoadingErrorOrIO (Program)
+loadProgram pinfo = do
+    sources <- loadSourcesFromDirs pinfo.rootDirs
+    entryPoint <- parseTextIO "<entrypoint expression>" pinfo.entryPointExpr
+    pure $ Program
+        { sources = sources
+        , entryPoint = entryPoint
+        }
 
 loadModuleBasedProgram :: ModuleBasedProgramInfo -> LoadingErrorOrIO (Program)
 loadModuleBasedProgram mbpi = do

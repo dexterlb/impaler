@@ -35,6 +35,7 @@
       ];
       default-extensions = [
         "BlockArguments"
+        "DataKinds"
         "DeriveAnyClass"
         "DeriveGeneric"
         "DerivingStrategies"
@@ -77,6 +78,8 @@
           "path"
           "mtl"
           "path-io >= 1.8"
+          "optparse-applicative"
+          "optparse-generic"
         ];
       };
 

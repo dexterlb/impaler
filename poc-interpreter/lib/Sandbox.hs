@@ -2,6 +2,7 @@ module Sandbox
     ( demo
     , sandboxEnv
     , sandboxEnvWithoutSources
+    , evalAndPrintPureProgram
     )
 
 where
