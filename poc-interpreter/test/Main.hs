@@ -18,8 +18,6 @@ import Test.Hspec
 
 import Utils.Parsing (parseFile)
 
-import Cli.Main (runCli)
-
 sandboxDemo :: IO ()
 sandboxDemo = demo "demos/fact.l"
 
@@ -28,8 +26,7 @@ sandboxDemo = demo "demos/fact.l"
 -- this will make it work under nix, etc
 
 main :: IO ()
--- main = sandboxDemo
-main = runCli
+main = sandboxDemo
 
 exprTestMain :: IO ()
 exprTestMain = do
