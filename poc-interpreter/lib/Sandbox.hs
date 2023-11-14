@@ -1,25 +1,21 @@
 module Sandbox
-    ( demo
-    , sandboxEnv
+    ( sandboxEnv
     , sandboxEnvWithoutSources
     , evalAndPrintPureProgram
     )
 
 where
 
-import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import qualified Data.Map as Map
 import Control.Monad.Trans.State.Lazy (State, get, put, execState)
-import Control.Monad.Except (runExceptT)
 
 import qualified System.TimeIt as TIT
 
 import Values
 import Environments
 import Evaluator
-import qualified Utils.Files as F
 import PrimitiveData
 import Stringify
 import ValueBuilders
@@ -278,21 +274,3 @@ evalAndPrintPureProgram prog = do
         mapM_ TIO.putStrLn results
 
     pure ()
-
-demo :: Text -> IO ()
-demo entryPointModule = do
-    lib_dir <- F.resolveDir' "./code"
-    progOrErr <- runExceptT $ loadModuleBasedProgram $ ModuleBasedProgramInfo
-        { rootDirs = [lib_dir]
-        , moduleLoaderSrc = "core/bootstrap/module_loader.l"
-        , entryPointModule = entryPointModule
-        , entryPointFuncName = "main"
-        , entryPointFuncArgs = []
-        }
-
-    case progOrErr of
-        (Left err) -> do
-            TIO.putStrLn $ "error loading program:"
-            prettyPrintLoadingError err
-        (Right prog) -> do
-            evalAndPrintPureProgram prog
