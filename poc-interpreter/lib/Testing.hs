@@ -9,6 +9,7 @@ module Testing
 where
 
 import Data.Text (Text)
+import qualified Data.Text as T
 
 import Values
 import AST
@@ -16,6 +17,7 @@ import Evaluator
 
 import Utils.Parsing (Parseable, Parser, parser)
 import qualified Utils.Parsing as P
+import Stringify (prettyPrintVal)
 
 newtype ExprTests = ExprTests [ExprTest]
 
@@ -57,13 +59,20 @@ data TestResult v m
     | TestNoVal
         { expectedVal :: Value v m
         }
-    deriving stock (Show)
 
 instance Eq (TestResult v m) where
     TestOK == TestOK = True
     (TestFail _ _) == (TestFail _ _) = True
     (TestNoVal _) == (TestNoVal _) = True
     _ == _ = False
+
+instance (Show v) => Show (TestResult v m) where
+    show TestOK = "test ok"
+    show (TestNoVal { expectedVal })
+        = T.unpack $ "got no value when expecting: \n" <> (prettyPrintVal expectedVal)
+    show (TestFail { expectedVal, actualVal })
+        = T.unpack $ "got:\n" <> (prettyPrintVal actualVal)
+        <> "\nwhen expecting:\n" <> (prettyPrintVal expectedVal)
 
 runExprTest :: (Computation v m) => Env v m -> ExprTest -> TestResult v m
 runExprTest env (ExprTest { input, expectedOutput })
