@@ -1,24 +1,21 @@
 module Sandbox
-    ( demo
-    , sandboxEnv
+    ( sandboxEnv
     , sandboxEnvWithoutSources
+    , evalAndPrintPureProgram
     )
 
 where
 
-import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Text.IO as TIO
 import qualified Data.Map as Map
 import Control.Monad.Trans.State.Lazy (State, get, put, execState)
-import Control.Monad.Except (runExceptT)
 
 import qualified System.TimeIt as TIT
 
 import Values
 import Environments
 import Evaluator
-import qualified Utils.Files as F
 import PrimitiveData
 import Stringify
 import ValueBuilders
@@ -58,7 +55,8 @@ sandboxEnv sb = envUnion specialForms $ envFromList
     [ ("yield", makeCPSFunc (\ret val -> (yieldResult val) >> (ret $ builtinVal Null)))
 
     -- core stuff
-    , ("lambda", makeEnvAwareCPSFunc internalLambda)
+    , ("lambda", makeEnvAwarePureFunc internalLambda)
+    , ("poly-fix", makeEnvAwareCPSFunc internalPolyFix)
     , ("eval", makeCPSFunc internalEval)
     , ("apply", makeCPSFunc internalApply)
     , ("call/cc", makeCPSFunc internalCallCC)
@@ -118,12 +116,15 @@ internalApply ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-two-arg
 internalMakeFail :: Value v m -> Value v m
 internalMakeFail v@(Value dinfo _) = makeFail dinfo v
 
-internalLambda :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
-internalLambda env ret (Value dinfo (Pair arg bodyVal))
-    | (Just body) <- valToList bodyVal = ret $ makeLambda dinfo env arg body
-    | otherwise = ret $ makeFailList dinfo "lambda-body-not-list" [bodyVal]
-internalLambda _   ret val@(Value dinfo _)
-    = ret $ makeFailList dinfo "lambda-malformed" [val]
+internalLambda :: forall v m. (EvalWorld v m) => Env v m -> Value v m -> Value v m
+internalLambda env (Value dinfo (Pair arg bodyVal))
+    | (Just body) <- valToList bodyVal = makeLambda dinfo env arg body
+    | otherwise = makeFailList dinfo "lambda-body-not-list" [bodyVal]
+internalLambda _   val@(Value dinfo _)
+    = makeFailList dinfo "lambda-malformed" [val]
+
+internalPolyFix :: Env v m -> Callback v m -> Value v m -> m ()
+internalPolyFix _ = polyFix
 
 readSource :: PureSandbox -> Value NoValue PureComp -> Value NoValue PureComp
 readSource (PureSandbox { sources }) (Value _ (Pair nameVal@(Value dinfo (Str name)) (Value _ Null)))
@@ -207,6 +208,21 @@ cdr :: Value v m -> Value v m
 cdr (Value _ (Pair (Value _ (Pair _ b)) (Value _ Null))) = b
 cdr arg@(Value dinfo _) = makeFailList dinfo "expected-pair" [arg]
 
+
+-- | TODO: there's a conceptual problem with "gensym".
+-- | Since our macros have "runtime" semantics, given the current
+-- | version of gensym (which is impure and returns a new value each time)
+-- | the result of the macro *depends* on the context in which it is called
+-- | Thus, we can't expect something like (!lambda (x) (foo (!my-macro baba)))
+-- | to be partially evaluated to (!lambda (x) (the-result-of-applying-my-macro-to-baba)),
+-- | even though baba (the symbol 'baba) is a constant with respect to my-macro,
+-- | if my-macro contains calls to gensym (since they will return different
+-- | results for every value of x). We need another version of gensym
+-- | that will be constant in this case.
+-- | I propose a (gensym name . args), where the returned symbol is
+-- | a hash of args; Thus, we'll be able to write macros that only
+-- | depend on their arguments. However, is this enough to ensure
+-- | hygiene? To be continued!
 gensym :: Value v PureComp -> PureComp (Value v PureComp)
 gensym (Value dinfo (Pair (Value _ (Str name)) (Value _ Null))) = PureComp $ do
     oldState <- get
@@ -258,21 +274,3 @@ evalAndPrintPureProgram prog = do
         mapM_ TIO.putStrLn results
 
     pure ()
-
-demo :: Text -> IO ()
-demo entryPointModule = do
-    lib_dir <- F.resolveDir' "./code"
-    progOrErr <- runExceptT $ loadModuleBasedProgram $ ModuleBasedProgramInfo
-        { rootDirs = [lib_dir]
-        , moduleLoaderSrc = "core/bootstrap/module_loader.l"
-        , entryPointModule = entryPointModule
-        , entryPointFuncName = "main"
-        , entryPointFuncArgs = []
-        }
-
-    case progOrErr of
-        (Left err) -> do
-            TIO.putStrLn $ "error loading program:"
-            prettyPrintLoadingError err
-        (Right prog) -> do
-            evalAndPrintPureProgram prog

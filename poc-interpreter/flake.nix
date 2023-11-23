@@ -35,6 +35,7 @@
       ];
       default-extensions = [
         "BlockArguments"
+        "DataKinds"
         "DeriveAnyClass"
         "DeriveGeneric"
         "DerivingStrategies"
@@ -74,8 +75,10 @@
           "transformers"
           "timeit >= 2.0"
           "prettyprinter >= 1.7"
+          "path"
+          "mtl"
           "path-io >= 1.8"
-          "mtl >= 2.3.1"
+          "optparse-generic"
         ];
       };
 

@@ -1,6 +1,6 @@
 module Main (main) where
 
-import Sandbox
+import Cli.Main (runCli)
 
 main :: IO ()
-main = demo
+main = runCli

@@ -1,11 +1,9 @@
 module Loader
-    ( ModuleBasedProgramInfo(..)
-    , ModuleBasedProgram(..)
-    , Program(..)
+    ( Program(..)
+    , ProgramInfo(..)
     , Sources
     , SourceName(..)
-    , loadModuleBasedProgram
-    , prepareModuleBasedProgram
+    , loadProgram
     , prettyPrintLoadingError
     , prettifyLoadingError
     )
@@ -18,11 +16,10 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import qualified Data.Map.Merge.Lazy as MM
 import Path.Posix (Path, Rel, Abs, Dir, File, toFilePath)
-import Control.Monad.Except (ExceptT, liftEither, liftIO, throwError)
+import Control.Monad.Except (ExceptT, liftEither, liftIO)
 import Data.Either.Extra (mapLeft)
 
 import AST
-import PrimitiveData
 import qualified Utils.Files as F
 import qualified Utils.Parsing as Parsing
 
@@ -34,22 +31,11 @@ data Program = Program
     , entryPoint :: AST   -- ^ expression to evaluate
     }
 
-
-data ModuleBasedProgram = ModuleBasedProgram
-    { sources :: Sources
-    , moduleLoaderSrc :: SourceName
-    , entryPointModule :: SourceName
-    , entryPointFuncName :: Identifier
-    , entryPointFuncArgs :: [AST]
-    }
-
-data ModuleBasedProgramInfo = ModuleBasedProgramInfo
+data ProgramInfo = ProgramInfo
     { rootDirs :: [Path Abs Dir]
-    , moduleLoaderSrc :: Text
-    , entryPointModule :: Text
-    , entryPointFuncName :: Text
-    , entryPointFuncArgs :: [Text]
+    , entryPointExpr :: Text
     }
+
 
 type LoadingErrorOrIO = ExceptT LoadingError IO
 
@@ -58,64 +44,17 @@ data LoadingError
     | InvalidFuncName AST
     deriving stock (Show)
 
-loadModuleBasedProgram :: ModuleBasedProgramInfo -> LoadingErrorOrIO (Program)
-loadModuleBasedProgram mbpi = do
-    mbp <- prepareModuleBasedProgram mbpi
-    pure $ unModulise mbp
-
-prepareModuleBasedProgram :: ModuleBasedProgramInfo -> LoadingErrorOrIO (ModuleBasedProgram)
-prepareModuleBasedProgram mbpi = do
-    sources <- loadSourcesFromDirs mbpi.rootDirs
-    let moduleLoaderSrc = SourceName mbpi.moduleLoaderSrc
-    let entryPointModule = SourceName mbpi.entryPointModule
-    entryPointFuncNameAST <- parseTextIO "<entrypoint function name>" mbpi.entryPointFuncName
-    entryPointFuncName <- ensureIdentifier entryPointFuncNameAST
-    entryPointFuncArgs <- mapM (parseTextIO "<entrypoint function argument>") mbpi.entryPointFuncArgs
-    pure $ ModuleBasedProgram
+loadProgram :: ProgramInfo -> LoadingErrorOrIO (Program)
+loadProgram pinfo = do
+    sources <- loadSourcesFromDirs pinfo.rootDirs
+    entryPoint <- parseTextIO "<entrypoint expression>" pinfo.entryPointExpr
+    pure $ Program
         { sources = sources
-        , moduleLoaderSrc = moduleLoaderSrc
-        , entryPointModule = entryPointModule
-        , entryPointFuncName = entryPointFuncName
-        , entryPointFuncArgs = entryPointFuncArgs
+        , entryPoint = entryPoint
         }
-
-    where
-        ensureIdentifier :: AST -> LoadingErrorOrIO Identifier
-        ensureIdentifier (Symbol _ i) = pure i
-        ensureIdentifier ast = throwError $ InvalidFuncName ast
 
 parseErrToLoadingErr :: Parsing.ErrorBundle -> LoadingError
 parseErrToLoadingErr = LoadingErrorWhileParsing
-
-unModulise :: ModuleBasedProgram -> Program
-unModulise (ModuleBasedProgram { entryPointModule = (SourceName epm), entryPointFuncName = epfunc, entryPointFuncArgs = epargs, moduleLoaderSrc = (SourceName loader), sources })
-    = Program { entryPoint = entryPoint, sources = sources }
-    where
-        -- the entrypoint looks like this:
-        -- ((expand (read-source <loader>)) ; the loader evaluates to a function of 2 arguments:
-        --      <entrypoint module>             ; the name of the entry-point module
-        --      (quote <entrypoint func name>)  ; quoted entry-point function name
-        --      (quote <entrypoint func args>)) ; quoted entry-point function name
-        entryPoint =
-            builtinASTList
-                [ builtinASTList
-                    [ (builtinASTSymbol $ Identifier "expand")
-                    , builtinASTList
-                        [ builtinASTSymbol $ Identifier "read-source"
-                        , builtinASTStr $ loader
-                        ]
-                    ]
-                , builtinASTStr epm
-                , builtinASTList
-                    [ (builtinASTSymbol $ Identifier "quote")
-                    , (builtinASTSymbol epfunc)
-                    ]
-                , builtinASTList
-                    [ (builtinASTSymbol $ Identifier "quote")
-                    , builtinASTList epargs
-                    ]
-                ]
-
 
 loadSourcesFromDirs :: [Path Abs Dir] -> LoadingErrorOrIO (Sources)
 loadSourcesFromDirs dirs = (foldr mergeSources noSources) <$> (mapM loadSourcesFromDir dirs)

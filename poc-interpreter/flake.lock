@@ -2,15 +2,14 @@
   "nodes": {
     "hix": {
       "inputs": {
-        "nixpkgs": "nixpkgs",
-        "thax": "thax"
+        "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1696340787,
-        "narHash": "sha256-Gvswsox0I27cociI5DnzX7BfIsgwNHJYByulKmGksjI=",
+        "lastModified": 1698691616,
+        "narHash": "sha256-nlZlxp6UQju+c5J+mvj4Orz+Xmew5A7lJY4HhMd/n3M=",
         "owner": "tek",
         "repo": "hix",
-        "rev": "2b4d5e78d33004d54eb13c32be55d9fec691f294",
+        "rev": "b0c5fd50d00da7b04b4d70008c94ba494aad7286",
         "type": "github"
       },
       "original": {
@@ -39,21 +38,6 @@
     "root": {
       "inputs": {
         "hix": "hix"
-      }
-    },
-    "thax": {
-      "locked": {
-        "lastModified": 1691091387,
-        "narHash": "sha256-i1dc/XqsIQizZ09o2ltX10zhV/3LCc0ZUqsS7enyN+g=",
-        "owner": "tek",
-        "repo": "thax",
-        "rev": "10fa7482d171739414fc0d829005b4055799e4c6",
-        "type": "github"
-      },
-      "original": {
-        "owner": "tek",
-        "repo": "thax",
-        "type": "github"
       }
     }
   },
