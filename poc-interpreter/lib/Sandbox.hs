@@ -16,6 +16,7 @@ import qualified System.TimeIt as TIT
 import Values
 import Environments
 import Evaluator
+import PartialEvaluator
 import PrimitiveData
 import Stringify
 import ValueBuilders
@@ -68,6 +69,9 @@ sandboxEnv sb = envUnion specialForms $ envFromList
     -- module utils
     , ("read-source", makePureFunc $ readSource sb)
 
+    -- partial evaluation
+    , ("peval", makeCPSFunc internalPEval)
+
     -- data utils
     , ("add", makePureFunc $ vffoldr adder (builtinVal $ Num 0))
     , ("mul", makePureFunc $ vffoldr multiplier (builtinVal $ Num 1))
@@ -95,6 +99,15 @@ internalEval ret (Value dinfo (Pair envRepr (Value _ (Pair val (Value _ Null))))
         envResult :: Maybe (Env v m)
         envResult = envFromKVList envRepr
 internalEval ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-two-args" [v]
+
+internalPEval :: forall v m. (EvalWorld v m) => Callback v m -> Value v m -> m ()
+internalPEval ret (Value dinfo (Pair envRepr (Value _ (Pair val (Value _ Null)))))
+    | (Just env) <- envResult = peval env ret val
+    | otherwise = ret $ makeFailList dinfo "malformed-environment-arg" [envRepr]
+    where
+        envResult :: Maybe (Env v m)
+        envResult = envFromKVList envRepr
+internalPEval ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-two-args" [v]
 
 internalCallCC :: Callback v m -> Value v m -> m ()
 internalCallCC ret (Value dinfo (Pair f (Value _ Null)))
