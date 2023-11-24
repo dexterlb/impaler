@@ -65,6 +65,10 @@ data ValueItem v m
     -- | handling errors easier
     | Fail              (Value v m)
 
+    -- | Special marker used during partial evaluation that denotes
+    -- | a fully-evaluated expression. Semantically equivalent to quote.
+    | PEConst           (Value v m)
+
     -- | Encapsulate user-defined data structures (the user being
     -- | the one who embeds the language). Things like lazy lists,
     -- | hash maps, file handles, etc, will all go here
@@ -215,6 +219,7 @@ instance (Show v) => (Show (ValueItem v m)) where
     show (Bool False)  = "#f"
     show (Pair a b)    = "(" <> (show a) <> " . " <> (show b) <> ")"
     show (Fail err)    = "FAIL<" <> (show err) <> ">"
+    show (PEConst val)    = "pe-const<" <> (show val) <> ">"
     show Null          = "null"
     show (Func _) = "<external func>"
     show (ExternalVal v) = show v
