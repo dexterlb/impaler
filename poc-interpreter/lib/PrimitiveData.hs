@@ -1,11 +1,10 @@
 module PrimitiveData
-    ( Identifier(..)
-    )
-
+  ( Identifier (..),
+  )
 where
 
-import Data.Text (Text)
 import Data.String (IsString)
+import Data.Text (Text)
 
 newtype Identifier = Identifier Text
-    deriving newtype (Show, Eq, Ord, IsString)
+  deriving newtype (Show, Eq, Ord, IsString)
