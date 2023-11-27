@@ -1,20 +1,19 @@
 {-# LANGUAGE TemplateHaskell #-}
+
 module Main
-    ( main
-    , exprTestMain )
+  ( main,
+    exprTestMain,
+  )
 where
 
-import PseudoMacros
-
-import Sandbox
-import Testing
-
 import Data.Text (Text)
-import qualified Data.Text as T
+import Data.Text qualified as T
+import PseudoMacros
+import Sandbox
 import System.Directory (listDirectory)
-import System.FilePath ((</>), takeDirectory)
+import System.FilePath (takeDirectory, (</>))
 import Test.Hspec
-
+import Testing
 import Utils.Parsing (parseFile)
 
 -- TODO: instead of reading the files at runtime,
@@ -26,36 +25,37 @@ main = exprTestMain
 
 exprTestMain :: IO ()
 exprTestMain = do
-    let dir = (takeDirectory $ $__FILE__) </> "expr-tests"
-    testFiles <- listDirectory dir
-    let testPaths = map (dir </>) testFiles
-    groups <- loadExprTestGroups testPaths
-    hspec $ do
-        mapM_ specExprTestGroup groups
+  let dir = (takeDirectory $ $__FILE__) </> "expr-tests"
+  testFiles <- listDirectory dir
+  let testPaths = map (dir </>) testFiles
+  groups <- loadExprTestGroups testPaths
+  hspec $ do
+    mapM_ specExprTestGroup groups
 
 data ExprTestGroup = ExprTestGroup
-    { name :: Text
-    , tests :: [ExprTest]
-    }
+  { name :: Text,
+    tests :: [ExprTest]
+  }
 
 loadExprTestGroups :: [FilePath] -> IO [ExprTestGroup]
 loadExprTestGroups = mapM loadExprTestGroup
 
 loadExprTestGroup :: FilePath -> IO ExprTestGroup
 loadExprTestGroup path = do
-    (ExprTests tests) <- parseFile path
-    pure $ ExprTestGroup
-        { name = T.pack path
-        , tests = tests
-        }
+  (ExprTests tests) <- parseFile path
+  pure $
+    ExprTestGroup
+      { name = T.pack path,
+        tests = tests
+      }
 
 specExprTestGroup :: ExprTestGroup -> Spec
-specExprTestGroup (ExprTestGroup { name, tests }) = do
-    describe (T.unpack name) $ mapM_ specExprTest tests
+specExprTestGroup (ExprTestGroup {name, tests}) = do
+  describe (T.unpack name) $ mapM_ specExprTest tests
 
 specExprTest :: ExprTest -> Spec
-specExprTest test@(ExprTest{ name }) = do
-    it (T.unpack name) $ do
-        (runExprTest env test) `shouldBe` TestOK
-    where
-        env = sandboxEnvWithoutSources
+specExprTest test@(ExprTest {name}) = do
+  it (T.unpack name) $ do
+    (runExprTest env test) `shouldBe` TestOK
+  where
+    env = sandboxEnvWithoutSources
