@@ -19,7 +19,7 @@ peval' :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> Value v m ->
 peval' env ret (Value dinfo (Pair x xs)) =
   -- this is an S-expression. We will first evaluate its head (x),
   -- and then pass the result to `go`, which will determine what to do next
-  eval env go x
+  peval env go x
   where
     go :: Value v m -> m ()
     go (Value _ (SpecialForm sf)) =
