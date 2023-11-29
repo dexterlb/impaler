@@ -4,6 +4,7 @@ module Environments
     envFromList,
     envToList,
     envGet,
+    envLookup,
     envUnion,
     emptyEnv,
     envFromKVList,
@@ -28,6 +29,9 @@ envToList (Env e) = Map.toList e
 
 emptyEnv :: Env v m
 emptyEnv = Env Map.empty
+
+envLookup :: Identifier -> Env v m -> Maybe (Value v m)
+envLookup i (Env e) = Map.lookup i e
 
 envGet :: DebugInfo -> Identifier -> Env v m -> Value v m
 envGet dinfo i (Env e)
