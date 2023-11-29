@@ -3,7 +3,7 @@ module PartialEvaluator
   )
 where
 
--- import Utils.Debug
+import Utils.Debug
 
 import Environments
 import Evaluator
@@ -11,9 +11,8 @@ import Values
 
 -- | partially evaluate the given value under the given environment
 peval :: (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
-peval = peval'
-
--- peval env ret v = peval' env ret (traceVal "peval" v)
+-- peval = peval'
+peval env ret v = peval' env ret (traceVal "peval" v)
 
 peval' :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
 peval' env ret (Value dinfo (Pair x xs)) =
