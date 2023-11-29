@@ -12,7 +12,7 @@ import Values
 -- | partially evaluate the given value under the given environment
 peval :: (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
 -- peval = peval'
-peval env ret v = peval' env ret (traceVal "peval" v)
+peval env ret arg = peval' env (\result -> ret $ traceResult "peval" arg result) arg
 
 peval' :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
 peval' env ret (Value dinfo (Pair x xs)) =
@@ -21,7 +21,7 @@ peval' env ret (Value dinfo (Pair x xs)) =
   peval env go x
   where
     go :: Value v m -> m ()
-    go (Value _ (SpecialForm sf)) =
+    go (Value _ (PEConst (Value _ (SpecialForm sf)))) =
       -- the "special" in SpecialForm refers to the fact that
       -- special forms don't evaluate their arguments
       papplySpecialForm env ret sf xs
