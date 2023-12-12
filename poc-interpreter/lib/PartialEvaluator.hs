@@ -31,7 +31,7 @@ peval' env ret (Value dinfo (Pair x xs)) =
 
     applyOnPEArgs :: Value v m -> Value v m -> m ()
     applyOnPEArgs peHead peArgs
-      | (Value _ (PEConst f)) <- peHead, (Just args) <- unpartialList peArgs = apply env ret f args
+      | (Value _ (PEConst f)) <- peHead, (Just args) <- unpartialList peArgs = apply env (ret . peConst) f args
       -- TODO: handle functions that know how to partially apply themselves
       | otherwise = ret $ Value dinfo (Pair peHead peArgs)
 
