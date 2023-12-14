@@ -31,6 +31,8 @@ peval' env ret (Value dinfo (Pair x xs)) =
 
     applyOnPEArgs :: Value v m -> Value v m -> m ()
     applyOnPEArgs peHead peArgs
+      -- BUG: we regard a function as completely evaluateable even though it might peek at its
+      -- environment, and some variables might be undefined there. This needs to be addressed.
       | (Value _ (PEConst f)) <- peHead, (Just args) <- unpartialList peArgs = apply env (ret . peConst) f args
       -- TODO: handle functions that know how to partially apply themselves
       | otherwise = ret $ Value dinfo (Pair peHead peArgs)
