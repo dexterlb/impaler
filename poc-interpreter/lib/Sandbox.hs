@@ -291,7 +291,13 @@ makeNoPEImpl :: EnvlessProcedure v m -> Value v m
 makeNoPEImpl = builtinVal . Func . makeNoPEImplFunc
 
 makeDefaultPEImplFunc :: EnvlessProcedure v m -> FuncObj v m
-makeDefaultPEImplFunc = error "not implemented"
+makeDefaultPEImplFunc proc = FuncObj
+  { applyProc = \_env -> proc
+  , partiallyApplyProc = \_env -> peIfArgsAvailable proc
+  }
+
+peIfArgsAvailable :: EnvlessProcedure v m -> Callback v m -> Value v m -> Maybe (m ())
+peIfArgsAvailable = error "not implemented"
 
 makeNoPEImplFunc :: EnvlessProcedure v m -> FuncObj v m
 makeNoPEImplFunc proc = FuncObj
@@ -300,7 +306,7 @@ makeNoPEImplFunc proc = FuncObj
   }
 
 makePureProc :: (Value v m -> Value v m) -> EnvlessProcedure v m
-makePureProc = error "not implemented"
+makePureProc f ret arg = ret $ f arg
 
 makeEnvAwarePureProc :: (Monad m) => (Env v m -> Value v m -> Value v m) -> Procedure v m
 makeEnvAwarePureProc f = makeEnvAwareProc (\env args -> pure $ f env args)
