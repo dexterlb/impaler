@@ -28,6 +28,7 @@ module Values
     encodeFail,
     weaklyEqual,
     weaklyEqualItems,
+    peConst,
   )
 where
 
@@ -240,3 +241,6 @@ class (EvalWorld v m) => Computation v m where
   resultsOf m
     | (Just r) <- resultOf m = [r]
     | otherwise = []
+
+peConst :: Value v m -> Value v m
+peConst v@(Value dinfo _) = Value dinfo $ PEConst v

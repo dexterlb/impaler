@@ -4,11 +4,13 @@ module Environments
     envFromList,
     envToList,
     envGet,
+    partialEnvGet,
     envLookup,
     envUnion,
     emptyEnv,
     envFromKVList,
     envToKVList,
+    partialEnvFromKVList,
     specialForms,
   )
 where
@@ -38,6 +40,12 @@ envGet dinfo i (Env e)
   | (Just v) <- Map.lookup i e = v
   | otherwise = makeFailList dinfo "not-defined" [Value dinfo $ Symbol i]
 
+-- | TODO: refactor
+partialEnvGet :: DebugInfo -> Identifier -> Env v m -> Value v m
+partialEnvGet dinfo i (Env e)
+  | (Just v) <- Map.lookup i e = v
+  | otherwise = peConst $ makeFailList dinfo "not-defined" [Value dinfo $ Symbol i]
+
 envUnion :: Env v m -> Env v m -> Env v m
 envUnion (Env a) (Env b) = Env $ Map.union a b
 
@@ -53,6 +61,20 @@ envToKVList dinfo = (foldr go (Value dinfo Null)) . envToList
   where
     go :: (Identifier, Value v m) -> Value v m -> Value v m
     go (k, v) rest = Value dinfo $ Pair (Value dinfo $ Pair (Value dinfo $ Symbol k) v) rest
+
+-- | partialEnvFromKVList creates a "partial" environment:
+-- | the given kvlist may contain bare keys in addition to the key-value
+-- | pairs. A bare key represents an unknown variable, and is passed as-is
+-- | in the resulting environment. Known values are passwd as PEConst's.
+partialEnvFromKVList :: Value v m -> Maybe (Env v m)
+partialEnvFromKVList (Value _ Null) = Just $ emptyEnv
+partialEnvFromKVList (Value _ (Pair ksym@(Value _ (Symbol k)) xs)) = do
+  rest <- partialEnvFromKVList xs
+  pure $ envAdd k ksym rest
+partialEnvFromKVList (Value _ (Pair (Value _ (Pair (Value _ (Symbol k)) v)) xs)) = do
+  rest <- partialEnvFromKVList xs
+  pure $ envAdd k (peConst v) rest
+partialEnvFromKVList _ = fail "required a kvlist that may optionally contain bare keys, got something else"
 
 specialForms :: Env v m
 specialForms =

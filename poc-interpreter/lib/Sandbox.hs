@@ -100,7 +100,7 @@ internalPEval ret (Value dinfo (Pair envRepr (Value _ (Pair val (Value _ Null)))
   | otherwise = ret $ makeFailList dinfo "malformed-environment-arg" [envRepr]
   where
     envResult :: Maybe (Env v m)
-    envResult = envFromKVList envRepr
+    envResult = partialEnvFromKVList envRepr
 internalPEval ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-two-args" [v]
 
 internalCallCC :: Callback v m -> Value v m -> m ()
