@@ -30,25 +30,50 @@ peval' env ret (Value dinfo (Pair x xs)) =
 
     applyOnPEArgs :: Value v m -> Value v m -> m ()
     applyOnPEArgs peHead peArgs
-      -- BUG: we regard a function as completely evaluateable even though it might peek at its
-      -- environment, and some variables might be undefined there. This needs to be addressed.
-      | (Value _ (PEConst f)) <- peHead, (Just args) <- unpartialList peArgs = apply env (ret . peConst) f args
+      | (Value _ (PEConst f)) <- peHead, (Just resultComp) <- partiallyApply env ret f peArgs = resultComp
       -- TODO: handle functions that know how to partially apply themselves
       | otherwise = ret $ Value dinfo (Pair peHead peArgs)
 peval' env ret (Value dinfo (Symbol i)) = ret $ partialEnvGet dinfo i env
-peval' _ ret v@(Value _ _) = ret $ peConst v
-
 -- all other values evaluate to themselves instantly
 -- FIXME: or do they? what about external values that
 -- are composite data structures that may contain
 -- unevaluated programs? huuuuh?
+peval' _ ret v@(Value _ _) = ret $ peConst v
+
+-- | execute the given callable
+partiallyApply ::
+  -- | the calling environment (because some special functions want to see it)
+  Env v m ->
+  -- | callback to call with result
+  Callback v m ->
+  -- | callable
+  Value v m ->
+  -- | argument
+  Value v m ->
+  Maybe (m ())
+partiallyApply = partiallyApply'
+
+-- partiallyApply env ret callable arg = partiallyApply' env ret callable ((traceVals "partiallyApply" [callable, arg]) !! 1)
+
+partiallyApply' ::
+  -- | the calling environment (because some special functions want to see it)
+  Env v m ->
+  -- | callback to call with result
+  Callback v m ->
+  -- | callable
+  Value v m ->
+  -- | argument
+  Value v m ->
+  Maybe (m ())
+partiallyApply' env ret (Value _ (Func f)) arg = undefined f env ret arg
+partiallyApply' _ ret expr@(Value dinfo _) _ = Just $ ret $ makeFailList dinfo "dont-know-how-to-call" [expr]
 
 partiallyApplySpecialForm :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> SpecialForm -> Value v m -> m ()
 partiallyApplySpecialForm = applySpecialForm' peval peConst
 
-unpartialList :: Value v m -> Maybe (Value v m)
-unpartialList v@(Value _ Null) = pure v
-unpartialList (Value dinfo (Pair (Value _ (PEConst x)) xs)) = do
-  unpxs <- unpartialList xs
-  pure $ Value dinfo (Pair x unpxs)
-unpartialList _ = Nothing
+-- unpartialList :: Value v m -> Maybe (Value v m)
+-- unpartialList v@(Value _ Null) = pure v
+-- unpartialList (Value dinfo (Pair (Value _ (PEConst x)) xs)) = do
+--   unpxs <- unpartialList xs
+--   pure $ Value dinfo (Pair x unpxs)
+-- unpartialList _ = Nothing

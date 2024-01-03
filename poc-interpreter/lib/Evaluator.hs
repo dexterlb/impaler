@@ -62,7 +62,7 @@ apply' ::
   -- | argument
   Value v m ->
   m ()
-apply' env ret (Value _ (Func f)) arg = f env ret arg
+apply' env ret (Value _ (Func (FuncObj {applyProc}))) arg = applyProc env ret arg
 apply' _ ret expr@(Value dinfo _) _ = ret $ makeFailList dinfo "dont-know-how-to-call" [expr]
 
 -- | evaluate all elements in a given list

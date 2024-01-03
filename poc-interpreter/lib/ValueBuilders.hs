@@ -25,7 +25,12 @@ makeLambda ::
   Value v m
 makeLambda dinfo env arg body
   | (Right spec) <- mspec =
-      Value dinfo $ Func $ lambdaCallable dinfo body spec env
+      Value dinfo $
+        Func $
+          FuncObj
+            { applyProc = lambdaCallable dinfo body spec env,
+              partiallyApplyProc = partialLambdaCallable dinfo body spec env
+            }
   | (Left err) <- mspec = Value dinfo err
   where
     mspec = makeArgSpec arg
@@ -60,6 +65,22 @@ lambdaCallable dinfoDef body argspec closure _ ret arg@(Value dinfoCallsite _)
   where
     envOrErr :: CouldFail v m (Env v m)
     envOrErr = makeLambdaEnv argspec arg closure
+
+partialLambdaCallable ::
+  --  forall v m.
+  --  (EvalWorld v m) =>
+  DebugInfo ->
+  -- | body
+  [Value v m] ->
+  -- | formal arguments (argument names)
+  ArgSpec ->
+  -- | closure that comes with the lambda
+  Env v m ->
+  Env v m ->
+  Callback v m ->
+  Value v m ->
+  Maybe (m ())
+partialLambdaCallable = error "not implemented"
 
 evalLambdaBody ::
   forall v m.
@@ -103,7 +124,7 @@ bindArgs (ArgSpec {argNames, tailName}) val
   | otherwise = returnFailList "incorrect-arguments" []
 
 makeCallableFromReturnCallback :: forall v m. () => Callback v m -> Value v m
-makeCallableFromReturnCallback f = builtinVal $ Func g
+makeCallableFromReturnCallback f = builtinVal $ Func $ fixmePartialFunc "partial evaluation of lambda closures not yet implemented" g
   where
     g :: Env v m -> Callback v m -> Value v m -> m ()
     g _ _ (Value _ (Pair arg (Value _ Null))) =
@@ -123,5 +144,12 @@ doTheTruckersHitch dinfo ret fs = ret gsList
     gsList = makeList dinfo gs
 
     tie :: Value v m -> Value v m
-    tie f = Value dinfo $ Func $ \genv gret garg ->
+    tie f = Value dinfo $ Func $ fixmePartialFunc "partial evaluation of fixpoint knots not yet implemented" $ \genv gret garg ->
       apply emptyEnv (\g -> apply genv gret g garg) f gsList
+
+fixmePartialFunc :: String -> (Env v m -> Callback v m -> Value v m -> m ()) -> FuncObj v m
+fixmePartialFunc msg f =
+  FuncObj
+    { applyProc = f,
+      partiallyApplyProc = \_ _ _ -> error msg
+    }

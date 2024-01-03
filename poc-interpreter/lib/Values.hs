@@ -1,12 +1,16 @@
 module Values
   ( Value (..),
     ValueItem (..),
+    FuncObj (..),
     Computation (..),
     SpecialForm (..),
     EvalWorld,
     Callback,
     Env (..),
     ArgSpec (..),
+    Procedure,
+    PartialProcedure,
+    EnvlessProcedure,
     astToVal,
     builtinVal,
     builtinList,
@@ -55,7 +59,7 @@ data ValueItem v m
     SpecialForm SpecialForm
   | -- | A callable object that may optionally have side effects and/or
     -- | Look at the environment (the latter should really not be abused)
-    Func (Env v m -> Callback v m -> Value v m -> m ())
+    Func (FuncObj v m)
   | -- | Since we don't have things like panics or exceptions,
     -- | we encapsulate failure as a separate value type, which makes
     -- | handling errors easier
@@ -74,6 +78,16 @@ data ValueItem v m
   | Bool Bool
 
 type Callback v m = (Value v m) -> m ()
+
+type Procedure v m = Env v m -> Callback v m -> Value v m -> m ()
+type EnvlessProcedure v m = Callback v m -> Value v m -> m ()
+
+type PartialProcedure v m = Env v m -> Callback v m -> Value v m -> Maybe (m ())
+
+data FuncObj v m = FuncObj
+  { applyProc :: Procedure v m,
+    partiallyApplyProc :: PartialProcedure v m
+  }
 
 newtype Env v m = Env (Map Identifier (Value v m))
 
