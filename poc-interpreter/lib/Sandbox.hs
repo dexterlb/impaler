@@ -297,7 +297,9 @@ makeDefaultPEImplFunc proc = FuncObj
   }
 
 peIfArgsAvailable :: EnvlessProcedure v m -> Callback v m -> Value v m -> Maybe (m ())
-peIfArgsAvailable = error "not implemented"
+peIfArgsAvailable f ret peArgs
+  | (Just args) <- unpartialList peArgs = Just $ f ret args
+  | otherwise = Nothing
 
 makeNoPEImplFunc :: EnvlessProcedure v m -> FuncObj v m
 makeNoPEImplFunc proc = FuncObj
@@ -336,3 +338,10 @@ evalAndPrintPureProgram prog = do
     mapM_ TIO.putStrLn results
 
   pure ()
+
+unpartialList :: Value v m -> Maybe (Value v m)
+unpartialList v@(Value _ Null) = pure v
+unpartialList (Value dinfo (Pair (Value _ (PEConst x)) xs)) = do
+  unpxs <- unpartialList xs
+  pure $ Value dinfo (Pair x unpxs)
+unpartialList _ = Nothing

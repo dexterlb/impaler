@@ -65,15 +65,8 @@ partiallyApply' ::
   -- | argument
   Value v m ->
   Maybe (m ())
-partiallyApply' env ret (Value _ (Func f)) arg = undefined f env ret arg
+partiallyApply' env ret (Value _ (Func (FuncObj {partiallyApplyProc}))) arg = partiallyApplyProc env ret arg
 partiallyApply' _ ret expr@(Value dinfo _) _ = Just $ ret $ makeFailList dinfo "dont-know-how-to-call" [expr]
 
 partiallyApplySpecialForm :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> SpecialForm -> Value v m -> m ()
 partiallyApplySpecialForm = applySpecialForm' peval peConst
-
--- unpartialList :: Value v m -> Maybe (Value v m)
--- unpartialList v@(Value _ Null) = pure v
--- unpartialList (Value dinfo (Pair (Value _ (PEConst x)) xs)) = do
---   unpxs <- unpartialList xs
---   pure $ Value dinfo (Pair x unpxs)
--- unpartialList _ = Nothing
