@@ -13,7 +13,6 @@
 
     envs.dev = {
       buildInputs = [ config.pkgs.cabal-install ];
-      profiling = true;
     };
 
     cabal = {

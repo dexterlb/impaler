@@ -9,15 +9,15 @@ where
 import Environments
 import Values
 
--- import Utils.Debug
+import Utils.Debug
 
 type Evaluator v m = Env v m -> Callback v m -> Value v m -> m ()
 
 -- | eval the given value under the given environment
 eval :: (EvalWorld v m) => Evaluator v m
-eval = eval'
+-- eval = eval'
 
--- eval env ret v = eval' env ret (traceVal "eval" v)
+eval env ret v = eval' env ret (traceVal "eval" v)
 
 eval' :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
 eval' _ _ (Value _ (Fail x)) = error $ "instant crash on fail is enabled, so crashing: " <> (show x)
@@ -39,6 +39,7 @@ eval' _ ret v = ret $ v -- all other values evaluate to themselves
 
 -- | execute the given callable
 apply ::
+  (EvalWorld v m) =>
   -- | the calling environment (because some special functions want to see it)
   Env v m ->
   -- | callback to call with result
@@ -48,9 +49,8 @@ apply ::
   -- | argument
   Value v m ->
   m ()
-apply = apply'
-
--- apply env ret callable arg = apply' env ret callable ((traceVals "apply" [callable, arg]) !! 1)
+-- apply = apply'
+apply env ret callable arg = apply' env ret callable ((traceVals "apply" [callable, arg]) !! 1)
 
 apply' ::
   -- | the calling environment (because some special functions want to see it)

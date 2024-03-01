@@ -3,6 +3,7 @@ module PartialEvaluator
   )
 where
 
+import qualified Data.Text as Text
 import Environments
 import Evaluator
 import Utils.Debug
@@ -11,7 +12,7 @@ import Values
 -- | partially evaluate the given value under the given environment
 peval :: (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
 -- peval = peval'
-peval env ret arg = peval' env (\result -> ret $ traceResult "peval" arg result) arg
+peval env ret arg = peval' env (\result -> ret $ traceResult "end peval" arg result) (traceVal "begin peval" arg)
 
 peval' :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> Value v m -> m ()
 peval' env ret (Value dinfo (Pair x xs)) =
@@ -31,13 +32,9 @@ peval' env ret (Value dinfo (Pair x xs)) =
     applyOnPEArgs :: Value v m -> Value v m -> m ()
     applyOnPEArgs peHead peArgs
       | (Value _ (PEConst f)) <- peHead, (Just resultComp) <- partiallyApply env ret f peArgs = resultComp
-      -- TODO: handle functions that know how to partially apply themselves
       | otherwise = ret $ Value dinfo (Pair peHead peArgs)
 peval' env ret (Value dinfo (Symbol i)) = ret $ partialEnvGet dinfo i env
 -- all other values evaluate to themselves instantly
--- FIXME: or do they? what about external values that
--- are composite data structures that may contain
--- unevaluated programs? huuuuh?
 peval' _ ret v@(Value _ _) = ret $ peConst v
 
 -- | execute the given callable
@@ -66,7 +63,7 @@ partiallyApply' ::
   Value v m ->
   Maybe (m ())
 partiallyApply' env ret (Value _ (Func (FuncObj {partiallyApplyProc}))) arg = partiallyApplyProc env ret arg
-partiallyApply' _ ret expr@(Value dinfo _) _ = Just $ ret $ makeFailList dinfo "dont-know-how-to-call" [expr]
+partiallyApply' _ ret expr@(Value dinfo _) _ = Just $ ret $ makeFailList dinfo "dont-know-how-to-call-pe" [expr]
 
 partiallyApplySpecialForm :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> SpecialForm -> Value v m -> m ()
-partiallyApplySpecialForm = applySpecialForm' peval peConst
+partiallyApplySpecialForm env ret form val = applySpecialForm' peval peConst env (\result -> ret $ traceResult ("end partially apply special form " <> (Text.pack $ show form) <> " on") val result) form $ traceVal ("begin partially apply special form " <> (Text.pack $ show form) <> " on") val

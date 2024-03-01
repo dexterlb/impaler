@@ -25,6 +25,7 @@ library
       Environments
       Evaluator
       Loader
+      PartialEvaluator
       PrimitiveData
       Sandbox
       Stringify
@@ -70,7 +71,6 @@ library
     , extra
     , megaparsec
     , mtl
-    , optparse-applicative
     , optparse-generic
     , parser-combinators
     , path

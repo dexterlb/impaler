@@ -80,6 +80,7 @@ data ValueItem v m
 type Callback v m = (Value v m) -> m ()
 
 type Procedure v m = Env v m -> Callback v m -> Value v m -> m ()
+
 type EnvlessProcedure v m = Callback v m -> Value v m -> m ()
 
 type PartialProcedure v m = Env v m -> Callback v m -> Value v m -> Maybe (m ())
