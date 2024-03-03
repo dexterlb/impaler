@@ -27,6 +27,7 @@
 \usepackage{amsmath,amsfonts,amsthm}
 \usepackage[text={150mm,210mm},centering]{geometry}
 \usepackage{xspace}
+\setlength{\parindent}{0pt}
 
 \newcommand\ds{\displaystyle}
 \newcommand\etal{et al.\xspace}
@@ -61,6 +62,8 @@
 
 \renewcommand\emailaddrname{{\itshape E-mail}}
 
+\newcommand\lang{ILD }
+
 \maketitle
 \begin{center}
 \FMI
@@ -76,42 +79,28 @@
 
 \bigskip
 
+В този доклад представям език за програмиране \lang, който е подобен на
+езиците LISP и Scheme и има следните отличителни признаци:
 
+\begin{enumerate}
+    \item \lang е малък: единствените специални форми, дефинирани в основния
+    език са \texttt{quote} и \texttt{expand}
+    \item \lang е достатъчно изразителен за да може често-срещани в програмирането
+    конструкции да бъдат имплементирани чрез метапрограмиране
+    \item \lang поддържа continuations като първокласен обект (подобно на Scheme)
+    \item\label{immutable} Основните структури от данни в \lang не позволяват промяна (mutability)
+    \item\label{isolatedsiblings} По време на оценяване на програма, оценката на произволен
+    израз от нея не зависи от неговите съседни изрази
+    \item\label{runtimemacros} За разлика от LISP, където макросите и основният код
+    се оценяват в две отделни фази, в \lang макросите се оценяват в същия контекст,
+    в който и обикновените функции.
+\end{enumerate}
 
+\lang е учебен език, замислен да позволява лесни експерименти с частично оценяване.
+Целта на по-нататъчните изследвания е да се оцени възможността за използване
+на частично оценяване като стратегия за елиминиране на част от допълнителните изчисления,
+причинени от голямото количество метапрограмиране до степен, която би направила
+такъв минимален език пригоден за използване върху реални задачи.
 
 \bigskip
-Този шаблон ще Ви помогне да форматирате Вашето резюме.
-Моля въведете текста, запазвайки формата и стиловете.
-Цитиране на литературни източници не е задължително.
-
-Примери:
-
-\begin{theorem}\label{th:1}
-Текст на теоремата.
-\end{theorem}
-
-\begin{defn}\label{def:1}
-Текст на дефиницията.
-\end{defn}
-
-Виж~\cite{BS,Tagi} и Теорема~\ref{th:1}.
-
-\begin{thebibliography}{99}
-
-\bibitem{BS} E. Bannai, N.\,J.\,A. Sloane,
-Uniqueness of certain spherical codes,
-\emph{Can. J. Math.} 33, 1981, 437--449.
-
-\bibitem{CS}
-J.\,H. Conway, N.\,J.\,A. Sloane,
-\emph{Sphere Packings, Lattices and Groups}, New York, Springer-Verlag, 1988.
-
-\bibitem{Tagi}
-Я. Тагамлицки,
-\emph{Диференциално смятане},
-V изд.,
-София, Наука и изкуство, 1971.
-
-\end{thebibliography}
-
 \end{document}

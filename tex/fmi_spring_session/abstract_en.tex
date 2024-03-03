@@ -11,6 +11,7 @@
 \oddsidemargin 0.5in
 \evensidemargin 0.5in
 \parskip 1mm
+\setlength{\parindent}{0pt}
 \def\ds{\displaystyle}
 
 % margin note
@@ -29,7 +30,6 @@
 % \address{Baba \\
 % foo
 % }
-\setlength{\parindent}{0pt}
 \email{angel@qtrp.org}
 
 % \date{\today}
@@ -54,7 +54,7 @@ Faculty of Mathematics and Informatics, Sofia University
 
 \section*{Abstract}
 
-I present a programming language called \lang that loosely resembles Lisp
+I present a programming language called \lang that loosely resembles LISP
 and Scheme, having the following distinctive features:
 
 \begin{enumerate}
@@ -65,8 +65,8 @@ and Scheme, having the following distinctive features:
     \item \lang supports first-class continuations (like Scheme)
     \item\label{immutable} Basic data structures in \lang are immutable
     \item\label{isolatedsiblings} While evaluating a program, the value of an expression does not
-    depend on the values of its siblings
-    \item\label{runtimemacros} Lisp uses two-phase approach for evaluating macros and code,
+    depend on its siblings
+    \item\label{runtimemacros} LISP uses two-phase approach for evaluating macros and code,
     while in \lang calling a macro is done in the same context as
     calling a regular function.
 \end{enumerate}
