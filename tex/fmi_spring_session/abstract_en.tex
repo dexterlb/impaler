@@ -13,12 +13,23 @@
 \parskip 1mm
 \def\ds{\displaystyle}
 
-\title[Title]{\bf A functional programming language designed for easy partial evaluation}
+% margin note
+\newcommand\mnote[1]{\leavevmode\marginpar{\scriptsize{ #1 }}}
+\newcommand\note[1]{\mnote{\textcolor{orange}{ #1 }}}
+% margin note marked fixed
+\newcommand\fixednote[1]{}
+\newcommand\discuss[1]{\mnote{ #1 \textcolor{red}{discuss}}}
+\newcommand\reword[1]{\textcolor{orange}{ #1 }}
+
+\newcommand\lang{ILD }
+
+\title[Title]{\bf A minimal functional programming language designed for easy partial evaluation}
 
 \author[Angel]{Angel Angelov}
 % \address{Baba \\
 % foo
 % }
+\setlength{\parindent}{0pt}
 \email{angel@qtrp.org}
 
 % \date{\today}
@@ -43,11 +54,29 @@ Faculty of Mathematics and Informatics, Sofia University
 
 \section*{Abstract}
 
-I present a programming language that loosely resembles Scheme, while
-differing on a few key points:
-\begin{itemize}
-    \item foo
-\end{itemize}
+I present a programming language called \lang that loosely resembles Lisp
+and Scheme, having the following distinctive features:
+
+\begin{enumerate}
+    \item \lang is very small: the core language has only two special
+    forms (\texttt{quote}, \texttt{expand})
+    \item \lang is expressive enough that common programming constructs may
+    be implemented via metaprogramming
+    \item \lang supports first-class continuations (like Scheme)
+    \item\label{immutable} Basic data structures in \lang are immutable
+    \item\label{isolatedsiblings} While evaluating a program, the value of an expression does not
+    depend on the values of its siblings
+    \item\label{runtimemacros} Lisp uses two-phase approach for evaluating macros and code,
+    while in \lang calling a macro is done in the same context as
+    calling a regular function.
+\end{enumerate}
+
+\lang is a research language meant to facillitate experiments with partial evaluation.
+The goal of further research is to determine whether partial evaluation might be
+a viable strategy for eliminating some of the overhead caused by extensive metaprogramming,
+making such a minimal language performant enough for real-world use.
+
+
 
 % \begin{thebibliography}{99}
 %
