@@ -54,29 +54,26 @@ Faculty of Mathematics and Informatics, Sofia University
 
 \section*{Abstract}
 
-I present a programming language called \lang that loosely resembles LISP
-and Scheme, having the following distinctive features:
+We present a new programming language called \lang that loosely resembles LISP
+and Scheme, designed with the following distinctive features:
 
 \begin{enumerate}
-    \item \lang is very small: the core language has only two special
-    forms (\texttt{quote}, \texttt{expand})
-    \item \lang is expressive enough that common programming constructs may
-    be implemented via metaprogramming
-    \item \lang supports first-class continuations (like Scheme)
-    \item\label{immutable} Basic data structures in \lang are immutable
-    \item\label{isolatedsiblings} While evaluating a program, the value of an expression does not
-    depend on its siblings
-    \item\label{runtimemacros} LISP uses two-phase approach for evaluating macros and code,
-    while in \lang calling a macro is done in the same context as
-    calling a regular function.
+    \item minimal syntax: the core language has only two special
+    forms, \texttt{quote} and \texttt{expand}
+    \item sufficient expressivity to allow the implementation of common programming constructs
+    via metaprogramming
+    \item support for first-class continuations akin to Scheme
+    \item\label{immutable} immutability of basic data structures
+    \item\label{isolatedsiblings} isolation: the value of an expression does not
+    depend on its sibling expressions
+    \item\label{runtimemacros} calling of macros is performed in the same context as
+    calling of regular functions, unlike LISP where a two-phase approach is used for evaluating macros and code
 \end{enumerate}
 
 \lang is a research language meant to facillitate experiments with partial evaluation.
 The goal of further research is to determine whether partial evaluation might be
 a viable strategy for eliminating some of the overhead caused by extensive metaprogramming,
 making such a minimal language performant enough for real-world use.
-
-
 
 % \begin{thebibliography}{99}
 %
