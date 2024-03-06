@@ -11,12 +11,53 @@
     flake-utils.lib.eachSystem flake-utils.lib.allSystems (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        latexTools = latex_tools.lib.mkLatexTools { inherit nixpkgs pkgs; };
+        texPkgs = [
+          "subfiles"
+          "scheme-small"
+          "unicode-math"
+          "svg" "trimspaces" "catchfile"
+          "transparent"
+          "latex-bin" "latexmk"
+          "lualatex-math"
+          "selnolig"
+          "enumitem"
+          "wrapfig"
+          "extsizes" "euenc" "tools"
+          "hyperref" "pdftexcmds" "infwarerr"
+          "kvoptions" "l3kernel" "zref"
+          "fontspec"
+          "libertine"
+          "geometry" "titling" "mathabx" "csquotes"
+          "standalone" "cleveref" "ebproof"
+          "appendix"
+          "svn-prov"
+          "luatex85"
+          "minibox" "pbox" "mdframed" "needspace" "adjustbox"
+          "lstaddons"
+          "biblatex"
+          "beamer"
+          "cyrillic"
+          "babel-bulgarian" "babel-english"
+        ];
+        latexTools = latex_tools.lib.mkLatexTools { inherit nixpkgs pkgs texPkgs; };
         fmiSpringSession = (import ./fmi_spring_session) { inherit pkgs latexTools; };
+        thesis = (import ./thesis) { inherit pkgs latexTools; };
       in
       {
-        packages = fmiSpringSession.packages // {
-
+        packages
+          = fmiSpringSession.packages
+          // thesis.packages
+          // rec {
+          all = pkgs.stdenvNoCC.mkDerivation rec {
+            name = "all";
+            phases = [ "installPhase" "fixupPhase" ];
+            installPhase = ''
+              mkdir -p $out/thesis $out/fmi_spring_session
+              cp -rf ${thesis.packages.thesis}/* $out/thesis/
+              cp -rf ${fmiSpringSession.packages.fmi_spring_session_all}/* $out/fmi_spring_session/
+            '';
+          };
+          default = all;
         };
       }
     );
