@@ -158,6 +158,9 @@
 \PassOptionsToPackage{hyphens}{url}
 \urlstyle{same}
 
+\usepackage[outputdir=dist]{minted}
+\setminted{linenos}
+
 \graphicspath{{../images/}}
 
 \hypersetup{
@@ -167,7 +170,9 @@
   urlcolor=blue,
   pdfcreator={LaTeX}}
 
-\title{Операционни системи}
-\subtitle{ФМИ}
+\newcommand\lang{ILD }
+
+\title{The \lang language}
+\subtitle{FMI}
 \author{}
 \date{}

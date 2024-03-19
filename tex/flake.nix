@@ -38,6 +38,7 @@
           "beamer"
           "cyrillic"
           "babel-bulgarian" "babel-english"
+          "minted"
         ];
         latexTools = latex_tools.lib.mkLatexTools { inherit nixpkgs pkgs texPkgs; };
         fmiSpringSession = (import ./fmi_spring_session) { inherit pkgs latexTools; };
@@ -59,6 +60,18 @@
           };
           default = all;
         };
+        devShell = pkgs.mkShell
+          {
+            packages = latexTools.deps;
+            LOCALE_ARCHIVE = "${pkgs.glibcLocales}/lib/locale/locale-archive";
+            shellHook = ''
+              . ${latexTools.latexShellInit}
+
+              echo "for any latex file, you can use:"
+              echo " - 'latex_builder build foo.tex' to build dist/foo.pdf"
+              echo " - 'latex_builder watch foo.tex' to build automatically on file change."
+            '';
+          };
       }
     );
 }
