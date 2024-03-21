@@ -1,5 +1,9 @@
 \begin{document}
 
+\begin{frame}
+\maketitle
+\end{frame}
+
 \begin{frame}[fragile]{Example code in \lang}
 
 \begin{minted}{lisp}
@@ -7,8 +11,8 @@
   (doc "this module calculates factorials")
   (exports main)
   (imports
-    (builtin (mul add <= macroexpand lambda quote))
-    ("core/prelude.l" (if)))
+    (builtin (mul add <= expand lambda quote))
+    ("core/prelude.l" (if const fn)))
   (defs
     (!const main (!lambda () (fact 5)))
 
@@ -25,39 +29,43 @@
   (doc "this module calculates factorials")
   (exports main)
   (imports
-    (builtin (mul add <= macroexpand lambda quote))
-    ("core/prelude.l" (if)))
+    (builtin (mul add <= expand lambda quote))
+    ("core/prelude.l" (if const fn)))
   (defs
-    '(main (!lambda () (fact 5)))
+    (expand const (quote main) (quote (expand lambda (quote ()) (quote (fact 5)))))
 
-    '(fact (!lambda (x)
-      (!if (<= x 0)
-        1
-        (mul x (fact (add x -1))))))))
+    (expand fn (quote (fact x))
+      (quote (expand if (quote (<= x 0))
+        (quote 1)
+        (quote (mul x (fact (add x -1)))))))))
 \end{minted}
 \end{frame}
 
 \begin{frame}[fragile]{Goals}
 \begin{itemize}
-    \item Expressiveness
-        \begin{itemize}
-            \item Full LISP-like macros allow implementation of flow control, DSLs, custom syntax
-            \item Control over continuations allows implementation of error handling, state machines, async execution
-        \end{itemize}
     \item Minimality of the core language
         \begin{itemize}
-            \item Only two special forms: \verb|quote| and \verb|macroexpand|
-            \item Implement
+            \item Only two special forms: \verb|quote| and \verb|expand|
+            \item Implement everything else in \lang itself
         \end{itemize}
     \item Ease of implementing partial evaluation
+    \item Isolation
+        \begin{itemize}
+            \item The value of an expression does not depend on its sibling expressions
+        \end{itemize}
+\end{itemize}
+\end{frame}
+\begin{frame}[fragile]{Goals}
+\begin{itemize}
     \item Precise control over compile-time vs runtime execution
         \begin{itemize}
             \item Macro evaluation has ``runtime'' semantics: the macro body can make use of values defined in the runtime environment
             \item On the other hand, constant data, including macro execution, may be evaluated at compile time during PE
         \end{itemize}
-    \item Isolation
+    \item Expressiveness
         \begin{itemize}
-            \item The value of an expression does not depend on its sibling expressions
+            \item Full LISP-like macros allow implementation of flow control, DSLs, custom syntax
+            \item Control over continuations allows implementation of error handling, state machines, async execution
         \end{itemize}
 \end{itemize}
 \end{frame}
@@ -92,6 +100,15 @@
                 (cons (try (f (car l))) (e-map f (cdr l)))))))
 \end{minted}
 
+\end{frame}
+
+\begin{frame}[fragile]{Ongoing work}
+\begin{todolist}
+  \item[\done] Proof of conept interpreter
+  \item Partial Evaluator
+  \item Practical libraries
+  \item Optimising compiler
+\end{todolist}
 \end{frame}
 
 \end{document}

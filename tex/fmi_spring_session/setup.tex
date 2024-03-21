@@ -161,18 +161,31 @@
 \usepackage[outputdir=dist]{minted}
 \setminted{linenos}
 
+\usepackage{enumitem}
+% restore Beamer's itemize settings since enumitem breaks them
+\setitemize{label=\usebeamerfont*{itemize item}%
+  \usebeamercolor[fg]{itemize item}
+  \usebeamertemplate{itemize item}}
+
+\newlist{todolist}{itemize}{2}
+\setlist[todolist]{label=$\square$}
+\usepackage{pifont}
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\done}{\rlap{$\square$}{\raisebox{2pt}{\large\hspace{1pt}\cmark}}%
+\hspace{-2.5pt}}
+
 \graphicspath{{../images/}}
 
+\newcommand\lang{ILD }
+
 \hypersetup{
-  pdftitle={Операционни системи},
+  pdftitle={The \lang language},
   colorlinks=true,
   linkcolor=.,
   urlcolor=blue,
   pdfcreator={LaTeX}}
 
-\newcommand\lang{ILD }
-
-\title{The \lang language}
+\title{\lang: A Minimal functional programming language designed for easy partial evaluation}
 \subtitle{FMI}
 \author{}
-\date{}
+\date{2024}
