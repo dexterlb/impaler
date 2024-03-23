@@ -40,7 +40,11 @@
           "babel-bulgarian" "babel-english"
           "minted"
         ];
-        latexTools = latex_tools.lib.mkLatexTools { inherit nixpkgs pkgs texPkgs; };
+        extraBuildDeps = [
+          pkgs.python311Packages.pygments
+        ];
+
+        latexTools = latex_tools.lib.mkLatexTools { inherit nixpkgs pkgs texPkgs extraBuildDeps; };
         fmiSpringSession = (import ./fmi_spring_session) { inherit pkgs latexTools; };
         thesis = (import ./thesis) { inherit pkgs latexTools; };
       in
@@ -72,6 +76,7 @@
               echo " - 'latex_builder watch foo.tex' to build automatically on file change."
             '';
           };
+        apps = fmiSpringSession.apps;
       }
     );
 }
