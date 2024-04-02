@@ -1,0 +1,91 @@
+\documentclass[11pt]{amsart}
+
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx,color}
+% \usepackage{a4wide}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\textwidth 14.8cm \textheight 19.5cm \topmargin 0in
+\oddsidemargin 0.5in
+\evensidemargin 0.5in
+\parskip 1mm
+\setlength{\parindent}{0pt}
+\def\ds{\displaystyle}
+
+% margin note
+\newcommand\mnote[1]{\leavevmode\marginpar{\scriptsize{ #1 }}}
+\newcommand\note[1]{\mnote{\textcolor{orange}{ #1 }}}
+% margin note marked fixed
+\newcommand\fixednote[1]{}
+\newcommand\discuss[1]{\mnote{ #1 \textcolor{red}{discuss}}}
+\newcommand\reword[1]{\textcolor{orange}{ #1 }}
+
+\newcommand\lang{ILD }
+
+\title[Title]{\bf A minimal functional programming language designed for easy partial evaluation}
+
+\author[Angel]{Angel Angelov}
+% \address{Baba \\
+% foo
+% }
+\email{angel@qtrp.org}
+
+% \date{\today}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{remark}[theorem]{Remark}
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+Faculty of Mathematics and Informatics, Sofia University
+\end{center}
+
+\section*{Abstract}
+
+We present a new programming language called \lang that loosely resembles LISP
+and Scheme, designed with the following distinctive features:
+
+\begin{enumerate}
+    \item minimal syntax: the core language has only two special
+    forms, \texttt{quote} and \texttt{expand}
+    \item sufficient expressivity to allow the implementation of common programming constructs
+    via metaprogramming
+    \item support for first-class continuations akin to Scheme
+    \item\label{immutable} immutability of basic data structures
+    \item\label{isolatedsiblings} isolation: the value of an expression does not
+    depend on its sibling expressions
+    \item\label{runtimemacros} macro expansion is performed in the same context as
+    calling of regular functions, unlike LISP where a two-phase approach is used for evaluating macros and code
+\end{enumerate}
+
+\lang is a research language meant to facillitate experiments with partial evaluation.
+The goal of further research is to determine whether partial evaluation might be
+a viable strategy for eliminating some of the overhead caused by extensive metaprogramming,
+making such a minimal language performant enough for real-world use.
+
+% \begin{thebibliography}{99}
+%
+% \bibitem{BS} E. Bannai, N. J. A. Sloane, Uniqueness of certain spherical codes, {\it Can. J. Math.} 33, 1981, 437-449.
+%
+% \bibitem{CS} {	J.H.Conway, N.J.A.Sloane}, {\it Sphere Packings, Lattices and Groups}, Springer -- Verlag, New York 1988.
+%
+% \bibitem{Sze}
+% G.\,Szeg\H{o}, \emph{Orthogonal Polynomials},
+% Amer. Math. Soc. Col. Publ., { 23}, Providence, RI, 1939.
+%
+% \end{thebibliography}
+
+\bigskip
+\end{document}

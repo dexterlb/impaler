@@ -1,0 +1,105 @@
+\documentclass[11pt,a4paper]{amsart}
+
+\usepackage{iftex}
+\ifPDFTeX
+	\usepackage{mathtext}
+	\usepackage[T1,T2A]{fontenc}
+	\usepackage[utf8x]{inputenc}
+	\usepackage{amssymb}
+
+    \PrerenderUnicode{абвгдежзийклмнопрстуфхцчшщъьюяѝАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЬЮЯ}
+\else % if luatex or xetex
+	\usepackage{unicode-math} % this also loads fontspec
+	\defaultfontfeatures{Scale=MatchLowercase}
+	\defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+	\IfFontExistsTF{Stix Two Text}{%
+		\setmainfont[]{Stix Two Text}
+	}{%
+		\setmainfont[]{Noto Serif}
+	}
+	\IfFontExistsTF{DroidSansM Nerd Font}{%
+		\setmonofont[]{DroidSansM Nerd Font}
+	}{%
+		\setmonofont[]{Droid Sans Mono}
+	}
+\fi
+\usepackage[english,bulgarian]{babel}
+\usepackage{amsmath,amsfonts,amsthm}
+\usepackage[text={150mm,210mm},centering]{geometry}
+\usepackage{xspace}
+\setlength{\parindent}{0pt}
+
+\newcommand\ds{\displaystyle}
+\newcommand\etal{et al.\xspace}
+\makeatletter
+\def\@@and{и}
+\makeatother
+
+\title{\MakeUppercase{експериментален език за програмиране, насочен към лесно частично оценяване}}
+
+
+\author[angel]{Ангел Ангелов}
+\email{angel@qtrp.org}
+
+\newtheorem{theorem}{Теорема}%[section]
+\newtheorem{lemma}[theorem]{Лема}
+\newtheorem{corollary}[theorem]{Следствие}
+\newtheorem{proposition}[theorem]{Твърдение}
+\newtheorem{conjecture}[theorem]{Предположение}
+\theoremstyle{definition}
+\newtheorem{defn}[theorem]{Дефиниция}
+\newtheorem{example}[theorem]{Пример}
+\newtheorem{remark}[theorem]{Забележка}
+
+\begin{document}
+\newcommand\FMI{Факултет по математика и информатика,
+Софийски университет "`Св. Климент\par Охридски"',
+бул. "`Джеймс Баучър"' \No~5, 1164 София, България}
+
+\newcommand\NSF{Фонд "`Научни изследвания"' при МОН\xspace}
+
+\newcommand\SUF{Фонд "`Научни изследвания"' при СУ "`Св. Климент Охридски"'\xspace}
+
+\renewcommand\emailaddrname{{\itshape E-mail}}
+
+\newcommand\lang{ILD }
+
+\maketitle
+\begin{center}
+\FMI
+\end{center}
+
+\thispagestyle{empty}
+
+\bigskip
+
+\section*{Резюме%
+%\\{\small\normalfont (Тази работа ще бъде представена от Ангел Ангелов)}
+}
+
+\bigskip
+
+В този доклад представяме езика за програмиране \lang, който е подобен на
+езиците LISP и Scheme и има следните отличителни признаци:
+
+\begin{enumerate}
+    \item минимален синтаксис: единствените специални форми, дефинирани в основния
+    език, са \texttt{quote} и \texttt{expand};
+    \item достатъчна изразителност, позволяваща имплементирането на често срещани програмни
+    конструкции чрез метапрограмиране;
+    \item поддържка на продължения (continuations) като първокласни обекти, подобно на Scheme;
+    \item\label{immutable} основните структури от данни са неизменими (immutable);
+    \item\label{isolatedsiblings} изолация: оценката на произволен
+    израз не зависи от неговите съседни изрази;
+    \item\label{runtimemacros} макросите се оценяват в същия контекст, в който и обикновените
+    функции, за разлика от LISP, където макросите и основният код се оценяват в две отделни фази.
+\end{enumerate}
+
+\lang е език, създаден специално за научни експерименти с частично оценяване.
+Целта на по-нататъшните изследвания е да се оцени възможността за използване
+на частично оценяване като стратегия за елиминиране на част от допълнителните изчисления,
+причинени от голямото количество метапрограмиране, до степен, която би направила
+такъв минимален език пригоден за използване върху реални задачи.
+
+\bigskip
+\end{document}
