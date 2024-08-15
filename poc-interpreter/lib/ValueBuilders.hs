@@ -5,7 +5,6 @@ module ValueBuilders
     makeNoPEImpl,
     makeProc,
     makePureProc,
-    makeEnvAwarePureProc,
     makeCPSProc,
     polyFix,
   )
@@ -22,11 +21,12 @@ lambdaConstructor =
   builtinVal $
     Func $
       FuncObj
-        { applyProc = makeEnvAwarePureProc (makeLambdaConstructor makeLambda),
+        { applyProc = makePureProc (makeLambdaConstructor makeLambda),
           partiallyApplyProc = makePartialLambdaConstructorProc
         }
 
 makeLambdaConstructor ::
+  forall v m .
   -- | lambda maker
   ( DebugInfo ->
     Env v m ->
@@ -34,20 +34,24 @@ makeLambdaConstructor ::
     [Value v m] ->
     Value v m
   ) ->
-  -- | environment from which to capture closure
-  Env v m ->
   -- | argument of lambda expression
   Value v m ->
   Value v m
-makeLambdaConstructor lambdaMaker env (Value dinfo (Pair arg bodyVal))
-  | (Just body) <- valToList bodyVal = lambdaMaker dinfo env arg body
-  | otherwise = makeFailList dinfo "lambda-body-not-list" [bodyVal]
-makeLambdaConstructor _ _ val@(Value dinfo _) =
-  makeFailList dinfo "lambda-malformed" [val]
+makeLambdaConstructor lambdaMaker (Value dinfo (Pair envRepr (Value _ (Pair arg bodyVal))))
+  | (Just body) <- bodyResult, (Just env) <- envResult = lambdaMaker dinfo env arg body
+  | Nothing <- bodyResult = makeFailList dinfo "protolambda-body-not-list" [bodyVal]
+  | Nothing <- envResult = makeFailList dinfo "protolambda-env-arg-malformed" [bodyVal]
+  where
+    bodyResult :: Maybe [(Value v m)]
+    bodyResult = valToList bodyVal
+    envResult :: Maybe (Env v m)
+    envResult = envFromKVList envRepr
+makeLambdaConstructor _ val@(Value dinfo _) =
+  makeFailList dinfo "protolambda-malformed" [val]
 
-makePartialLambdaConstructorProc :: (EvalWorld v m) => PartialProcedure v m
-makePartialLambdaConstructorProc env ret (Value _ (PEConst arg)) = Just $ makeEnvAwarePureProc (makeLambdaConstructor makePartialLambda) env ret arg
-makePartialLambdaConstructorProc _ _ _ = Nothing
+makePartialLambdaConstructorProc :: PartialProcedure v m
+makePartialLambdaConstructorProc ret (Value _ (PEConst arg)) = Just $ makePureProc (makeLambdaConstructor makePartialLambda) ret arg
+makePartialLambdaConstructorProc _ _ = Nothing
 
 makeLambda ::
   forall v m.
@@ -111,11 +115,10 @@ lambdaCallable ::
   ArgSpec ->
   -- | closure that comes with the lambda
   Env v m ->
-  Env v m ->
   Callback v m ->
   Value v m ->
   m ()
-lambdaCallable dinfoDef body argspec closure _ ret arg@(Value dinfoCallsite _)
+lambdaCallable dinfoDef body argspec closure ret arg@(Value dinfoCallsite _)
   | (Right env) <- envOrErr = evalLambdaBody dinfoDef env ret body
   | (Left err) <- envOrErr = ret $ Value dinfoCallsite $ Fail $ Value dinfoDef $ err
   where
@@ -131,7 +134,6 @@ partialLambdaCallable ::
   -- | formal arguments (argument names)
   ArgSpec ->
   -- | closure that comes with the lambda
-  Env v m ->
   Env v m ->
   Callback v m ->
   Value v m ->
@@ -182,10 +184,10 @@ bindArgs (ArgSpec {argNames, tailName}) val
 makeCallableFromReturnCallback :: forall v m. () => Callback v m -> Value v m
 makeCallableFromReturnCallback f = builtinVal $ Func $ fixmePartialFunc "partial evaluation of lambda closures not yet implemented" g
   where
-    g :: Env v m -> Callback v m -> Value v m -> m ()
-    g _ _ (Value _ (Pair arg (Value _ Null))) =
+    g :: Callback v m -> Value v m -> m ()
+    g _ (Value _ (Pair arg (Value _ Null))) =
       f arg -- ignore the callback's callback - code after "return" is not executed
-    g _ _ val@(Value dinfo _) = f $ makeFailList dinfo "expected-one-arg-to-return" [val]
+    g _ val@(Value dinfo _) = f $ makeFailList dinfo "expected-one-arg-to-return" [val]
 
 -- | find the fixed point of a list of functions
 polyFix :: (EvalWorld v m) => Callback v m -> Value v m -> m ()
@@ -202,57 +204,51 @@ doTheTruckersHitch dinfo ret fs = ret gsList
     tie :: Value v m -> Value v m
     tie f = Value dinfo $
       Func $
-        fixmePartialFunc "partial evaluation of fixpoint knots not yet implemented" $ \genv gret garg ->
-          apply emptyEnv (\g -> apply genv gret g garg) f gsList
+        fixmePartialFunc "partial evaluation of fixpoint knots not yet implemented" $ \gret garg ->
+          apply (\g -> apply gret g garg) f gsList
 
-fixmePartialFunc :: String -> (Env v m -> Callback v m -> Value v m -> m ()) -> FuncObj v m
+fixmePartialFunc :: String -> (Callback v m -> Value v m -> m ()) -> FuncObj v m
 fixmePartialFunc msg f =
   FuncObj
     { applyProc = f,
-      partiallyApplyProc = \_ _ _ -> error msg
+      partiallyApplyProc = \_ _ -> error msg
     }
 
-makeDefaultPEImpl :: EnvlessProcedure v m -> Value v m
+makeDefaultPEImpl :: Procedure v m -> Value v m
 makeDefaultPEImpl = builtinVal . Func . makeDefaultPEImplFunc
 
-makeNoPEImpl :: EnvlessProcedure v m -> Value v m
+makeNoPEImpl :: Procedure v m -> Value v m
 makeNoPEImpl = builtinVal . Func . makeNoPEImplFunc
 
-makeDefaultPEImplFunc :: EnvlessProcedure v m -> FuncObj v m
+makeDefaultPEImplFunc :: Procedure v m -> FuncObj v m
 makeDefaultPEImplFunc proc =
   FuncObj
-    { applyProc = \_env -> proc,
-      partiallyApplyProc = \_env -> peIfArgsAvailable proc
+    { applyProc = proc,
+      partiallyApplyProc = peIfArgsAvailable proc
     }
 
-peIfArgsAvailable :: EnvlessProcedure v m -> Callback v m -> Value v m -> Maybe (m ())
+peIfArgsAvailable :: Procedure v m -> Callback v m -> Value v m -> Maybe (m ())
 peIfArgsAvailable f ret peArgs
   | (Just args) <- unpartialList peArgs = Just $ f ret args
   | otherwise = Nothing
 
-makeNoPEImplFunc :: EnvlessProcedure v m -> FuncObj v m
+makeNoPEImplFunc :: Procedure v m -> FuncObj v m
 makeNoPEImplFunc proc =
   FuncObj
-    { applyProc = \_env -> proc,
-      partiallyApplyProc = \_ _ _ -> Nothing
+    { applyProc = proc,
+      partiallyApplyProc = \_ _ -> Nothing
     }
 
-makePureProc :: (Value v m -> Value v m) -> EnvlessProcedure v m
+makePureProc :: (Value v m -> Value v m) -> Procedure v m
 makePureProc f ret arg = ret $ f arg
 
-makeEnvAwarePureProc :: (Monad m) => (Env v m -> Value v m -> Value v m) -> Procedure v m
-makeEnvAwarePureProc f = makeEnvAwareProc (\env args -> pure $ f env args)
-
 makeProc :: (Monad m) => (Value v m -> m (Value v m)) -> Procedure v m
-makeProc f = makeEnvAwareProc (\_env -> f)
-
-makeEnvAwareProc :: (Monad m) => (Env v m -> Value v m -> m (Value v m)) -> Procedure v m
-makeEnvAwareProc f env ret (val@(Value dinfo _)) = do
-  (Value _ resV) <- f env val
+makeProc f ret (val@(Value dinfo _)) = do
+  (Value _ resV) <- f val
   let res = Value dinfo resV -- maybe we need another way to pass the dinfo
   ret res
 
-makeCPSProc :: (Callback v m -> Value v m -> m ()) -> EnvlessProcedure v m
+makeCPSProc :: (Callback v m -> Value v m -> m ()) -> Procedure v m
 makeCPSProc = id
 
 unpartialList :: Value v m -> Maybe (Value v m)

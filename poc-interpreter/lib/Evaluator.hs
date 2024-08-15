@@ -33,15 +33,13 @@ eval' env ret (Value _ (Pair x xs)) =
       applySpecialForm env ret sf xs
     go xE =
       -- evaluate all arguments and then apply xE to them
-      evalList eval env (apply env ret xE) xs
+      evalList eval env (apply ret xE) xs
 eval' env ret (Value dinfo (Symbol i)) = ret $ envGet dinfo i env
 eval' _ ret v = ret $ v -- all other values evaluate to themselves
 
 -- | execute the given callable
 apply ::
   (EvalWorld v m) =>
-  -- | the calling environment (because some special functions want to see it)
-  Env v m ->
   -- | callback to call with result
   Callback v m ->
   -- | callable
@@ -50,11 +48,9 @@ apply ::
   Value v m ->
   m ()
 -- apply = apply'
-apply env ret callable arg = apply' env ret callable ((traceVals "apply" [callable, arg]) !! 1)
+apply ret callable arg = apply' ret callable ((traceVals "apply" [callable, arg]) !! 1)
 
 apply' ::
-  -- | the calling environment (because some special functions want to see it)
-  Env v m ->
   -- | callback to call with result
   Callback v m ->
   -- | callable
@@ -62,8 +58,8 @@ apply' ::
   -- | argument
   Value v m ->
   m ()
-apply' env ret (Value _ (Func (FuncObj {applyProc}))) arg = applyProc env ret arg
-apply' _ ret expr@(Value dinfo _) _ = ret $ makeFailList dinfo "dont-know-how-to-call" [expr]
+apply' ret (Value _ (Func (FuncObj {applyProc}))) arg = applyProc ret arg
+apply' ret expr@(Value dinfo _) _ = ret $ makeFailList dinfo "dont-know-how-to-call" [expr]
 
 -- | evaluate all elements in a given list
 -- | afterwards, pass a list of evaluated items to the callback
@@ -81,8 +77,6 @@ applySpecialForm :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> Sp
 applySpecialForm = applySpecialForm' eval id
 
 applySpecialForm' ::
-  forall v m.
-  (EvalWorld v m) =>
   -- | eval function used to recursively evaluate expressions (e.g. when expanding macros)
   Evaluator v m ->
   -- | function for returning constants; when not doing PE, just use identity
@@ -96,14 +90,11 @@ applySpecialForm' ::
   m ()
 applySpecialForm' _ cnst _ ret QuoteForm (Value _ (Pair arg (Value _ Null))) = ret $ cnst arg
 applySpecialForm' _ cnst _ ret QuoteForm val@(Value dinfo _) = ret $ cnst $ makeFailList dinfo "wrong-arg-to-quote" [val]
-applySpecialForm' evaluator _ env ret ExpandForm (Value _ (Pair arg (Value _ Null))) = evaluator env callback arg
-  where
-    callback :: Callback v m
-    callback = eval env ret
-applySpecialForm' _ cnst _ ret ExpandForm val@(Value dinfo _) = ret $ cnst $ makeFailList dinfo "wrong-arg-to-expand" [val]
 applySpecialForm' evaluator _ env ret MacroExpandForm (Value dinfo (Pair macro args)) =
-  evaluator env ret $ Value dinfo (Pair (Value dinfo (SpecialForm ExpandForm)) (Value dinfo (Pair (Value dinfo (Pair macro $ vfmap quoteVal args)) (Value dinfo Null))))
+  evaluator env ret $ Value dinfo (Pair macro $ vfmap quoteVal args)
   where
     quoteVal :: Value v m -> Value v m
     quoteVal uval = Value dinfo (Pair (Value dinfo (SpecialForm QuoteForm)) (Value dinfo (Pair uval (Value dinfo Null))))
 applySpecialForm' _ cnst _ ret MacroExpandForm val@(Value dinfo _) = ret $ cnst $ makeFailList dinfo "wrong-arg-to-macroexpand" [val]
+applySpecialForm' _ cnst env ret GetEnvForm (Value dinfo Null) = ret $ cnst $ envToKVList dinfo env
+applySpecialForm' _ cnst _ ret GetEnvForm val@(Value dinfo _) = ret $ cnst $ makeFailList dinfo "wrong-arg-to-getenv" [val]

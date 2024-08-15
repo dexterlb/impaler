@@ -79,7 +79,7 @@ partialEnvFromKVList _ = fail "required a kvlist that may optionally contain bar
 specialForms :: Env v m
 specialForms =
   envFromList
-    [ ("expand", builtinVal $ SpecialForm ExpandForm),
+    [ ("getenv", builtinVal $ SpecialForm GetEnvForm),
       ("macroexpand", builtinVal $ SpecialForm MacroExpandForm),
       ("quote", builtinVal $ SpecialForm QuoteForm)
     ]

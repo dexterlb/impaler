@@ -10,7 +10,6 @@ module Values
     ArgSpec (..),
     Procedure,
     PartialProcedure,
-    EnvlessProcedure,
     astToVal,
     builtinVal,
     builtinList,
@@ -55,10 +54,8 @@ data ValueItem v m
     -- | S-expression building blocks
     Pair (Value v m) (Value v m)
   | Null
-  | -- | The ultimate sin: special forms are first-class citizens
-    SpecialForm SpecialForm
-  | -- | A callable object that may optionally have side effects and/or
-    -- | Look at the environment (the latter should really not be abused)
+  | SpecialForm SpecialForm
+  | -- | A callable object that may optionally have side effects
     Func (FuncObj v m)
   | -- | Since we don't have things like panics or exceptions,
     -- | we encapsulate failure as a separate value type, which makes
@@ -79,11 +76,9 @@ data ValueItem v m
 
 type Callback v m = (Value v m) -> m ()
 
-type Procedure v m = Env v m -> Callback v m -> Value v m -> m ()
+type Procedure v m = Callback v m -> Value v m -> m ()
 
-type EnvlessProcedure v m = Callback v m -> Value v m -> m ()
-
-type PartialProcedure v m = Env v m -> Callback v m -> Value v m -> Maybe (m ())
+type PartialProcedure v m = Callback v m -> Value v m -> Maybe (m ())
 
 data FuncObj v m = FuncObj
   { applyProc :: Procedure v m,
@@ -92,7 +87,7 @@ data FuncObj v m = FuncObj
 
 newtype Env v m = Env (Map Identifier (Value v m))
 
-data SpecialForm = QuoteForm | MacroExpandForm | ExpandForm
+data SpecialForm = QuoteForm | MacroExpandForm | GetEnvForm
 
 data ArgSpec = ArgSpec
   { argNames :: [Identifier],
@@ -237,7 +232,7 @@ instance (Show v) => (Show (ValueItem v m)) where
 instance (Show SpecialForm) where
   show QuoteForm = "#quote"
   show MacroExpandForm = "#macroexpand"
-  show ExpandForm = "#macroexpand"
+  show GetEnvForm = "#getenv"
 
 instance (Show v) => (Show (Value v m)) where
   show (Value dinfo v) = (show v) <> (show dinfo)
