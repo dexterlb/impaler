@@ -177,4 +177,4 @@
     module-loader))
 
   ; definition of 'builtins':
-  (get-env))
+  (getenv))

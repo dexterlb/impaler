@@ -77,6 +77,7 @@ applySpecialForm :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> Sp
 applySpecialForm = applySpecialForm' eval id
 
 applySpecialForm' ::
+  forall v m. (EvalWorld v m) =>
   -- | eval function used to recursively evaluate expressions (e.g. when expanding macros)
   Evaluator v m ->
   -- | function for returning constants; when not doing PE, just use identity
@@ -90,11 +91,11 @@ applySpecialForm' ::
   m ()
 applySpecialForm' _ cnst _ ret QuoteForm (Value _ (Pair arg (Value _ Null))) = ret $ cnst arg
 applySpecialForm' _ cnst _ ret QuoteForm val@(Value dinfo _) = ret $ cnst $ makeFailList dinfo "wrong-arg-to-quote" [val]
-applySpecialForm' evaluator _ env ret MacroExpandForm (Value dinfo (Pair macro args)) =
-  evaluator env ret $ Value dinfo (Pair macro $ vfmap quoteVal args)
+applySpecialForm' evaluator _ env ret MacroExpandForm (Value _ (Pair macro args)) =
+  evaluator env go macro
   where
-    quoteVal :: Value v m -> Value v m
-    quoteVal uval = Value dinfo (Pair (Value dinfo (SpecialForm QuoteForm)) (Value dinfo (Pair uval (Value dinfo Null))))
+    go :: Callback v m
+    go macroFunc = apply (evaluator env ret) macroFunc args
 applySpecialForm' _ cnst _ ret MacroExpandForm val@(Value dinfo _) = ret $ cnst $ makeFailList dinfo "wrong-arg-to-macroexpand" [val]
 applySpecialForm' _ cnst env ret GetEnvForm (Value dinfo Null) = ret $ cnst $ envToKVList dinfo env
 applySpecialForm' _ cnst _ ret GetEnvForm val@(Value dinfo _) = ret $ cnst $ makeFailList dinfo "wrong-arg-to-getenv" [val]

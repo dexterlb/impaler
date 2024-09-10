@@ -15,6 +15,7 @@ import DebugInfo
 import Environments
 import Evaluator
 import Values
+import Utils.Debug
 
 lambdaConstructor :: (EvalWorld v m) => Value v m
 lambdaConstructor =
@@ -26,7 +27,7 @@ lambdaConstructor =
         }
 
 makeLambdaConstructor ::
-  forall v m .
+  forall v m . (Show v) =>
   -- | lambda maker
   ( DebugInfo ->
     Env v m ->
@@ -45,11 +46,11 @@ makeLambdaConstructor lambdaMaker (Value dinfo (Pair envRepr (Value _ (Pair arg 
     bodyResult :: Maybe [(Value v m)]
     bodyResult = valToList bodyVal
     envResult :: Maybe (Env v m)
-    envResult = envFromKVList envRepr
+    envResult = envFromKVList (traceVal "lambda_env" envRepr)
 makeLambdaConstructor _ val@(Value dinfo _) =
   makeFailList dinfo "protolambda-malformed" [val]
 
-makePartialLambdaConstructorProc :: PartialProcedure v m
+makePartialLambdaConstructorProc :: (Show v) => PartialProcedure v m
 makePartialLambdaConstructorProc ret (Value _ (PEConst arg)) = Just $ makePureProc (makeLambdaConstructor makePartialLambda) ret arg
 makePartialLambdaConstructorProc _ _ = Nothing
 

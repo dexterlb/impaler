@@ -95,4 +95,4 @@
 (!lambda (args body) (cons macroexpand (cons lambda (cons args (cons body ())))))
 
 ; definition of "builtins"
-(get-env))
+(getenv))
