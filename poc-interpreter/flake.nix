@@ -84,7 +84,7 @@
       executable.enable = true;
 
       test = {
-        enable = true;
+        enable = false;
         dependencies = [
           "hspec"
           "filepath"

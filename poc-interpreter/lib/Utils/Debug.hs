@@ -11,17 +11,25 @@ import Debug.Trace (trace)
 import Stringify
 import Values
 
+enableTrace :: Bool
+enableTrace = False
+
 traceResult :: (Show v) => Text -> Value v m -> Value v m -> Value v m
-traceResult msg expr result = trace s result
+traceResult msg expr result = traceOrNot s result
   where
-    s = T.unpack $ msg <> ": " <> (stringifyVal expr) <> " -> " <> (stringifyVal result)
+    s = msg <> ": " <> (stringifyVal expr) <> " -> " <> (stringifyVal result)
 
 traceVal :: (Show v) => Text -> Value v m -> Value v m
-traceVal msg v = trace s v
+traceVal msg v = traceOrNot s v
   where
-    s = T.unpack $ msg <> ": " <> (stringifyVal v)
+    s = msg <> ": " <> (stringifyVal v)
 
 traceVals :: (Show v) => Text -> [Value v m] -> [Value v m]
-traceVals msg v = trace s v
+traceVals msg v = traceOrNot s v
   where
-    s = T.unpack $ msg <> ": " <> (T.intercalate "|" $ map stringifyVal v)
+    s = msg <> ": " <> (T.intercalate "|" $ map stringifyVal v)
+
+traceOrNot :: Text -> a -> a
+traceOrNot msg
+  | enableTrace = trace (T.unpack msg)
+  | otherwise = id
