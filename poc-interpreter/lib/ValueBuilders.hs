@@ -14,8 +14,8 @@ import Data.List.Extra (unsnoc)
 import DebugInfo
 import Environments
 import Evaluator
-import Values
 import Utils.Debug
+import Values
 
 lambdaConstructor :: (EvalWorld v m) => Value v m
 lambdaConstructor =
@@ -27,7 +27,8 @@ lambdaConstructor =
         }
 
 makeLambdaConstructor ::
-  forall v m . (Show v) =>
+  forall v m.
+  (Show v) =>
   -- | lambda maker
   ( DebugInfo ->
     Env v m ->
@@ -51,8 +52,11 @@ makeLambdaConstructor _ val@(Value dinfo _) =
   makeFailList dinfo "protolambda-malformed" [val]
 
 makePartialLambdaConstructorProc :: (Show v) => PartialProcedure v m
-makePartialLambdaConstructorProc ret (Value _ (PEConst arg)) = Just $ makePureProc (makeLambdaConstructor makePartialLambda) ret arg
-makePartialLambdaConstructorProc _ _ = Nothing
+-- fixme: unpack the arg list properly here
+makePartialLambdaConstructorProc ret val
+  | (Just lambdaArg) <- unpartialList val =
+    Just $ makePureProc (makeLambdaConstructor makePartialLambda) ret lambdaArg
+  | otherwise = traceValAnd "not partially evaluating lambda" val Nothing
 
 makeLambda ::
   forall v m.

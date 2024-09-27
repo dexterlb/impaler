@@ -52,9 +52,9 @@ sandboxEnv :: PureSandbox -> Env NoValue PureComp
 sandboxEnv sb =
   envUnion specialForms $
     envFromList
-      [ ( "yield", makeNoPEImpl $ makeCPSProc (\ret val -> (yieldResult val) >> (ret $ builtinVal Null))),
+      [ ("yield", makeNoPEImpl $ makeCPSProc (\ret val -> (yieldResult val) >> (ret $ builtinVal Null))),
         -- core stuff
-        ( "protolambda", lambdaConstructor),
+        ("protolambda", lambdaConstructor),
         ( "poly-fix",
           builtinVal $
             Func $

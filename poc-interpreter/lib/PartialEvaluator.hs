@@ -3,7 +3,7 @@ module PartialEvaluator
   )
 where
 
-import qualified Data.Text as Text
+import Data.Text qualified as Text
 import Environments
 import Evaluator
 import Utils.Debug

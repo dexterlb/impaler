@@ -7,9 +7,8 @@ module Evaluator
 where
 
 import Environments
-import Values
-
 import Utils.Debug
+import Values
 
 type Evaluator v m = Env v m -> Callback v m -> Value v m -> m ()
 
@@ -77,7 +76,8 @@ applySpecialForm :: forall v m. (EvalWorld v m) => Env v m -> Callback v m -> Sp
 applySpecialForm = applySpecialForm' eval id
 
 applySpecialForm' ::
-  forall v m. (EvalWorld v m) =>
+  forall v m.
+  (EvalWorld v m) =>
   -- | eval function used to recursively evaluate expressions (e.g. when expanding macros)
   Evaluator v m ->
   -- | function for returning constants; when not doing PE, just use identity

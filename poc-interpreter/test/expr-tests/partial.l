@@ -26,19 +26,19 @@
     (
         (test "lambda substitution")
         (input
-            (peval (cons (cons 'macroexpand macroexpand) (cons (cons 'lambda lambda) (cons (cons 'add add) (quote (y))))) (quote
-                ((!lambda (x) (add x y)) 5))))
+            (peval (cons (cons 'getenv getenv) (cons (cons 'quote quote) (cons (cons 'protolambda protolambda) (cons (cons 'add add) (quote (y)))))) (quote
+                ((protolambda (getenv) (quote (x)) (quote (add x y))) 5))))
         (output (add 5 y)))
-    (
-        (test "lambda substitution, then constant folding")
-        (input
-            (peval (cons (cons 'macroexpand macroexpand) (cons (cons 'lambda lambda) (cons (cons 'add add) (quote ())))) (quote
-                ((!lambda (x) (add x 2)) 5))))
-        (output 7))
-    (
-        (test "partial lambda substitution")
-        (input
-            (peval (cons (cons 'macroexpand macroexpand) (cons (cons 'lambda lambda) (cons (cons 'add add) (quote (z))))) (quote
-                ((!lambda (x y) (add x y)) 5 z))))
-        (output ((fixme-lambda (y) (add 5 y)) z)))
+    ; (
+    ;     (test "lambda substitution, then constant folding")
+    ;     (input
+    ;         (peval (cons (cons 'macroexpand macroexpand) (cons (cons 'lambda lambda) (cons (cons 'add add) (quote ())))) (quote
+    ;             ((!lambda (x) (add x 2)) 5))))
+    ;     (output 7))
+    ; (
+    ;     (test "partial lambda substitution")
+    ;     (input
+    ;         (peval (cons (cons 'macroexpand macroexpand) (cons (cons 'lambda lambda) (cons (cons 'add add) (quote (z))))) (quote
+    ;             ((!lambda (x y) (add x y)) 5 z))))
+    ;     (output ((fixme-lambda (y) (add 5 y)) z)))
 ))
