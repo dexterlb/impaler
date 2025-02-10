@@ -55,7 +55,7 @@ makePartialLambdaConstructorProc :: (Show v) => PartialProcedure v m
 -- fixme: unpack the arg list properly here
 makePartialLambdaConstructorProc ret val
   | (Just lambdaArg) <- unpartialList val =
-    Just $ makePureProc (makeLambdaConstructor makePartialLambda) ret lambdaArg
+      Just $ makePureProc (makeLambdaConstructor makePartialLambda) ret lambdaArg
   | otherwise = traceValAnd "not partially evaluating lambda" val Nothing
 
 makeLambda ::
