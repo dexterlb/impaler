@@ -1,0 +1,118 @@
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+\begin{frame}[fragile]{Goals}
+\begin{itemize}
+    \item Minimality of the core language
+        \begin{itemize}
+            \item Only two special forms: \verb|quote| and \verb|expand|
+            \item Implement everything else in \lang itself
+        \end{itemize}
+    \item Ease of implementing partial evaluation
+    \item Expressiveness
+        \begin{itemize}
+            \item Full LISP-like macros: implement flow control, DSLs, custom syntax
+            \item Control over continuations: implement error handling, state machines, async execution
+        \end{itemize}
+\end{itemize}
+\end{frame}
+\begin{frame}[fragile]{Goals}
+\begin{itemize}
+    \item Precise control over compile-time vs runtime execution
+        \begin{itemize}
+            \item Macro evaluation has ``runtime'' semantics: the macro body can make use of values defined in the runtime environment
+            \item Constant data, including macro execution, may be evaluated at compile time during PE
+        \end{itemize}
+    \item Isolation
+        \begin{itemize}
+            \item The value of an expression does not depend on its sibling expressions
+        \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Example code in \lang}
+\begin{minted}{lisp}
+(module
+  (doc "this module calculates factorials")
+  (exports main)
+  (imports
+    (builtin (mul add <= expand lambda quote))
+    ("core/prelude.l" (if const fn)))
+  (defs
+    (!const main (!lambda () (fact 5)))
+
+    (!fn (fact x)
+      (!if (<= x 0)
+        1
+        (mul x (fact (add x -1)))))))
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Example code in \lang}
+\begin{itemize}
+    \item This code:
+      \begin{minted}{lisp}
+        (!if (= x 5)
+          "x is 5"
+          "x is not 5")
+      \end{minted}
+    \item Is syntax sugar for this code:
+      \begin{minted}{lisp}
+        (expand (if (quote (= x 5))
+          (quote "x is 5")
+          (quote "x is not 5")))
+      \end{minted}
+    \item Macros are just functions that operate on code.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Embedding}
+\begin{itemize}
+    \item In \lang:
+        \begin{itemize}
+            \item Application software
+            \item Libraries
+            \item DSL definitions (syntactic constructs, etc)
+        \end{itemize}
+    \item In the host language:
+        \begin{itemize}
+            \item IO
+            \item Data structures that depend on memory layout
+            \item Scheduling (tasks, async IO, threads)
+            \item Garbage collection
+        \end{itemize}
+\end{itemize}
+\end{frame}
+
+% \begin{frame}[fragile]{Example: error handling}
+%
+% \begin{minted}{lisp}
+% (defs
+%     ...
+%     (!fn (e-map f l)
+%         (!propagate-err-with try
+%             (!if (empty? l)
+%                 l
+%                 (cons (try (f (car l))) (e-map f (cdr l)))))))
+% \end{minted}
+%
+% \end{frame}
+
+\begin{frame}[fragile]{Ongoing work}
+\begin{todolist}
+  \item[\done] Proof of concept interpreter
+  \item Partial evaluator
+  \item Practical libraries
+  \item Optimising compiler
+\end{todolist}
+\end{frame}
+
+\begin{frame}[fragile,plain]
+\begin{center}
+\Huge Thank you!
+\end{center}
+\end{frame}
+\end{document}

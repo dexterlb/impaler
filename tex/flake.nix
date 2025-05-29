@@ -40,30 +40,24 @@
           "babel-bulgarian" "babel-english"
           "minted"
         ];
+
         extraBuildDeps = [
           pkgs.python311Packages.pygments
         ];
 
         latexTools = latex_tools.lib.mkLatexTools { inherit nixpkgs pkgs texPkgs extraBuildDeps; };
         fmiSpringSession = (import ./fmi_spring_session) { inherit pkgs latexTools; };
+        isesia = (import ./isesia) { inherit pkgs latexTools; };
         thesis = (import ./thesis) { inherit pkgs latexTools; };
       in
       {
         packages
           = fmiSpringSession.packages
+          // isesia.packages
           // thesis.packages
           // rec {
-          all = pkgs.stdenvNoCC.mkDerivation rec {
-            name = "all";
-            phases = [ "installPhase" "fixupPhase" ];
-            installPhase = ''
-              mkdir -p $out/thesis $out/fmi_spring_session
-              cp -rf ${thesis.packages.thesis}/* $out/thesis/
-              cp -rf ${fmiSpringSession.packages.fmi_spring_session_all}/* $out/fmi_spring_session/
-            '';
+            default = thesis.packages.thesis;
           };
-          default = all;
-        };
         devShell = pkgs.mkShell
           {
             packages = latexTools.deps;
@@ -76,7 +70,7 @@
               echo " - 'latex_builder watch foo.tex' to build automatically on file change."
             '';
           };
-        apps = fmiSpringSession.apps;
+        apps = fmiSpringSession.apps // isesia.apps;
       }
     );
 }
