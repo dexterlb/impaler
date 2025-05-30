@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.35.2.
+-- This file has been generated from package.yaml by hpack version 0.36.1.
 --
 -- see: https://github.com/sol/hpack
 
@@ -10,7 +10,7 @@ synopsis:       PoC interpreter
 description:    See https://hackage.haskell.org/package/poc-interpreter/docs/Poc-Interpreter.html
 author:         dexterlb
 maintainer:     dexterlb
-copyright:      2023 dexterlb
+copyright:      2025 dexterlb
 license:        BSD-2-Clause-Patent
 license-file:   LICENSE
 build-type:     Simple
@@ -64,6 +64,8 @@ library
       ScopedTypeVariables
       FlexibleContexts
       MultiParamTypeClasses
+      TypeOperators
+      FlexibleInstances
   ghc-options: -Werror -Wall -Wcompat -Widentities -Wmissing-deriving-strategies -Wpartial-fields -Wredundant-constraints -Wunused-type-patterns -Wincomplete-uni-patterns -Wunused-packages
   build-depends:
       base >=4.7 && <5
@@ -79,7 +81,7 @@ library
     , text
     , timeit >=2.0
     , transformers
-  default-language: GHC2021
+  default-language: Haskell2010
 
 executable poc-interpreter
   main-is: Main.hs
@@ -112,11 +114,13 @@ executable poc-interpreter
       ScopedTypeVariables
       FlexibleContexts
       MultiParamTypeClasses
+      TypeOperators
+      FlexibleInstances
   ghc-options: -Werror -Wall -Wcompat -Widentities -Wmissing-deriving-strategies -Wpartial-fields -Wredundant-constraints -Wunused-type-patterns -Wincomplete-uni-patterns -Wunused-packages -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base ==4.*
     , poc-interpreter
-  default-language: GHC2021
+  default-language: Haskell2010
 
 test-suite poc-interpreter-test
   type: exitcode-stdio-1.0
@@ -150,6 +154,8 @@ test-suite poc-interpreter-test
       ScopedTypeVariables
       FlexibleContexts
       MultiParamTypeClasses
+      TypeOperators
+      FlexibleInstances
   ghc-options: -Werror -Wall -Wcompat -Widentities -Wmissing-deriving-strategies -Wpartial-fields -Wredundant-constraints -Wunused-type-patterns -Wincomplete-uni-patterns -Wunused-packages -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base ==4.*
@@ -159,4 +165,4 @@ test-suite poc-interpreter-test
     , poc-interpreter
     , pseudomacros
     , text
-  default-language: GHC2021
+  default-language: Haskell2010

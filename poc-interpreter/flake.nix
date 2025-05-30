@@ -55,6 +55,8 @@
         "ScopedTypeVariables"
         "FlexibleContexts"
         "MultiParamTypeClasses"
+        "TypeOperators"
+        "FlexibleInstances"
       ];
     };
 
