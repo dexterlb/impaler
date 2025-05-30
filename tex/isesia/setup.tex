@@ -159,7 +159,9 @@
 \urlstyle{same}
 
 \usepackage[outputdir=dist]{minted}
-\setminted{linenos}
+\usemintedstyle{gruvbox-light}
+\setminted{linenos=false}
+\setminted{autogobble}
 
 \usepackage{enumitem}
 % restore Beamer's itemize settings since enumitem breaks them
@@ -185,7 +187,9 @@
   urlcolor=blue,
   pdfcreator={LaTeX}}
 
-\title{\lang: A Minimal functional programming language designed for easy partial evaluation}
-\subtitle{FMI Spring Science Session 2024}
+\title{A Lisp-Like Programming Language with First-Class Macro Execution and Partial
+Evaluation}
+\subtitle{Doctoral Workshop on Research in Information Systems, Embedded Systems
+and Intelligent Applications}
 \author{Angel Angelov <angel@qtrp.org>}
-\date{2024}
+\date{2025}

@@ -4,21 +4,21 @@
 \maketitle
 \end{frame}
 
-\begin{frame}[fragile]{Goals}
-\begin{itemize}
-    \item Minimality of the core language
-        \begin{itemize}
-            \item Only two special forms: \verb|quote| and \verb|expand|
-            \item Implement everything else in \lang itself
-        \end{itemize}
-    \item Ease of implementing partial evaluation
-    \item Expressiveness
-        \begin{itemize}
-            \item Full LISP-like macros: implement flow control, DSLs, custom syntax
-            \item Control over continuations: implement error handling, state machines, async execution
-        \end{itemize}
-\end{itemize}
+\begin{frame}[fragile]{Goals of the \lang language}
+  \begin{itemize}
+    \item A Lisp (in particular, a Lisp1)
+    \item Minimal core language
+      \begin{itemize}
+        \item Only two special forms: \verb|quote|, \verb|expand| and a macro expansion operator
+        \item Implement everything else in the language itself
+      \end{itemize}
+    \item Expressive
+      \begin{itemize}
+        \item Classic features found in Lisp and Scheme: closures, macros, continuation-passing style
+      \end{itemize}
+  \end{itemize}
 \end{frame}
+
 \begin{frame}[fragile]{Goals}
 \begin{itemize}
     \item Precise control over compile-time vs runtime execution
@@ -51,7 +51,7 @@
 \end{minted}
 \end{frame}
 
-\begin{frame}[fragile]{Example code in \lang}
+\begin{frame}[fragile]{The macro expansion operator}
 \begin{itemize}
     \item This code:
       \begin{minted}{lisp}
@@ -67,6 +67,102 @@
       \end{minted}
     \item Macros are just functions that operate on code.
 \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Runtime macro execution semantics}
+  \begin{minipage}[t]{0.48\textwidth}
+    \textbf{\lang}:
+
+    \vspace{0.5em}
+    Macro definition:
+    \begin{minted}{lisp}
+      (!fn (if cnd then else)
+        (list
+          (list 'bool-to-k cnd)
+          then else))
+    \end{minted}
+    \vspace{0.5em}
+    Usage:
+    \begin{minted}{lisp}
+      (!if (= x 5)
+        "x is 5"
+        "x is not 5")
+    \end{minted}
+    \vspace{0.5em}
+    Which is the same as:
+    \begin{minted}{lisp}
+      (expand (if (quote (= x 5))
+        (quote "x is 5")
+        (quote "x is not 5")))
+    \end{minted}
+    \vspace{0.5em}
+    Which evaluates to the result of:
+    \begin{minted}{lisp}
+      ((bool-to-k (= x 5))
+        "x is 5"
+        "x is not 5")
+    \end{minted}
+  \end{minipage}
+  \begin{minipage}[t]{0.48\textwidth}
+    \textbf{Lisp}:
+
+    \vspace{0.5em}
+    Macro definition:
+    \begin{minted}{lisp}
+      (defmacro if (cnd then else)
+        (list
+          (list 'bool-to-k cnd)
+          then else))
+    \end{minted}
+
+    \vspace{0.5em}
+    Usage:
+    \begin{minted}{lisp}
+      (if (= x 5)
+        "x is 5"
+        "x is not 5")
+    \end{minted}
+
+    \vspace{0.5em}
+    Gets replaced at compile time by:
+    \begin{minted}{lisp}
+      ((bool-to-k (= x 5))
+        "x is 5"
+        "x is not 5")
+    \end{minted}
+
+    \vspace{0.5em}
+    Which gets evaluated at runtime
+  \end{minipage}
+\end{frame}
+
+\begin{frame}[fragile]{Runtime macro execution semantics}
+  \begin{minipage}[t]{0.48\textwidth}
+    \textbf{Pros:}
+
+    \begin{itemize}
+      \item Macros are more powerful (they see local bindings
+      in addition to global ones)
+      \item No extra macro expansion pass
+      \begin{itemize}
+        \item Makes it trivial to write a basic interpreter
+      \end{itemize}
+    \end{itemize}
+  \end{minipage}
+  \begin{minipage}[t]{0.48\textwidth}
+    \textbf{Cons:}
+
+    \begin{itemize}
+      \item Resolving metaprogramming at runtime carries
+      a performance penalty
+      \item Resolving nested macros may be counterintuitive
+    \end{itemize}
+  \end{minipage}
+
+  \vspace{2em}
+
+  PE lets us address the runtime performance penalty "for free",
+  because the argument of a macro is always a constant.
 \end{frame}
 
 \begin{frame}[fragile]{Embedding}
@@ -104,7 +200,8 @@
 \begin{frame}[fragile]{Ongoing work}
 \begin{todolist}
   \item[\done] Proof of concept interpreter
-  \item Partial evaluator
+  \item[\done] Basic partial evaluator
+  \item Non-diverging partial evaluator
   \item Practical libraries
   \item Optimising compiler
 \end{todolist}
