@@ -33,7 +33,6 @@ module Utils.Parsing
   )
 where
 
-import Control.Applicative (liftA2)
 import Control.Monad (forM)
 import Control.Monad.Combinators.Expr
 import Data.Text (Text)

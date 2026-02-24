@@ -1,14 +1,20 @@
 {
   description = "A Haskell project";
 
-  inputs.hix.url = "github:tek/hix/main";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/25.11";
+    hix = {
+      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:tek/hix?ref=0.8.0";
+    };
+  };
 
   outputs = {hix, ...}: hix.lib.flake ({config, ...}: {
     hackage.versionFile = "./ops/version.nix";
 
-    compiler = "ghc94";
+    compiler = "ghc912";
     ghcVersions = [
-      "ghc94"
+      "ghc912"
     ];
 
     envs.dev = {

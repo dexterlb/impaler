@@ -10,7 +10,8 @@ module Loader
 where
 
 import AST
-import Control.Monad.Except (ExceptT, liftEither, liftIO)
+import Control.Monad.Except (ExceptT, liftEither)
+import Control.Monad.IO.Class (liftIO)
 import Data.Either.Extra (mapLeft)
 import Data.Map (Map)
 import Data.Map qualified as Map
