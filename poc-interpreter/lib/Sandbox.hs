@@ -12,7 +12,6 @@ import Data.Text.IO qualified as TIO
 import Environments
 import Evaluator
 import Loader
-import PartialEvaluator
 import PrimitiveData
 import Stringify
 import System.TimeIt qualified as TIT
@@ -52,78 +51,35 @@ sandboxEnv :: PureSandbox -> Env NoValue PureComp
 sandboxEnv sb =
   envUnion specialForms $
     envFromList
-      [ ("yield", makeNoPEImpl $ makeCPSProc (\ret val -> (yieldResult val) >> (ret $ builtinVal Null))),
+      [ ("yield", makeCPSFunc (\ret val -> (yieldResult val) >> (ret $ builtinVal Null))),
         -- core stuff
-        ("protolambda", lambdaConstructor),
-        ( "poly-fix",
-          builtinVal $
-            Func $
-              FuncObj
-                { applyProc = makeCPSProc polyFix,
-                  partiallyApplyProc = error "partially-evaluating poly-fix is not yet implemented"
-                }
-        ),
-        ( "eval",
-          builtinVal $
-            Func $
-              FuncObj
-                { applyProc = makeCPSProc internalEval,
-                  partiallyApplyProc = error "partially-evaluating eval is not yet implemented"
-                }
-        ),
-        ( "apply",
-          builtinVal $
-            Func $
-              FuncObj
-                { applyProc = makeCPSProc internalApply,
-                  partiallyApplyProc = error "partially-evaluating apply is not yet implemented"
-                }
-        ),
-        ( "call/cc",
-          builtinVal $
-            Func $
-              FuncObj
-                { applyProc = makeCPSProc internalCallCC,
-                  partiallyApplyProc = error "partially-evaluating call/cc is not yet implemented"
-                }
-        ),
+        ("lambda", makeEnvAwarePureFunc internalLambda),
+        ("poly-fix", makeEnvAwareCPSFunc internalPolyFix),
+        ("eval", makeCPSFunc internalEval),
+        ("apply", makeCPSFunc internalApply),
+        ("call/cc", makeCPSFunc internalCallCC),
         -- metaprogramming utils
-        ( "gensym",
-          builtinVal $
-            Func $
-              FuncObj
-                { applyProc = makeProc gensym,
-                  partiallyApplyProc = error "partially-evaluating gensym not yet implemented"
-                }
-        ),
+        ("gensym", makeFunc gensym),
+        ("get-env", makeEnvAwarePureFunc getEnv),
         -- module utils
-        ("read-source", makeDefaultPEImpl $ makePureProc $ readSource sb),
-        -- partial evaluation
-        ( "peval",
-          builtinVal $
-            Func $
-              FuncObj
-                { applyProc = makeCPSProc internalPEval,
-                  partiallyApplyProc = error "partially-evaluating the partially-evaluate operator is not yet implemented - a bit daring today, aren't we?"
-                }
-        ),
+        ("read-source", makePureFunc $ readSource sb),
         -- data utils
-        ("add", makeDefaultPEImpl $ makePureProc $ vffoldr adder (builtinVal $ Num 0)),
-        ("mul", makeDefaultPEImpl $ makePureProc $ vffoldr multiplier (builtinVal $ Num 1)),
-        ("div", makeDefaultPEImpl $ makePureProc $ divide),
-        ("cons", makeDefaultPEImpl $ makePureProc cons),
-        ("car", makeDefaultPEImpl $ makePureProc car),
-        ("cdr", makeDefaultPEImpl $ makePureProc cdr),
-        ("bool-to-k", makeDefaultPEImpl $ makePureProc boolToK),
-        ("null?", makeDefaultPEImpl $ makePureProc isNull),
-        ("fail?", makeDefaultPEImpl $ makePureProc isFail),
-        ("pair?", makeDefaultPEImpl $ makePureProc isPair),
-        ("symbol?", makeDefaultPEImpl $ makePureProc isSymbol),
-        ("string?", makeDefaultPEImpl $ makePureProc isString),
-        ("func?", makeDefaultPEImpl $ makePureProc isFunc),
-        ("sym-eq?", makeDefaultPEImpl $ makePureProc symEq),
-        ("make-fail", makeDefaultPEImpl $ makePureProc internalMakeFail),
-        ("<=", makeDefaultPEImpl $ makePureProc numberLE)
+        ("add", makePureFunc $ vffoldr adder (builtinVal $ Num 0)),
+        ("mul", makePureFunc $ vffoldr multiplier (builtinVal $ Num 1)),
+        ("div", makePureFunc $ divide),
+        ("cons", makePureFunc cons),
+        ("car", makePureFunc car),
+        ("cdr", makePureFunc cdr),
+        ("bool-to-k", makePureFunc boolToK),
+        ("null?", makePureFunc isNull),
+        ("fail?", makePureFunc isFail),
+        ("pair?", makePureFunc isPair),
+        ("symbol?", makePureFunc isSymbol),
+        ("string?", makePureFunc isString),
+        ("func?", makePureFunc isFunc),
+        ("sym-eq?", makePureFunc symEq),
+        ("make-fail", makePureFunc internalMakeFail),
+        ("<=", makePureFunc numberLE)
       ]
 
 internalEval :: forall v m. (EvalWorld v m) => Callback v m -> Value v m -> m ()
@@ -135,30 +91,35 @@ internalEval ret (Value dinfo (Pair envRepr (Value _ (Pair val (Value _ Null))))
     envResult = envFromKVList envRepr
 internalEval ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-two-args" [v]
 
-internalPEval :: forall v m. (EvalWorld v m) => Callback v m -> Value v m -> m ()
-internalPEval ret (Value dinfo (Pair envRepr (Value _ (Pair val (Value _ Null)))))
-  | (Just env) <- envResult = peval env ret val
-  | otherwise = ret $ makeFailList dinfo "malformed-environment-arg" [envRepr]
-  where
-    envResult :: Maybe (Env v m)
-    envResult = partialEnvFromKVList envRepr
-internalPEval ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-two-args" [v]
-
-internalCallCC :: (EvalWorld v m) => Callback v m -> Value v m -> m ()
+internalCallCC :: Callback v m -> Value v m -> m ()
 internalCallCC ret (Value dinfo (Pair f (Value _ Null))) =
-  apply discardContinuation f $ (Value dinfo (Pair (makeCallableFromReturnCallback ret) (builtinVal Null)))
+  apply emptyEnv discardContinuation f $ (Value dinfo (Pair (makeCallableFromReturnCallback ret) (builtinVal Null)))
 internalCallCC ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-function" [v]
 
 discardContinuation :: Callback v m
 discardContinuation = error "a continuation was discarded"
 
-internalApply :: (EvalWorld v m) => Callback v m -> Value v m -> m ()
+internalApply :: Callback v m -> Value v m -> m ()
 internalApply ret (Value _ (Pair f (Value _ (Pair arg (Value _ Null))))) =
-  apply ret f arg
+  -- note that apply rejects the current environment and substitutes its own:
+  -- an empty one. This means that things like (apply get-env) don't work
+  -- I am making this decision arbitrarily - it looks safer this way to me,
+  -- and I don't see a proper use case.
+  apply emptyEnv ret f arg
 internalApply ret v@(Value dinfo _) = ret $ makeFailList dinfo "expected-two-args" [v]
 
 internalMakeFail :: Value v m -> Value v m
 internalMakeFail v@(Value dinfo _) = makeFail dinfo v
+
+internalLambda :: forall v m. (EvalWorld v m) => Env v m -> Value v m -> Value v m
+internalLambda env (Value dinfo (Pair arg bodyVal))
+  | (Just body) <- valToList bodyVal = makeLambda dinfo env arg body
+  | otherwise = makeFailList dinfo "lambda-body-not-list" [bodyVal]
+internalLambda _ val@(Value dinfo _) =
+  makeFailList dinfo "lambda-malformed" [val]
+
+internalPolyFix :: Env v m -> Callback v m -> Value v m -> m ()
+internalPolyFix _ = polyFix
 
 readSource :: PureSandbox -> Value NoValue PureComp -> Value NoValue PureComp
 readSource (PureSandbox {sources}) (Value _ (Pair nameVal@(Value dinfo (Str name)) (Value _ Null)))
@@ -174,22 +135,10 @@ multiplier :: Value v m -> Value v m -> Value v m
 multiplier (Value _ (Num a)) (Value _ (Num b)) = builtinVal $ Num $ a * b
 multiplier v1@(Value dinfo _) v2 = makeFailList dinfo "expected-two-numbers" [v1, v2]
 
-boolToK :: Value v m -> Value v m
+boolToK :: (Monad m) => Value v m -> Value v m
 boolToK (Value _ (Pair (Value _ (Bool b)) (Value _ Null)))
-  | b =
-      builtinVal $
-        Func $
-          FuncObj
-            { applyProc = makePureProc k,
-              partiallyApplyProc = error "partial application of the K combinator not yet implemented"
-            }
-  | not b =
-      builtinVal $
-        Func $
-          FuncObj
-            { applyProc = makePureProc k_,
-              partiallyApplyProc = error "partial application of the K* combinator not yet implemented"
-            }
+  | b = makePureFunc k
+  | not b = makePureFunc k_
   where
     k (Value _ (Pair x (Value _ (Pair _ (Value _ Null))))) = x
     k v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-k" [v]
@@ -230,6 +179,10 @@ isFunc v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-symbol?" [v]
 symEq :: Value v m -> Value v m
 symEq (Value dinfo (Pair (Value _ (Symbol a)) (Value _ (Pair (Value _ (Symbol b)) (Value _ Null))))) = Value dinfo $ Bool $ a == b
 symEq v@(Value dinfo _) = makeFailList dinfo "malformed-args-to-sym-eq" [v]
+
+getEnv :: Env v m -> Value v m -> Value v m
+getEnv env (Value dinfo Null) = envToKVList dinfo env
+getEnv _ v@(Value dinfo _) = makeFailList dinfo "args-given-to-get-env" [v]
 
 cons :: Value v m -> Value v m
 cons (Value dinfo (Pair a (Value _ (Pair b (Value _ Null))))) = Value dinfo (Pair a b)
@@ -275,6 +228,29 @@ numberLE :: Value v m -> Value v m
 numberLE (Value dinfo (Pair (Value _ (Num a)) (Value _ (Pair (Value _ (Num b)) (Value _ Null))))) =
   Value dinfo $ Bool $ a <= b
 numberLE v@(Value dinfo _) = makeFailList dinfo "expected-two-numbers" [v]
+
+makePureFunc :: (Monad m) => (Value v m -> Value v m) -> Value v m
+makePureFunc f = makeEnvAwarePureFunc (\_env -> f)
+
+makeEnvAwarePureFunc :: (Monad m) => (Env v m -> Value v m -> Value v m) -> Value v m
+makeEnvAwarePureFunc f = makeEnvAwareFunc (\env args -> pure $ f env args)
+
+makeFunc :: (Monad m) => (Value v m -> m (Value v m)) -> Value v m
+makeFunc f = makeEnvAwareFunc (\_env -> f)
+
+makeEnvAwareFunc :: (Monad m) => (Env v m -> Value v m -> m (Value v m)) -> Value v m
+makeEnvAwareFunc f = makeEnvAwareCPSFunc g
+  where
+    g env ret (val@(Value dinfo _)) = do
+      (Value _ resV) <- f env val
+      let res = Value dinfo resV -- maybe we need another way to pass the dinfo
+      ret res
+
+makeCPSFunc :: (Callback v m -> Value v m -> m ()) -> Value v m
+makeCPSFunc f = makeEnvAwareCPSFunc (\_env -> f)
+
+makeEnvAwareCPSFunc :: (Env v m -> Callback v m -> Value v m -> m ()) -> Value v m
+makeEnvAwareCPSFunc f = builtinVal $ Func f
 
 evalPureProgram :: Program -> [Value NoValue PureComp]
 evalPureProgram prog = resultsOf $ eval env yieldResult progExpr
