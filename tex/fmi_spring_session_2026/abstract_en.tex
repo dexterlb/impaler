@@ -25,7 +25,7 @@
 
 \newcommand\lang{ILD }
 
-\title[Title]{\bf A module system implemented on top of a minimal Scheme dialect}
+\title[Title]{\bf A module system for a minimalistic functional language}
 
 \author{Angel Angelov}
 % \address{Baba \\
@@ -59,22 +59,22 @@ Faculty of Mathematics and Informatics, Sofia University
 
 We define a minimal language called \lang that syntactically resembles LISP and
 Scheme. Functions and macros in \lang are indistinguishable; the distinction is
-made only at the call site. We show that the minimal features of \lang are
+made only at invocation. We show that the minimal features of \lang are
 sufficient to define a module system that is as expressive as existing module
 systems in Scheme~\cite{r6rs}.
 
 Well-established module systems for Scheme and Racket take extra care to handle
 compile-time code execution and imports and exports of macros
 \cite{module-system-for-scheme}\cite{submodules-in-racket}. In contrast, we
-demonstrate that such techniques are not needed for a language like \lang
+demonstrate that such techniques are not needed for a language such as \lang
 because macros have runtime semantics and are effectively identical to
 functions.
 
-Using runtime macro semantics for complex metaprogramming constructs such as
-the module system presented here incurs a significant performance penalty. We
-propose using partial evaluation to implicitly shift module resolution to
-compile time, achieving performance comparable to that of established module
-systems in other languages.
+The complex metaprogramming constructs used to implement the proposed module
+system typically incur a significant performance penalty when combined with
+runtime semantics. We propose using partial evaluation to implicitly shift
+module resolution to compile time, achieving performance comparable to that of
+established module systems in other languages.
 
 \pagebreak
 \thispagestyle{plain}
