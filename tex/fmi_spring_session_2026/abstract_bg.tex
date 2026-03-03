@@ -1,0 +1,85 @@
+\documentclass[11pt,a4paper]{amsart}
+
+\usepackage{iftex}
+\ifPDFTeX
+	\usepackage{mathtext}
+	\usepackage[T1,T2A]{fontenc}
+	\usepackage[utf8x]{inputenc}
+	\usepackage{amssymb}
+
+    \PrerenderUnicode{абвгдежзийклмнопрстуфхцчшщъьюяѝАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЬЮЯ}
+\else % if luatex or xetex
+	\usepackage{unicode-math} % this also loads fontspec
+	\defaultfontfeatures{Scale=MatchLowercase}
+	\defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+	\IfFontExistsTF{Stix Two Text}{%
+		\setmainfont[]{Stix Two Text}
+	}{%
+		\setmainfont[]{Noto Serif}
+	}
+	\IfFontExistsTF{DroidSansM Nerd Font}{%
+		\setmonofont[]{DroidSansM Nerd Font}
+	}{%
+		\setmonofont[]{Droid Sans Mono}
+	}
+\fi
+\usepackage[english,bulgarian]{babel}
+\usepackage{amsmath,amsfonts,amsthm}
+\usepackage[text={150mm,210mm},centering]{geometry}
+\usepackage{xspace}
+\setlength{\parindent}{0pt}
+
+\newcommand\ds{\displaystyle}
+\newcommand\etal{et al.\xspace}
+\makeatletter
+\def\@@and{и}
+\makeatother
+
+\title{\MakeUppercase{заглавие}}
+
+
+\author[angel]{Ангел Ангелов}
+\email{angel@qtrp.org}
+
+\newtheorem{theorem}{Теорема}%[section]
+\newtheorem{lemma}[theorem]{Лема}
+\newtheorem{corollary}[theorem]{Следствие}
+\newtheorem{proposition}[theorem]{Твърдение}
+\newtheorem{conjecture}[theorem]{Предположение}
+\theoremstyle{definition}
+\newtheorem{defn}[theorem]{Дефиниция}
+\newtheorem{example}[theorem]{Пример}
+\newtheorem{remark}[theorem]{Забележка}
+
+\begin{document}
+\newcommand\FMI{Факултет по математика и информатика,
+Софийски университет "`Св. Климент\par Охридски"',
+бул. "`Джеймс Баучър"' \No~5, 1164 София, България}
+
+\newcommand\NSF{Фонд "`Научни изследвания"' при МОН\xspace}
+
+\newcommand\SUF{Фонд "`Научни изследвания"' при СУ "`Св. Климент Охридски"'\xspace}
+
+\renewcommand\emailaddrname{{\itshape E-mail}}
+
+\newcommand\lang{ILD }
+
+\maketitle
+\begin{center}
+\FMI
+\end{center}
+
+\thispagestyle{empty}
+
+\bigskip
+
+\section*{Резюме%
+%\\{\small\normalfont (Тази работа ще бъде представена от Ангел Ангелов)}
+}
+
+\bigskip
+
+foo
+
+\bigskip
+\end{document}

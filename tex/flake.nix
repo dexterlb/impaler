@@ -5,6 +5,8 @@
     nixpkgs.url = github:NixOS/nixpkgs/nixos-unstable;
     flake-utils.url = github:numtide/flake-utils;
     latex_tools.url = github:dexterlb/latex_tools;
+    latex_tools.inputs.flake-utils.follows = "flake-utils";
+    latex_tools.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs = { self, nixpkgs, flake-utils, latex_tools }:
@@ -46,13 +48,15 @@
         ];
 
         latexTools = latex_tools.lib.mkLatexTools { inherit nixpkgs pkgs texPkgs extraBuildDeps; };
-        fmiSpringSession = (import ./fmi_spring_session) { inherit pkgs latexTools; };
+        fmiSpringSession2024 = (import ./fmi_spring_session_2024) { inherit pkgs latexTools; };
+        fmiSpringSession2026 = (import ./fmi_spring_session_2026) { inherit pkgs latexTools; };
         isesia = (import ./isesia) { inherit pkgs latexTools; };
         thesis = (import ./thesis) { inherit pkgs latexTools; };
       in
       {
         packages
-          = fmiSpringSession.packages
+          = fmiSpringSession2024.packages
+          // fmiSpringSession2026.packages
           // isesia.packages
           // thesis.packages
           // rec {
@@ -70,7 +74,7 @@
               echo " - 'latex_builder watch foo.tex' to build automatically on file change."
             '';
           };
-        apps = fmiSpringSession.apps // isesia.apps;
+        apps = fmiSpringSession2024.apps // fmiSpringSession2026.apps // isesia.apps;
       }
     );
 }

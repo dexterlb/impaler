@@ -3,13 +3,11 @@
   (exports main)
   (imports
     (builtin (lambda macroexpand quote <= mul add))
-    ("core/prelude.l" (if))
-    )
+    ("core/prelude.l" (if)))
   (defs
     '(main (!lambda () (fact 5)))
 
     '(fact (!lambda (x)
       (!if (<= x 0)
         1
-        (mul x (fact (add x -1))))))
-  ))
+        (mul x (fact (add x -1))))))))

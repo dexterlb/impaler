@@ -1,0 +1,78 @@
+\documentclass[11pt]{amsart}
+
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{graphicx,color}
+% \usepackage{a4wide}
+\usepackage{amsmath}
+\usepackage{amsthm}
+
+\textwidth 14.8cm \textheight 19.5cm \topmargin 0in
+\oddsidemargin 0.5in
+\evensidemargin 0.5in
+\parskip 1mm
+\setlength{\parindent}{0pt}
+\def\ds{\displaystyle}
+
+% margin note
+\newcommand\mnote[1]{\leavevmode\marginpar{\scriptsize{ #1 }}}
+\newcommand\note[1]{\mnote{\textcolor{orange}{ #1 }}}
+% margin note marked fixed
+\newcommand\fixednote[1]{}
+\newcommand\discuss[1]{\mnote{ #1 \textcolor{red}{discuss}}}
+\newcommand\reword[1]{\textcolor{orange}{ #1 }}
+
+\newcommand\lang{ILD }
+
+\title[Title]{\bf A module system implemented on top of a minimal Scheme dialect}
+
+\author[Angel]{Angel Angelov}
+% \address{Baba \\
+% foo
+% }
+\email{angel@qtrp.org}
+
+% \date{\today}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{remark}[theorem]{Remark}
+
+\begin{document}
+
+\maketitle
+
+\begin{center}
+Faculty of Mathematics and Informatics, Sofia University
+\end{center}
+
+\section*{Abstract}
+
+We define a minimal language called \lang that syntactically resembles LISP
+and Scheme. Functions and macros in \lang are indistinguishable and are
+differentiated at the callsite. We show that the minimal features of \lang
+are sufficient to define a module system that is as expressive as existing
+module systems in Scheme.\cite{r6rs}
+
+Well-established module systems for Scheme and Racket take extra care
+to handle compile-time code execution and imports and exports of macros
+\cite{module-system-for-scheme}\cite{submodules-in-racket}. In contrast,
+we demonstrate that such techniques are not needed for a language like
+\lang because of macros having runtime semantics and being effectively
+identical to functions.
+
+Using runtime macro semantics for complex metaprogramming constructs such
+as the here-established module system incurs a significant performance
+penalty. We propose using partial evaluation to implicitly shift module
+resolution into compile-time execution, achieving similar performance
+to established module systems in other languages.
+
+\bigskip
+\bibliography{citations}
+\end{document}
