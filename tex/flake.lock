@@ -28,11 +28,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1711191416,
-        "narHash": "sha256-ZR9zPOdwsRcB0VSy0xShKWgc7RBiLktNIZPDW1lE59U=",
+        "lastModified": 1772532854,
+        "narHash": "sha256-F4r10oAg15IAnSAhWdmZgBD8527TEm/OZ3p5oma7WqA=",
         "owner": "dexterlb",
         "repo": "latex_tools",
-        "rev": "722474966b0f44ef4f62beca233231de5aa7cbe1",
+        "rev": "0183a573a151a993105556d56cc4e560d5db225e",
         "type": "github"
       },
       "original": {

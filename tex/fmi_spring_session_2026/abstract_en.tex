@@ -6,11 +6,12 @@
 % \usepackage{a4wide}
 \usepackage{amsmath}
 \usepackage{amsthm}
+\usepackage[style=alphabetic]{biblatex}
 
 \textwidth 14.8cm \textheight 19.5cm \topmargin 0in
 \oddsidemargin 0.5in
 \evensidemargin 0.5in
-\parskip 1mm
+\parskip 5mm
 \setlength{\parindent}{0pt}
 \def\ds{\displaystyle}
 
@@ -44,6 +45,8 @@
 \newtheorem{example}[theorem]{Example}
 \newtheorem{remark}[theorem]{Remark}
 
+\addbibresource{references.bib}
+
 \begin{document}
 
 \maketitle
@@ -73,6 +76,9 @@ penalty. We propose using partial evaluation to implicitly shift module
 resolution into compile-time execution, achieving similar performance
 to established module systems in other languages.
 
+\pagebreak
+
+\printbibliography[title={References}]
+
 \bigskip
-\bibliography{citations}
 \end{document}
