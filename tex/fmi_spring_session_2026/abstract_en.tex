@@ -1,41 +1,29 @@
-\documentclass[11pt]{amsart}
+\documentclass[12pt,a4paper]{amsart}
 
-\usepackage{amsfonts}
-\usepackage{amssymb}
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
 \usepackage{graphicx,color}
-% \usepackage{a4wide}
-\usepackage{amsmath}
-\usepackage{amsthm}
+\usepackage{fancyhdr}
 \usepackage[style=alphabetic]{biblatex}
+\addbibresource{references.bib}
 
-\textwidth 14.8cm \textheight 19.5cm \topmargin 0in
-\oddsidemargin 0.5in
-\evensidemargin 0.5in
-\parskip 5mm
-\setlength{\parindent}{0pt}
-\def\ds{\displaystyle}
-
-% margin note
-\newcommand\mnote[1]{\leavevmode\marginpar{\scriptsize{ #1 }}}
-\newcommand\note[1]{\mnote{\textcolor{orange}{ #1 }}}
-% margin note marked fixed
-\newcommand\fixednote[1]{}
-\newcommand\discuss[1]{\mnote{ #1 \textcolor{red}{discuss}}}
-\newcommand\reword[1]{\textcolor{orange}{ #1 }}
+\newcommand\ds{\displaystyle}
+\newcommand\etal{et al.\xspace}
 
 \newcommand\lang{ILD }
 
-\title[Title]{\bf A module system for a minimalistic functional language}
+\fancyhf{}
+\fancyhead[C]{\textit{Spring Scientific Session FMI -- 2026}}
 
-\author{Angel Angelov}
-% \address{Baba \\
-% foo
-% }
+% Title
+\title[ILD Module system]{\bf A module system for a minimalistic functional language}
+
+% Authors
+\author[A. Angelov]{Angel Angelov$^1$}
+\address{$^1$Faculty of Mathematics and Informatics, Sofia University}
 \email{angel@qtrp.org}
+% \thanks{$^1$The research of these authors was supported, in part, by the ...}
 
-% \date{\today}
-
-\newtheorem{theorem}{Theorem}[section]
+\newtheorem{theorem}{Theorem}
 \newtheorem{lemma}[theorem]{Lemma}
 \newtheorem{corollary}[theorem]{Corollary}
 \newtheorem{proposition}[theorem]{Proposition}
@@ -45,18 +33,15 @@
 \newtheorem{example}[theorem]{Example}
 \newtheorem{remark}[theorem]{Remark}
 
-\addbibresource{references.bib}
-
 \begin{document}
 
 \maketitle
 
-\begin{center}
-Faculty of Mathematics and Informatics, Sofia University
-\end{center}
+\thispagestyle{fancy}
 
-\section*{Abstract}
+\section*{Abstract\\{\small\normalfont (Presenter \textit{Angel Angelov})}}
 
+\bigskip
 We define a minimal language called \lang that syntactically resembles LISP and
 Scheme. Functions and macros in \lang are indistinguishable; the distinction is
 made only at invocation. We show that the minimal features of \lang are
@@ -75,11 +60,16 @@ system typically incur a significant performance penalty when combined with
 runtime semantics. We propose using partial evaluation to implicitly shift
 module resolution to compile time, achieving performance comparable to that of
 established module systems in other languages.
+\bigskip
+
+\noindent\textbf{Keywords:} % Maximum 6 keywords
+Functional, Lisp, Scheme, Partial evaluation
+\bigskip
 
 \pagebreak
 \thispagestyle{plain}
-
 \printbibliography[title={References}]
 
-\bigskip
+\newpage\thispagestyle{empty}
+
 \end{document}
