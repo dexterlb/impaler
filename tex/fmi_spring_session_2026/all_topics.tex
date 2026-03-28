@@ -37,6 +37,106 @@
 \end{minted}
 \end{frame}
 
+\begin{frame}[fragile]{Builtin special forms in \lang}
+\begin{itemize}
+  \item \linline|cur-env| -- introspect the environment at the callsite
+  \item \linline|quote| -- return the given expression without evaluating
+  \item \linline|macroexpand| -- apply given macro to quoted arguments and then evaluate result
+  \begin{itemize}
+    \item Syntax sugar is available (next slide)
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Macro execution in \lang}
+\begin{itemize}
+    \item This code:
+      \begin{minted}{lisp}
+        (!if (= x 5)
+          "x is 5"
+          "x is not 5")
+      \end{minted}
+    \item Is syntax sugar for this code:
+      \begin{minted}{lisp}
+        (eval (cur-env) (if (quote (= x 5))
+          (quote "x is 5")
+          (quote "x is not 5")))
+      \end{minted}
+    \item Macros are just functions that operate on code.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Defining the building blocks of a module system}
+Functions for manipulating basic data must be included in the initial environment:
+\begin{itemize}
+\item Lists: \linline|cons|, \linline|car|, \linline|cdr|, \linline|null?|
+\item Tests: \linline|symbol?|, \linline|pair?|, \linline|func?|, \linline|sym-eq?|
+\item Booleans: \tinline|#t|, \tinline|#f|, \linline|bool-to-k|
+\item Functional: \linline|lambda|, \linline|eval|, \linline|apply|
+\item Extrinsic: \linline|read-source|
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Defining the building blocks of a module system}
+Bootstrapping can be done in a few tiers:
+\begin{itemize}
+    \item \linline|list|, \linline|if|
+    \item The simple \linline|Y| combinator (if not available)
+    \item \linline|map|
+    \item \linline|let|
+    \item The polyvariate \linline|Y| combinator (if not available)
+    \item \linline|letrec|
+    \item Operations with key-value lists
+    \item Module parsing
+    \item Imports
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Bootstrapping specific constructs}
+\begin{minted}{lisp}
+  ; definition of helper "expand-lambda"
+  (!lambda (args body) (cons macroexpand (cons lambda (cons args (cons body ())))))
+
+  ; definition of "map" without use of letrec
+  (Y (!lambda (map)
+      (!lambda (f l)
+        (!if (null? l)
+          l
+          (!if (pair? l)
+            (cons (f (car l)) (map f (cdr l)))
+            (make-fail (list 'not-a-list l)))))))))
+
+  ; definition of "let"
+  (!lambda (letlist body)
+    (cons
+      (expand-lambda (map car letlist) body)
+      (map cadr letlist)))))
+\end{minted}
+\end{frame}
+\begin{frame}[fragile]{Core concepts}
+\begin{itemize}
+    \item Modules are converted to \linline|letrec| definitions that allow mutual recursion
+    \item The result of evaluating these definitions is a key-value list of exported items
+    \item Importing modules works by first evaluating them and then making their exports available in the new environment
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Future research}
+\begin{itemize}
+    \item Partial evaluation of the module import process
+      \begin{itemize}
+        \item If \linline|read-source| can be evaluated as a constant during PE,
+        a module import declaration can be specialised to the key-value list
+        resulting from its evaluation
+      \end{itemize}
+    \item Additional features
+      \begin{itemize}
+        \item Declaration of constants in addition to functions
+        \item Module structure verification
+      \end{itemize}
+\end{itemize}
+\end{frame}
+
 \begin{frame}[fragile,plain]
 \begin{center}
 \Huge Thank you!
