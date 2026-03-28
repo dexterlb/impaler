@@ -4,6 +4,39 @@
 \maketitle
 \end{frame}
 
+\begin{frame}[fragile]{\lang: Features}
+\begin{itemize}
+    \item Lisp-like
+        \begin{itemize}
+            \item Closures
+            \item Macros
+        \end{itemize}
+    \item Precise control over compile-time vs runtime execution
+        \begin{itemize}
+            \item Macro evaluation has ``runtime'' semantics: the macro body can make use of values defined in the runtime environment
+            \item Constant data, including macro execution, may be evaluated at compile time during PE
+        \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Example code in \lang}
+\begin{minted}{lisp}
+(module
+  (doc "this module calculates factorials")
+  (exports main)
+  (imports
+    (builtin (mul add <= expand lambda quote))
+    ("core/prelude.l" (if const fn)))
+  (defs
+    (!const main (!lambda () (fact 5)))
+
+    (!fn (fact x)
+      (!if (<= x 0)
+        1
+        (mul x (fact (add x -1)))))))
+\end{minted}
+\end{frame}
+
 \begin{frame}[fragile,plain]
 \begin{center}
 \Huge Thank you!
