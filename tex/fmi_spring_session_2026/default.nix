@@ -17,14 +17,12 @@ in rec {
     pkgname = "fmi_spring_session_2026_slides_with_notes";
     latexFiles = "slides_with_notes.tex";
   };
-  packages.fmi_spring_session_2026_slides_presenter = pkgs.writeTextFile
+  packages.fmi_spring_session_2026_slides_presenter = pkgs.writeShellApplication
     {
       name = "present.sh";
       text = ''
         ${pkgs.pympress}/bin/pympress ${packages.fmi_spring_session_2026_slides_with_notes}/slides_with_notes.pdf "''${@}"
       '';
-      executable = true;
-      destination = "/present.sh";
     };
   packages.fmi_spring_session_2026_all = pkgs.stdenvNoCC.mkDerivation rec {
     name = "fmi_spring_session_2026_all";
@@ -36,6 +34,6 @@ in rec {
   };
   apps.fmi_spring_session_2026_slides_present = {
     type = "app";
-    program = "${packages.fmi_spring_session_2026_slides_presenter}/present.sh";
+    program = "${packages.fmi_spring_session_2026_slides_presenter}/bin/present.sh";
   };
 }

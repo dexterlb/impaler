@@ -4,6 +4,22 @@
 \maketitle
 \end{frame}
 
+\begin{frame}[fragile]{Goals}
+\begin{itemize}
+    \item Minimality of the core language
+        \begin{itemize}
+            \item Only 3 special forms: \linline|quote|, and \linline|macroexpand| and \linline|cur-env|
+            \item Implement everything else in \lang itself
+        \end{itemize}
+    \item Ease of implementing partial evaluation
+    \item Expressiveness
+        \begin{itemize}
+            \item Full LISP-like macros: implement flow control, DSLs, custom syntax
+            \item Control over continuations: implement error handling, state machines, async execution
+        \end{itemize}
+\end{itemize}
+\end{frame}
+
 \begin{frame}[fragile]{\lang: Features}
 \begin{itemize}
     \item Lisp-like
@@ -25,7 +41,9 @@
   (doc "this module calculates factorials")
   (exports main)
   (imports
-    (builtin (mul add <= expand lambda quote))
+    (builtin
+      (mul add <= macroexpand
+        lambda quote))
     ("core/prelude.l" (if const fn)))
   (defs
     (!const main (!lambda () (fact 5)))
@@ -48,6 +66,17 @@
 \end{itemize}
 \end{frame}
 
+\begin{frame}[fragile]{Requirements for bootstrapping}
+Functions for manipulating basic data are assumed to be included in the initial environment:
+\begin{itemize}
+\item Lists: \linline|cons|, \linline|car|, \linline|cdr|, \linline|null?|
+\item Tests: \linline|symbol?|, \linline|pair?|, \linline|func?|, \linline|sym-eq?|
+\item Booleans: \tinline|#t|, \tinline|#f|, \linline|bool-to-k|
+\item Functional: \linline|lambda|, \linline|eval|, \linline|apply|
+\item Extrinsic: \linline|read-source|
+\end{itemize}
+\end{frame}
+
 \begin{frame}[fragile]{Macro execution in \lang}
 \begin{itemize}
     \item This code:
@@ -63,17 +92,6 @@
           (quote "x is not 5")))
       \end{minted}
     \item Macros are just functions that operate on code.
-\end{itemize}
-\end{frame}
-
-\begin{frame}[fragile]{Defining the building blocks of a module system}
-Functions for manipulating basic data must be included in the initial environment:
-\begin{itemize}
-\item Lists: \linline|cons|, \linline|car|, \linline|cdr|, \linline|null?|
-\item Tests: \linline|symbol?|, \linline|pair?|, \linline|func?|, \linline|sym-eq?|
-\item Booleans: \tinline|#t|, \tinline|#f|, \linline|bool-to-k|
-\item Functional: \linline|lambda|, \linline|eval|, \linline|apply|
-\item Extrinsic: \linline|read-source|
 \end{itemize}
 \end{frame}
 
@@ -95,7 +113,9 @@ Bootstrapping can be done in a few tiers:
 \begin{frame}[fragile]{Bootstrapping specific constructs}
 \begin{minted}{lisp}
   ; definition of helper "expand-lambda"
-  (!lambda (args body) (cons macroexpand (cons lambda (cons args (cons body ())))))
+  (!lambda (args body)
+    (cons macroexpand
+      (cons lambda (cons args (cons body ())))))
 
   ; definition of "map" without use of letrec
   (Y (!lambda (map)
