@@ -1,0 +1,88 @@
+We define a minimal language (called ILD) with the following (very informally specified) structure:
+
+    Mandatory builtin data types:
+        - Symbol: a short string that is used as an identifier
+        - Null: has a single inhabitant (null)
+        - Pair: a two-element tuple
+        - Fail: encapsulates failure, used for poor man's error handling
+        - Closure: carries an environment, a list of formal parameters and an expression
+        - External value: an opaque value from the environment we're embedded in
+
+    Special forms:
+        - quote: returns its argument without evaluating
+        - macroexpand: (macroexpand c foo bar baz) gets substituted by the equivalent of (c (quote foo) (quote bar) (quote baz)). A syntax sugar for this special form is available: (!c foo bar baz)
+        - lambda: (lambda <params> <body>) creates a closure that captures the current environment and executes <body> with <params> when called
+
+    Mandatory callable external values (every embedding environment must support these):
+        - car, cdr, cons
+        - null?, pair?, symbol?, fail?, func?
+        - make-fail: creates a fail object
+        - sym-eq?: compare symbols for equality
+
+    Good-to-have external value types:
+        - Number
+        - Bool
+        - String
+
+    And their associated helper callables:
+        - number?, add, multiply, num-eq?
+        - bool?
+        - bool-to-k: converts true to the K combinator and false to the K* combinator
+        - string?
+
+    Good-to-have external callables:
+        - poly-fix: polyvariate Y combinator; can be implemented by the definition of a Y combinator but in practice it is much more performant to make it available externally
+        - eval: of course one could implement an ILD interpretator in ILD, but since this is out of scope, we provide the eval operation externally
+
+TODO: define this formally; look at papers for other schemes and lisps (janet, clojure etc) - how do they define their semantics?
+
+We aim to define an ergonomic module system implemented in ILD on top of just
+the language features listed here and one additional external callable
+(`read-source`, for reading and parsing an external ILD source file).
+An example module may look like this:
+
+    (module
+        (doc "this module calculates factorials :)")
+        (exports main)
+        (imports
+            (builtin (lambda macroexpand quote <= mul add))
+            ("core/prelude.ild" (if)))
+        (defs
+            (!fn (main) (fact five))
+
+            (!const five 5)
+
+            (!fn (fact x)
+                (!if (<= x 0)
+                    1
+                    (multiply x (fact (add x -1)))))))
+
+
+We show that the metaprogramming constructs in the minimal language defined
+above are sufficient for implementing a "module-loader" function that allows
+organising code in such modules. In further research, we aim to show that the
+severe performance overhead incurred by implementing such complex
+metaprogramming constructs using a very limited set of base special forms can
+be significantly reduced by employing partial evaluation as an optimisation
+step.
+
+
+
+========
+
+Building blocks of the module loader
+- letrec: show how to implement a letrec macro using poly-fix
+- association lists: note that we need to implement some helper functions for working with association lists
+- transforming module definitions to letrec calls
+- handling imports (and recursively calling the module loader for imported modules)
+
+TODO: how do other lisps do their module systems? Scheme, for example, requires the module system to be implemented as part of the interpreter. There is a case to be made here, that implementing the module system in the language allows for greater portability between interpreters, etc.
+
+========
+
+References
+- r6rs has a library system that is really similar to what we've done: look at the "libraries" section of the r6rs document: https://www.r6rs.org/final/r6rs.pdf
+- chicken scheme has (non-standard?) "modules": https://wiki.call-cc.org/man/5/Modules
+- guile has pre-r6rs "modules": https://www.gnu.org/software/guile/manual/html_node/Creating-Guile-Modules.html
+- racket has a comprehensive module system which goes to great lengths to support macro exporting: https://dl.acm.org/doi/epdf/10.1145/2637365.2517211
+

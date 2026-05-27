@@ -1,0 +1,39 @@
+{ pkgs, latexTools }:
+let
+  buildLatex = latexTools.buildLatex;
+in rec {
+  packages.fmi_spring_session_2026_abstract = buildLatex {
+    src = ./.;
+    pkgname = "fmi_spring_session_2026_abstract";
+    latexFiles = "abstract_en.tex abstract_bg.tex";
+  };
+  packages.fmi_spring_session_2026_slides = buildLatex {
+    src = ./.;
+    pkgname = "fmi_spring_session_2026_slides";
+    latexFiles = "slides.tex";
+  };
+  packages.fmi_spring_session_2026_slides_with_notes = buildLatex {
+    src = ./.;
+    pkgname = "fmi_spring_session_2026_slides_with_notes";
+    latexFiles = "slides_with_notes.tex";
+  };
+  packages.fmi_spring_session_2026_slides_presenter = pkgs.writeShellApplication
+    {
+      name = "present.sh";
+      text = ''
+        ${pkgs.pympress}/bin/pympress ${packages.fmi_spring_session_2026_slides_with_notes}/slides_with_notes.pdf "''${@}"
+      '';
+    };
+  packages.fmi_spring_session_2026_all = pkgs.stdenvNoCC.mkDerivation rec {
+    name = "fmi_spring_session_2026_all";
+    phases = [ "installPhase" "fixupPhase" ];
+    installPhase = ''
+      mkdir -p $out
+      cp -rf ${packages.fmi_spring_session_2026_abstract}/* ${packages.fmi_spring_session_2026_slides}/* ${packages.fmi_spring_session_2026_slides_with_notes}/* ${packages.fmi_spring_session_2026_slides_presenter}/* $out/
+    '';
+  };
+  apps.fmi_spring_session_2026_slides_present = {
+    type = "app";
+    program = "${packages.fmi_spring_session_2026_slides_presenter}/bin/present.sh";
+  };
+}

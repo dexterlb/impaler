@@ -1,0 +1,114 @@
+\documentclass[11pt,a4paper]{amsart}
+
+\usepackage{iftex}
+\ifPDFTeX
+	\usepackage{mathtext}
+	\usepackage[T1,T2A]{fontenc}
+	\usepackage[utf8x]{inputenc}
+	\usepackage{amssymb}
+
+    \PrerenderUnicode{абвгдежзийклмнопрстуфхцчшщъьюяѝАБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЬЮЯ}
+\else % if luatex or xetex
+	\usepackage{unicode-math} % this also loads fontspec
+	\defaultfontfeatures{Scale=MatchLowercase}
+	\defaultfontfeatures[\rmfamily]{Ligatures=TeX,Scale=1}
+	\IfFontExistsTF{Stix Two Text}{%
+		\setmainfont[]{Stix Two Text}
+	}{%
+		\setmainfont[]{Noto Serif}
+	}
+	\IfFontExistsTF{DroidSansM Nerd Font}{%
+		\setmonofont[]{DroidSansM Nerd Font}
+	}{%
+		\setmonofont[]{Droid Sans Mono}
+	}
+\fi
+\usepackage[english,bulgarian]{babel}
+\usepackage{amsmath,amsfonts,amsthm}
+\usepackage[text={150mm,210mm},centering]{geometry}
+\usepackage[style=alphabetic]{biblatex}
+\usepackage{xspace}
+\setlength{\parindent}{0pt}
+
+\newcommand\ds{\displaystyle}
+\newcommand\etal{et al.\xspace}
+\makeatletter
+\def\@@and{и}
+\makeatother
+
+\addbibresource{references.bib}
+
+\title{\MakeUppercase{Модулна система, реализирана върху минимален диалект на Scheme}}
+
+
+\author{Ангел Ангелов}
+\email{angel@qtrp.org}
+
+\newtheorem{theorem}{Теорема}%[section]
+\newtheorem{lemma}[theorem]{Лема}
+\newtheorem{corollary}[theorem]{Следствие}
+\newtheorem{proposition}[theorem]{Твърдение}
+\newtheorem{conjecture}[theorem]{Предположение}
+\theoremstyle{definition}
+\newtheorem{defn}[theorem]{Дефиниция}
+\newtheorem{example}[theorem]{Пример}
+\newtheorem{remark}[theorem]{Забележка}
+
+\begin{document}
+\newcommand\FMI{Факултет по математика и информатика,
+Софийски университет "`Св. Климент\par Охридски"',
+бул. "`Джеймс Баучър"' \No~5, 1164 София, България}
+
+\newcommand\NSF{Фонд "`Научни изследвания"' при МОН\xspace}
+
+\newcommand\SUF{Фонд "`Научни изследвания"' при СУ "`Св. Климент Охридски"'\xspace}
+
+\renewcommand\emailaddrname{{\itshape E-mail}}
+
+\newcommand\lang{ILD }
+
+\maketitle
+\begin{center}
+\FMI
+\end{center}
+
+\thispagestyle{empty}
+
+\bigskip
+
+\section*{Резюме%
+%\\{\small\normalfont (Тази работа ще бъде представена от Ангел Ангелов)}
+}
+
+\bigskip
+
+\textbf{Пробвах се да направя машинен превод с Claude, и резултатът е много
+забавен (и неизползваем). TODO: хубав превод}
+
+Дефинираме минимален език, наречен \lang, който синтактично наподобява LISP и
+Scheme. Функциите и макросите в \lang са неразличими; разграничението се прави
+единствено на мястото на извикване. Показваме, че минималните средства на \lang
+са достатъчни за дефиниране на модулна система, която е толкова изразителна,
+колкото съществуващите модулни системи в Scheme~\cite{r6rs}.
+
+Утвърдените модулни системи за Scheme и Racket полагат специални усилия за
+обработка на изпълнение на код по време на компилация, както и на внос и износ
+на макроси~\cite{module-system-for-scheme}\cite{submodules-in-racket}. За
+разлика от тях, ние демонстрираме, че подобни техники не са необходими за език
+като \lang, тъй като макросите имат семантика по време на изпълнение и на
+практика са идентични с функциите.
+
+Използването на семантика на макросите по време на изпълнение за сложни
+метапрограмни конструкции, като представената тук модулна система, води до
+значително влошаване на производителността. Предлагаме използването на частично
+оценяване за имплицитно изместване на резолюцията на модулите към време на
+компилация, постигайки производителност, сравнима с тази на утвърдените модулни
+системи в други езици.
+
+\pagebreak
+\thispagestyle{plain}
+
+\printbibliography[title={Литература}]
+
+\bigskip
+\end{document}

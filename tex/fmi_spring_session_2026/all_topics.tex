@@ -1,0 +1,165 @@
+\begin{document}
+
+\begin{frame}
+\maketitle
+\end{frame}
+
+\begin{frame}[fragile]{Goals}
+\begin{itemize}
+    \item Minimality of the core language
+        \begin{itemize}
+            \item Only 3 special forms: \linline|quote|, and \linline|macroexpand| and \linline|cur-env|
+            \item Implement everything else in \lang itself
+        \end{itemize}
+    \item Ease of implementing partial evaluation
+    \item Expressiveness
+        \begin{itemize}
+            \item Full LISP-like macros: implement flow control, DSLs, custom syntax
+            \item Control over continuations: implement error handling, state machines, async execution
+        \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{\lang: Features}
+\begin{itemize}
+    \item Lisp-like
+        \begin{itemize}
+            \item Closures
+            \item Macros
+        \end{itemize}
+    \item Precise control over compile-time vs runtime execution
+        \begin{itemize}
+            \item Macro evaluation has ``runtime'' semantics: the macro body can make use of values defined in the runtime environment
+            \item Constant data, including macro execution, may be evaluated at compile time during PE
+        \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Example code in \lang}
+\begin{minted}{lisp}
+(module
+  (doc "this module calculates factorials")
+  (exports main)
+  (imports
+    (builtin
+      (mul add <= macroexpand
+        lambda quote))
+    ("core/prelude.l" (if const fn)))
+  (defs
+    (!const main (!lambda () (fact 5)))
+
+    (!fn (fact x)
+      (!if (<= x 0)
+        1
+        (mul x (fact (add x -1)))))))
+\end{minted}
+\end{frame}
+
+\begin{frame}[fragile]{Builtin special forms in \lang}
+\begin{itemize}
+  \item \linline|cur-env| -- introspect the environment at the callsite
+  \item \linline|quote| -- return the given expression without evaluating
+  \item \linline|macroexpand| -- apply given macro to quoted arguments and then evaluate result
+  \begin{itemize}
+    \item Syntax sugar is available (next slide)
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Requirements for bootstrapping}
+Functions for manipulating basic data are assumed to be included in the initial environment:
+\begin{itemize}
+\item Lists: \linline|cons|, \linline|car|, \linline|cdr|, \linline|null?|
+\item Tests: \linline|symbol?|, \linline|pair?|, \linline|func?|, \linline|sym-eq?|
+\item Booleans: \tinline|#t|, \tinline|#f|, \linline|bool-to-k|
+\item Functional: \linline|lambda|, \linline|eval|, \linline|apply|
+\item Extrinsic: \linline|read-source|
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Macro execution in \lang}
+\begin{itemize}
+    \item This code:
+      \begin{minted}{lisp}
+        (!if (= x 5)
+          "x is 5"
+          "x is not 5")
+      \end{minted}
+    \item Is syntax sugar for this code:
+      \begin{minted}{lisp}
+        (eval (cur-env) (if (quote (= x 5))
+          (quote "x is 5")
+          (quote "x is not 5")))
+      \end{minted}
+    \item Macros are just functions that operate on code.
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Defining the building blocks of a module system}
+Bootstrapping can be done in a few tiers:
+\begin{itemize}
+    \item \linline|list|, \linline|if|
+    \item The simple \linline|Y| combinator (if not available)
+    \item \linline|map|
+    \item \linline|let|
+    \item The polyvariate \linline|Y| combinator (if not available)
+    \item \linline|letrec|
+    \item Operations with key-value lists
+    \item Module parsing
+    \item Imports
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Bootstrapping specific constructs}
+\begin{minted}{lisp}
+  ; definition of helper "expand-lambda"
+  (!lambda (args body)
+    (cons macroexpand
+      (cons lambda (cons args (cons body ())))))
+
+  ; definition of "map" without use of letrec
+  (Y (!lambda (map)
+      (!lambda (f l)
+        (!if (null? l)
+          l
+          (!if (pair? l)
+            (cons (f (car l)) (map f (cdr l)))
+            (make-fail (list 'not-a-list l)))))))))
+
+  ; definition of "let"
+  (!lambda (letlist body)
+    (cons
+      (expand-lambda (map car letlist) body)
+      (map cadr letlist)))))
+\end{minted}
+\end{frame}
+\begin{frame}[fragile]{Core concepts}
+\begin{itemize}
+    \item Modules are converted to \linline|letrec| definitions that allow mutual recursion
+    \item The result of evaluating these definitions is a key-value list of exported items
+    \item Importing modules works by first evaluating them and then making their exports available in the new environment
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Future research}
+\begin{itemize}
+    \item Partial evaluation of the module import process
+      \begin{itemize}
+        \item If \linline|read-source| can be evaluated as a constant during PE,
+        a module import declaration can be specialised to the key-value list
+        resulting from its evaluation
+      \end{itemize}
+    \item Additional features
+      \begin{itemize}
+        \item Declaration of constants in addition to functions
+        \item Module structure verification
+      \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile,plain]
+\begin{center}
+\Huge Thank you!
+\end{center}
+\end{frame}
+\end{document}
