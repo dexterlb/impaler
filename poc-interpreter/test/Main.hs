@@ -10,18 +10,30 @@ import Data.Text (Text)
 import Data.Text qualified as T
 import PseudoMacros
 import Sandbox
+import Loader (ProgramInfo(..))
 import System.Directory (listDirectory)
 import System.FilePath (takeDirectory, (</>))
 import Test.Hspec
 import Testing
 import Utils.Parsing (parseFile)
+import Cli.Runner (runProgram)
+import Utils.Files qualified as F
 
 -- TODO: instead of reading the files at runtime,
 -- use embedDir from here: https://hackage.haskell.org/package/file-embed-0.0.15.0/docs/Data-FileEmbed.html
 -- this will make it work under nix, etc
 
 main :: IO ()
-main = exprTestMain
+-- main = exprTestMain
+main = factDemo
+
+factDemo :: IO ()
+factDemo = do
+  codeDir <- F.resolveDir' "code"
+  runProgram $ ProgramInfo {
+    rootDirs = [ codeDir ],
+    entryPointExpr = "((eval (get-env) (read-source \"core/bootstrap/module_loader.l\")) \"demos/fact.l\" (quote main) (quote ()))"
+  }
 
 exprTestMain :: IO ()
 exprTestMain = do

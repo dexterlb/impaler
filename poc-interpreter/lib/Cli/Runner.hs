@@ -1,5 +1,6 @@
 module Cli.Runner
   ( runWithOpts,
+    runProgram,
   )
 where
 
@@ -13,13 +14,15 @@ import Utils.Files qualified as F
 runWithOpts :: Opts -> IO ()
 runWithOpts o = do
   rootDirs <- mapM F.resolveDir' o.rootDir
-  progOrErr <-
-    runExceptT $
-      loadProgram $
-        ProgramInfo
-          { rootDirs = rootDirs,
-            entryPointExpr = o.expr
-          }
+  runProgram $
+    ProgramInfo
+      { rootDirs = rootDirs,
+        entryPointExpr = o.expr
+      }
+
+runProgram :: ProgramInfo -> IO ()
+runProgram progInfo = do
+  progOrErr <- runExceptT $ loadProgram progInfo
 
   case progOrErr of
     (Left err) -> do

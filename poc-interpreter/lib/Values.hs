@@ -1,15 +1,12 @@
 module Values
   ( Value (..),
     ValueItem (..),
-    FuncObj (..),
     Computation (..),
     SpecialForm (..),
     EvalWorld,
     Callback,
     Env (..),
     ArgSpec (..),
-    Procedure,
-    PartialProcedure,
     astToVal,
     builtinVal,
     builtinList,
@@ -31,7 +28,6 @@ module Values
     encodeFail,
     weaklyEqual,
     weaklyEqualItems,
-    peConst,
   )
 where
 
@@ -54,16 +50,15 @@ data ValueItem v m
     -- | S-expression building blocks
     Pair (Value v m) (Value v m)
   | Null
-  | SpecialForm SpecialForm
-  | -- | A callable object that may optionally have side effects
-    Func (FuncObj v m)
+  | -- | The ultimate sin: special forms are first-class citizens
+    SpecialForm SpecialForm
+  | -- | A callable object that may optionally have side effects and/or
+    -- | Look at the environment (the latter should really not be abused)
+    Func (Env v m -> Callback v m -> Value v m -> m ())
   | -- | Since we don't have things like panics or exceptions,
     -- | we encapsulate failure as a separate value type, which makes
     -- | handling errors easier
     Fail (Value v m)
-  | -- | Special marker used during partial evaluation that denotes
-    -- | a fully-evaluated expression. Semantically equivalent to quote.
-    PEConst (Value v m)
   | -- | Encapsulate user-defined data structures (the user being
     -- | the one who embeds the language). Things like lazy lists,
     -- | hash maps, file handles, etc, will all go here
@@ -76,18 +71,9 @@ data ValueItem v m
 
 type Callback v m = (Value v m) -> m ()
 
-type Procedure v m = Callback v m -> Value v m -> m ()
-
-type PartialProcedure v m = Callback v m -> Value v m -> Maybe (m ())
-
-data FuncObj v m = FuncObj
-  { applyProc :: Procedure v m,
-    partiallyApplyProc :: PartialProcedure v m
-  }
-
 newtype Env v m = Env (Map Identifier (Value v m))
 
-data SpecialForm = QuoteForm | MacroExpandForm | GetEnvForm
+data SpecialForm = QuoteForm | MacroExpandForm | ExpandForm
 
 data ArgSpec = ArgSpec
   { argNames :: [Identifier],
@@ -223,7 +209,6 @@ instance (Show v) => (Show (ValueItem v m)) where
   show (Bool False) = "#f"
   show (Pair a b) = "(" <> (show a) <> " . " <> (show b) <> ")"
   show (Fail err) = "FAIL<" <> (show err) <> ">"
-  show (PEConst val) = "pe-const<" <> (show val) <> ">"
   show Null = "null"
   show (Func _) = "<external func>"
   show (ExternalVal v) = show v
@@ -232,7 +217,7 @@ instance (Show v) => (Show (ValueItem v m)) where
 instance (Show SpecialForm) where
   show QuoteForm = "#quote"
   show MacroExpandForm = "#macroexpand"
-  show GetEnvForm = "#getenv"
+  show ExpandForm = "#macroexpand"
 
 instance (Show v) => (Show (Value v m)) where
   show (Value dinfo v) = (show v) <> (show dinfo)
@@ -251,6 +236,3 @@ class (EvalWorld v m) => Computation v m where
   resultsOf m
     | (Just r) <- resultOf m = [r]
     | otherwise = []
-
-peConst :: Value v m -> Value v m
-peConst v@(Value dinfo _) = Value dinfo $ PEConst v
