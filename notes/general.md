@@ -1,0 +1,3 @@
+- Fexpr's might be close to the macros in ILD, need to look at related research
+- Paulette's talk on partial evaluation in scheme: https://www.youtube.com/watch?v=K-l5CdeHn7s
+    - It references a cool classic paper that explains how to deal with termination in PE: https://dl.acm.org/doi/10.5555/127960.128037

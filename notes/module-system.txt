@@ -1,3 +1,14 @@
+Outline of paper:
+    - Definition of ILD
+    - Some words about opinions
+        - it doesn't matter if we have get-env and lambda or protolambda and cur-env, etc
+    - Module system definition
+    - Definition of all building blocks
+    - Exploratory words, etc
+
+
+=======================
+
 We define a minimal language (called ILD) with the following (very informally specified) structure:
 
     Mandatory builtin data types:
@@ -18,6 +29,7 @@ We define a minimal language (called ILD) with the following (very informally sp
         - null?, pair?, symbol?, fail?, func?
         - make-fail: creates a fail object
         - sym-eq?: compare symbols for equality
+        - get-env: get the binding environment of a closure
 
     Good-to-have external value types:
         - Number
