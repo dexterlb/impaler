@@ -1,9 +1,8 @@
 (module
   (doc "some core functions")
-  (exports if list)
+  (exports if list expand-lambda)
   (imports
-    (builtin (car cdr cons lambda macroexpand quote bool-to-k))
-    )
+    (builtin (lambda macroexpand quote bool-to-k)))
   (defs
     '(list (!lambda args args))
 
@@ -14,5 +13,4 @@
           (expand-lambda '() t)      ; lazy value that evals the "true" branch
           (expand-lambda '() f)))))  ; lazy value that evals the "false" branch
 
-    '(expand-lambda (!lambda (args body) (list macroexpand lambda args body)))
-  ))
+    '(expand-lambda (!lambda (args body) (list macroexpand lambda args body)))))

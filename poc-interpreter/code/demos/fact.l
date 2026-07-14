@@ -2,12 +2,13 @@
   (doc "this module calculates factorials :)")
   (exports main)
   (imports
-    (builtin (lambda macroexpand quote <= mul add))
-    ("core/prelude.l" (if)))
+    (builtin (macroexpand <= mul add))
+    ("core/prelude.l" (if))
+    ("core/module-utils.l" (fn)))
   (defs
-    '(main (!lambda () (fact 5)))
+    (!fn main () (fact 5))
 
-    '(fact (!lambda (x)
+    (!fn fact (x)
       (!if (<= x 0)
         1
-        (mul x (fact (add x -1))))))))
+        (mul x (fact (add x -1)))))))
