@@ -135,7 +135,7 @@
       (sym-item-pair (!lambda (sym)
         (list cons (list quote sym) sym)))
 
-      (module-loader (!lambda (entrypoint-module-name entrypoint-func-name entrypoint-func-args)
+      (module-loader (!lambda (entrypoint-module-name entrypoint-func-name . entrypoint-func-args)
         (apply
           (kv-get entrypoint-func-name (load-module entrypoint-module-name))
           entrypoint-func-args)))
