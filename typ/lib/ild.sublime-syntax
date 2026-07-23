@@ -1,0 +1,86 @@
+%YAML 1.2
+---
+# Syntax definition for ild — an s-expression language.
+# See http://www.sublimetext.com/docs/syntax.html
+name: ild
+file_extensions:
+  - ild
+scope: source.ild
+
+variables:
+  # A single character that is NOT allowed inside a symbol/number token.
+  # Symbols end at whitespace, parens, string quotes or comment starts.
+  boundary: '[\s()";]'
+  symbol_char: '[^\s()";]'
+
+contexts:
+  main:
+    - include: expression
+
+  expression:
+    - include: comment
+    - include: string
+    - include: number
+    - include: macroexpand
+    - include: list
+    - include: dot
+    - include: symbol
+
+  comment:
+    - match: ';'
+      scope: punctuation.definition.comment.ild
+      push:
+        - meta_scope: comment.line.semicolon.ild
+        - match: '$'
+          pop: true
+
+  string:
+    - match: '"'
+      scope: punctuation.definition.string.begin.ild
+      push:
+        - meta_scope: string.quoted.double.ild
+        - match: '\\.'
+          scope: constant.character.escape.ild
+        - match: '"'
+          scope: punctuation.definition.string.end.ild
+          pop: true
+
+  number:
+    # Integers and floats (optionally signed) that form a whole token.
+    - match: '(?<!{{symbol_char}})[+-]?(?:\d+\.\d*|\.\d+|\d+)(?={{boundary}}|$)'
+      scope: constant.numeric.ild
+
+  macroexpand:
+    # The bang-list operator: (!foo bar baz) — a "macroexpand" form.
+    - match: '(\()(!)({{symbol_char}}+)'
+      captures:
+        1: punctuation.section.parens.begin.ild
+        2: keyword.operator.macroexpand.ild
+        3: variable.function.macro.ild
+      push: parens-body
+    - match: '(\()(!)'
+      captures:
+        1: punctuation.section.parens.begin.ild
+        2: keyword.operator.macroexpand.ild
+      push: parens-body
+
+  list:
+    - match: '\('
+      scope: punctuation.section.parens.begin.ild
+      push: parens-body
+
+  parens-body:
+    - meta_scope: meta.parens.ild
+    - match: '\)'
+      scope: punctuation.section.parens.end.ild
+      pop: true
+    - include: expression
+
+  dot:
+    # A lone dot separating the two halves of a dot-pair: (a . b)
+    - match: '(?<={{boundary}})\.(?={{boundary}}|$)'
+      scope: keyword.operator.dot.ild
+
+  symbol:
+    - match: '{{symbol_char}}+'
+      scope: variable.other.ild
