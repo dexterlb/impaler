@@ -30,6 +30,12 @@ fn atom(input: &str) -> IResult<&str, Value> {
     if token == "." {
         return Err(Err::Error(Error::new(input, ErrorKind::Verify)));
     }
+    if token == "#t" {
+        return Ok((rest, Value::Bool(true)));
+    }
+    if token == "#f" {
+        return Ok((rest, Value::Bool(false)));
+    }
     let looks_numeric = token
         .chars()
         .next()
@@ -79,39 +85,49 @@ fn list(input: &str) -> IResult<&str, Value> {
 mod tests {
     use super::*;
 
+    fn parse(input: &str) -> Result<Value, String> {
+        parse_value(input)
+    }
+
     #[test]
     fn parses_symbol() {
-        assert_eq!(parse_value("foo"), Ok(Value::symbol("foo")));
-        assert_eq!(parse_value("+"), Ok(Value::symbol("+")));
-        assert_eq!(parse_value("nil?"), Ok(Value::symbol("nil?")));
+        assert_eq!(parse("foo"), Ok(Value::symbol("foo")));
+        assert_eq!(parse("+"), Ok(Value::symbol("+")));
+        assert_eq!(parse("nil?"), Ok(Value::symbol("nil?")));
     }
 
     #[test]
     fn parses_number() {
-        assert_eq!(parse_value("42"), Ok(Value::number(42.0)));
-        assert_eq!(parse_value("-3.5"), Ok(Value::number(-3.5)));
-        assert_eq!(parse_value("1e3"), Ok(Value::number(1000.0)));
+        assert_eq!(parse("42"), Ok(Value::number(42.0)));
+        assert_eq!(parse("-3.5"), Ok(Value::number(-3.5)));
+        assert_eq!(parse("1e3"), Ok(Value::number(1000.0)));
+    }
+
+    #[test]
+    fn parses_booleans() {
+        assert_eq!(parse("#t"), Ok(Value::boolean(true)));
+        assert_eq!(parse("#f"), Ok(Value::boolean(false)));
     }
 
     #[test]
     fn parses_string() {
-        assert_eq!(parse_value("\"hello\""), Ok(Value::string("hello")));
-        assert_eq!(parse_value("\"\""), Ok(Value::string("")));
+        assert_eq!(parse("\"hello\""), Ok(Value::string("hello")));
+        assert_eq!(parse("\"\""), Ok(Value::string("")));
         assert_eq!(
-            parse_value("\"a\\\"b\\nc\""),
+            parse("\"a\\\"b\\nc\""),
             Ok(Value::string("a\"b\nc"))
         );
     }
 
     #[test]
     fn parses_empty_list_as_null() {
-        assert_eq!(parse_value("()"), Ok(Value::Null));
+        assert_eq!(parse("()"), Ok(Value::Null));
     }
 
     #[test]
     fn parses_proper_list() {
         assert_eq!(
-            parse_value("(1 2 3)"),
+            parse("(1 2 3)"),
             Ok(Value::list([
                 Value::number(1.0),
                 Value::number(2.0),
@@ -123,7 +139,7 @@ mod tests {
     #[test]
     fn parses_nested_list() {
         assert_eq!(
-            parse_value("(add (mul 2 3) x)"),
+            parse("(add (mul 2 3) x)"),
             Ok(Value::list([
                 Value::symbol("add"),
                 Value::list([
@@ -139,23 +155,23 @@ mod tests {
     #[test]
     fn parses_dotted_pair() {
         assert_eq!(
-            parse_value("(1 . 2)"),
+            parse("(1 . 2)"),
             Ok(Value::pair(Value::number(1.0), Value::number(2.0)))
         );
     }
 
     #[test]
     fn ignores_surrounding_whitespace() {
-        assert_eq!(parse_value("  \n foo \t "), Ok(Value::symbol("foo")));
+        assert_eq!(parse("  \n foo \t "), Ok(Value::symbol("foo")));
     }
 
     #[test]
     fn rejects_trailing_input() {
-        assert!(parse_value("foo bar").is_err());
+        assert!(parse("foo bar").is_err());
     }
 
     #[test]
     fn rejects_unclosed_list() {
-        assert!(parse_value("(1 2").is_err());
+        assert!(parse("(1 2").is_err());
     }
 }
