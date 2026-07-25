@@ -1,6 +1,7 @@
 use crate::env::Env;
+use crate::lambda::mk_lambda;
 use crate::special_form::SpecialForm;
-use crate::value_builders::{func_binary, func_nary, func_unary};
+use crate::value_builders::{func_binary, func_nary, func_ternary, func_unary};
 use crate::value_list::ValueList;
 use crate::values::Value;
 
@@ -36,6 +37,11 @@ pub fn sandbox_env() -> Env {
     env.insert("cdr".to_string(), func_unary("cdr", cdr));
 
     env.insert("quote".to_string(), Value::SpecialForm(SpecialForm::Quote));
+
+    env.insert(
+        "mk-lambda".to_string(),
+        func_ternary("mk-lambda", mk_lambda),
+    );
 
     env
 }

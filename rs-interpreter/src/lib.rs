@@ -1,6 +1,7 @@
 pub mod async_eval;
 pub mod env;
 pub mod evaluator;
+pub mod lambda;
 pub mod parse;
 pub mod sandbox;
 pub mod special_form;

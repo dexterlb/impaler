@@ -36,4 +36,5 @@ eval_tests! {
     nested_arithmetic: "(+ (+ 1 1) 3)" => "5";
     nested_predicate: "(< (- 5 4) 3)" => "#t";
     quote: "(quote (+ 1 2))" => "(+ 1 2)";
+    mk_lambda: "((mk-lambda (cons (cons (quote +) +) (quote ((c . 42) (d . 3)))) (quote (a b)) (quote (+ a b c d))) 1 2)" => "48";
 }
