@@ -36,10 +36,9 @@ fn atom(input: &str) -> IResult<&str, Value> {
     if token == "#f" {
         return Ok((rest, Value::Bool(false)));
     }
-    let looks_numeric = token
-        .chars()
-        .next()
-        .map_or(false, |c| c.is_ascii_digit() || c == '+' || c == '-' || c == '.');
+    let looks_numeric = token.chars().next().map_or(false, |c| {
+        c.is_ascii_digit() || c == '+' || c == '-' || c == '.'
+    });
     if looks_numeric {
         if let Ok(n) = token.parse::<f64>() {
             return Ok((rest, Value::Number(n)));
@@ -113,10 +112,7 @@ mod tests {
     fn parses_string() {
         assert_eq!(parse("\"hello\""), Ok(Value::string("hello")));
         assert_eq!(parse("\"\""), Ok(Value::string("")));
-        assert_eq!(
-            parse("\"a\\\"b\\nc\""),
-            Ok(Value::string("a\"b\nc"))
-        );
+        assert_eq!(parse("\"a\\\"b\\nc\""), Ok(Value::string("a\"b\nc")));
     }
 
     #[test]
@@ -142,11 +138,7 @@ mod tests {
             parse("(add (mul 2 3) x)"),
             Ok(Value::list([
                 Value::symbol("add"),
-                Value::list([
-                    Value::symbol("mul"),
-                    Value::number(2.0),
-                    Value::number(3.0),
-                ]),
+                Value::list([Value::symbol("mul"), Value::number(2.0), Value::number(3.0),]),
                 Value::symbol("x"),
             ]))
         );

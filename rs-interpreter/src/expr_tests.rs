@@ -29,4 +29,6 @@ eval_tests! {
     greater_than: "(> 2 1)" => "#t";
     equal_true: "(= 2 2)" => "#t";
     equal_false: "(= 2 3)" => "#f";
+    nested_arithmetic: "(+ (+ 1 1) 3)" => "5";
+    nested_predicate: "(< (- 5 4) 3)" => "#t";
 }

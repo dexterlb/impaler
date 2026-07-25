@@ -1,4 +1,5 @@
 use crate::env::Env;
+use crate::value_list::ValueList;
 use crate::values::Value;
 
 pub fn sandbox_env() -> Env {
@@ -28,19 +29,16 @@ pub fn sandbox_env() -> Env {
         Value::func_binary(">", |a, b| compare(">", a, b, |x, y| x > y)),
     );
 
-    env.insert(
-        "cons".to_string(),
-        Value::func_binary("cons", Value::pair),
-    );
+    env.insert("cons".to_string(), Value::func_binary("cons", Value::pair));
     env.insert("car".to_string(), Value::func_unary("car", car));
     env.insert("cdr".to_string(), Value::func_unary("cdr", cdr));
 
     env
 }
 
-fn sum(args: Vec<Value>) -> Value {
+fn sum(args: ValueList) -> Value {
     let mut total = 0.0;
-    for arg in args {
+    for arg in args.to_vec() {
         match arg {
             Value::Number(n) => total += n,
             other => return Value::err("+: expected number", other),
@@ -49,9 +47,9 @@ fn sum(args: Vec<Value>) -> Value {
     Value::number(total)
 }
 
-fn product(args: Vec<Value>) -> Value {
+fn product(args: ValueList) -> Value {
     let mut total = 1.0;
-    for arg in args {
+    for arg in args.to_vec() {
         match arg {
             Value::Number(n) => total *= n,
             other => return Value::err("*: expected number", other),

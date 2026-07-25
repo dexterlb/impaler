@@ -1,10 +1,12 @@
 use std::fmt;
 use std::rc::Rc;
 
+use crate::value_list::ValueList;
+
 pub type Cont = Rc<dyn Fn(Value)>;
 
 pub trait External: fmt::Debug + 'static {
-    fn apply(&self, cont: Cont, arg: Value);
+    fn apply(&self, cont: Cont, args: ValueList);
     fn show(&self) -> String;
 }
 
@@ -60,26 +62,7 @@ impl Value {
             .fold(Value::Null, |cdr, car| Value::pair(car, cdr))
     }
 
-    pub fn to_vec(&self) -> Option<Vec<&Value>> {
-        let mut items = Vec::new();
-        let mut current = self;
-        loop {
-            match current {
-                Value::Null => return Some(items),
-                Value::Pair(cell) => {
-                    items.push(&cell.0);
-                    current = &cell.1;
-                }
-                _ => return None,
-            }
-        }
-    }
-
     pub fn show(&self) -> String {
-        if let Some(items) = self.to_vec() {
-            let parts: Vec<String> = items.iter().map(|item| item.show()).collect();
-            return format!("({})", parts.join(" "));
-        }
         match self {
             Value::Symbol(name) => name.clone(),
             Value::Number(x) => format!("{}", x),
@@ -115,19 +98,30 @@ impl Value {
         }
     }
 
-    pub fn apply(&self, cont: Cont, arg: Value) {
+    pub fn apply(&self, cont: Cont, args: ValueList) {
         if let Value::ExternalVal(external) = self {
-            external.apply(cont, arg);
+            external.apply(cont, args);
         }
     }
 
-    pub fn func_cps(
+    pub fn func_cps_nary(
         name: impl Into<String>,
-        f: impl Fn(&dyn Fn(Value), Value) + 'static,
+        f: impl Fn(&dyn Fn(Value), ValueList) + 'static,
     ) -> Value {
         Value::external(Func {
             name: name.into(),
-            f: Box::new(move |cont: Cont, arg: Value| f(&*cont, arg)),
+            f: Box::new(move |cont: Cont, args: ValueList| f(&*cont, args)),
+        })
+    }
+
+    pub fn func_nary(name: impl Into<String>, f: impl Fn(ValueList) -> Value + 'static) -> Value {
+        Value::func_cps_nary(name, move |ret, args| ret(f(args)))
+    }
+
+    pub fn func_cps(name: impl Into<String>, f: impl Fn(&dyn Fn(Value), Value) + 'static) -> Value {
+        Value::func_cps_nary(name, move |ret, args| match args.to_array::<1>() {
+            Some([a]) => f(ret, a),
+            None => ret(Value::Null),
         })
     }
 
@@ -135,21 +129,10 @@ impl Value {
         Value::func_cps(name, move |ret, arg| ret(f(arg)))
     }
 
-    pub fn func_nary(name: impl Into<String>, f: impl Fn(Vec<Value>) -> Value + 'static) -> Value {
-        Value::func(name, move |arg| f(list_args(&arg)))
-    }
-
-    pub fn func_cps_nary(
-        name: impl Into<String>,
-        f: impl Fn(&dyn Fn(Value), Vec<Value>) + 'static,
-    ) -> Value {
-        Value::func_cps(name, move |ret, arg| f(ret, list_args(&arg)))
-    }
-
     pub fn func_unary(name: impl Into<String>, f: impl Fn(Value) -> Value + 'static) -> Value {
-        Value::func_nary(name, move |args| match <[Value; 1]>::try_from(args) {
-            Ok([a]) => f(a),
-            Err(_) => Value::Null,
+        Value::func_nary(name, move |args| match args.to_array::<1>() {
+            Some([a]) => f(a),
+            None => Value::Null,
         })
     }
 
@@ -157,9 +140,9 @@ impl Value {
         name: impl Into<String>,
         f: impl Fn(Value, Value) -> Value + 'static,
     ) -> Value {
-        Value::func_nary(name, move |args| match <[Value; 2]>::try_from(args) {
-            Ok([a, b]) => f(a, b),
-            Err(_) => Value::Null,
+        Value::func_nary(name, move |args| match args.to_array::<2>() {
+            Some([a, b]) => f(a, b),
+            None => Value::Null,
         })
     }
 
@@ -167,24 +150,16 @@ impl Value {
         name: impl Into<String>,
         f: impl Fn(Value, Value, Value) -> Value + 'static,
     ) -> Value {
-        Value::func_nary(name, move |args| match <[Value; 3]>::try_from(args) {
-            Ok([a, b, c]) => f(a, b, c),
-            Err(_) => Value::Null,
+        Value::func_nary(name, move |args| match args.to_array::<3>() {
+            Some([a, b, c]) => f(a, b, c),
+            None => Value::Null,
         })
     }
 }
 
-fn list_args(arg: &Value) -> Vec<Value> {
-    arg.to_vec()
-        .unwrap_or_default()
-        .into_iter()
-        .cloned()
-        .collect()
-}
-
 struct Func {
     name: String,
-    f: Box<dyn Fn(Cont, Value)>,
+    f: Box<dyn Fn(Cont, ValueList)>,
 }
 
 impl fmt::Debug for Func {
@@ -194,8 +169,8 @@ impl fmt::Debug for Func {
 }
 
 impl External for Func {
-    fn apply(&self, cont: Cont, arg: Value) {
-        (self.f)(cont, arg)
+    fn apply(&self, cont: Cont, args: ValueList) {
+        (self.f)(cont, args)
     }
 
     fn show(&self) -> String {
@@ -227,7 +202,7 @@ mod tests {
     struct Prim(&'static str);
 
     impl External for Prim {
-        fn apply(&self, _cont: Cont, _arg: Value) {}
+        fn apply(&self, _cont: Cont, _args: ValueList) {}
 
         fn show(&self) -> String {
             format!("#<primitive {}>", self.0)
@@ -245,11 +220,7 @@ mod tests {
 
     #[test]
     fn displays_list() {
-        let value = Value::list([
-            Value::symbol("add"),
-            Value::number(1.0),
-            Value::number(2.0),
-        ]);
+        let value = Value::list([Value::symbol("add"), Value::number(1.0), Value::number(2.0)]);
         assert_eq!(value.show(), "(add 1 2)");
     }
 
@@ -272,28 +243,5 @@ mod tests {
     fn displays_external() {
         let value = Value::list([Value::symbol("call"), Value::external(Prim("add"))]);
         assert_eq!(value.show(), "(call #<primitive add>)");
-    }
-
-    #[test]
-    fn to_vec_collects_proper_list() {
-        let value = Value::list([Value::number(1.0), Value::number(2.0)]);
-        let items = value.to_vec().expect("proper list");
-        assert_eq!(items, vec![&Value::number(1.0), &Value::number(2.0)]);
-    }
-
-    #[test]
-    fn to_vec_empty_is_some() {
-        assert_eq!(Value::Null.to_vec(), Some(vec![]));
-    }
-
-    #[test]
-    fn to_vec_rejects_improper() {
-        let value = Value::pair(Value::number(1.0), Value::number(2.0));
-        assert_eq!(value.to_vec(), None);
-    }
-
-    #[test]
-    fn to_vec_rejects_atom() {
-        assert_eq!(Value::number(1.0).to_vec(), None);
     }
 }
