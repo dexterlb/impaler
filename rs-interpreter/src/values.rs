@@ -19,7 +19,34 @@ pub enum Value {
     Pair(Rc<(Value, Value)>),
     Null,
 
+    SpecialForm(SpecialForm),
+
     ExternalVal(Rc<dyn External>),
+}
+
+#[derive(Debug, Clone)]
+pub enum SpecialForm {
+    Quote,
+}
+
+impl SpecialForm {
+    pub fn show(&self) -> String {
+        match self {
+            SpecialForm::Quote => "#<special-form quote>".to_string(),
+        }
+    }
+
+    pub fn apply(&self, args: ValueList) -> Value {
+        match self {
+            SpecialForm::Quote => match args.to_array::<1>() {
+                Some([arg]) => arg,
+                None => Value::err(
+                    "quote expects exactly one argument",
+                    Value::list(args.to_vec()),
+                ),
+            },
+        }
+    }
 }
 
 impl Value {
@@ -68,6 +95,7 @@ impl Value {
             Value::Number(x) => format!("{}", x),
             Value::String(s) => format!("{:?}", s),
             Value::Bool(value) => if *value { "#t" } else { "#f" }.to_string(),
+            Value::SpecialForm(form) => form.show(),
             Value::ExternalVal(external) => external.show(),
             Value::Null => "()".to_string(),
             Value::Pair(_) => {
@@ -95,12 +123,6 @@ impl Value {
                 out.push(')');
                 out
             }
-        }
-    }
-
-    pub fn apply(&self, cont: Cont, args: ValueList) {
-        if let Value::ExternalVal(external) = self {
-            external.apply(cont, args);
         }
     }
 

@@ -77,19 +77,6 @@ impl NonEmptyValueList {
             _ => None,
         }
     }
-
-    pub fn from_list(list: ValueList) -> Option<NonEmptyValueList> {
-        let (head, tail) = list.split()?;
-        Some(NonEmptyValueList {
-            head: head.clone(),
-            tail: tail.clone(),
-        })
-    }
-
-    pub fn into_list(self) -> ValueList {
-        let NonEmptyValueList { head, tail } = self;
-        tail.push(head)
-    }
 }
 
 #[cfg(test)]

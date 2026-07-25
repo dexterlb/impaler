@@ -1,6 +1,6 @@
 use crate::env::Env;
 use crate::value_list::ValueList;
-use crate::values::Value;
+use crate::values::{SpecialForm, Value};
 
 pub fn sandbox_env() -> Env {
     let mut env = Env::new();
@@ -32,6 +32,8 @@ pub fn sandbox_env() -> Env {
     env.insert("cons".to_string(), Value::func_binary("cons", Value::pair));
     env.insert("car".to_string(), Value::func_unary("car", car));
     env.insert("cdr".to_string(), Value::func_unary("cdr", cdr));
+
+    env.insert("quote".to_string(), Value::SpecialForm(SpecialForm::Quote));
 
     env
 }

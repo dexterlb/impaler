@@ -9,12 +9,16 @@ fn eval_str(source: &str) -> Value {
     eval_async(env, expr)
 }
 
+fn parse_str(source: &str) -> Value {
+    parse_value(source).expect("parse")
+}
+
 macro_rules! eval_tests {
     ($($name:ident: $input:expr => $expected:expr;)*) => {
         $(
             #[test]
             fn $name() {
-                assert_eq!(eval_str($input), eval_str($expected));
+                assert_eq!(eval_str($input), parse_str($expected));
             }
         )*
     };
@@ -31,4 +35,5 @@ eval_tests! {
     equal_false: "(= 2 3)" => "#f";
     nested_arithmetic: "(+ (+ 1 1) 3)" => "5";
     nested_predicate: "(< (- 5 4) 3)" => "#t";
+    quote: "(quote (+ 1 2))" => "(+ 1 2)";
 }
