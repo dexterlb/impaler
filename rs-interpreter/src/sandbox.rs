@@ -1,38 +1,39 @@
 use crate::env::Env;
 use crate::special_form::SpecialForm;
+use crate::value_builders::{func_binary, func_nary, func_unary};
 use crate::value_list::ValueList;
 use crate::values::Value;
 
 pub fn sandbox_env() -> Env {
     let mut env = Env::new();
 
-    env.insert("+".to_string(), Value::func_nary("+", sum));
-    env.insert("*".to_string(), Value::func_nary("*", product));
+    env.insert("+".to_string(), func_nary("+", sum));
+    env.insert("*".to_string(), func_nary("*", product));
     env.insert(
         "-".to_string(),
-        Value::func_binary("-", |a, b| arithmetic("-", a, b, |x, y| x - y)),
+        func_binary("-", |a, b| arithmetic("-", a, b, |x, y| x - y)),
     );
     env.insert(
         "/".to_string(),
-        Value::func_binary("/", |a, b| arithmetic("/", a, b, |x, y| x / y)),
+        func_binary("/", |a, b| arithmetic("/", a, b, |x, y| x / y)),
     );
 
     env.insert(
         "=".to_string(),
-        Value::func_binary("=", |a, b| compare("=", a, b, |x, y| x == y)),
+        func_binary("=", |a, b| compare("=", a, b, |x, y| x == y)),
     );
     env.insert(
         "<".to_string(),
-        Value::func_binary("<", |a, b| compare("<", a, b, |x, y| x < y)),
+        func_binary("<", |a, b| compare("<", a, b, |x, y| x < y)),
     );
     env.insert(
         ">".to_string(),
-        Value::func_binary(">", |a, b| compare(">", a, b, |x, y| x > y)),
+        func_binary(">", |a, b| compare(">", a, b, |x, y| x > y)),
     );
 
-    env.insert("cons".to_string(), Value::func_binary("cons", Value::pair));
-    env.insert("car".to_string(), Value::func_unary("car", car));
-    env.insert("cdr".to_string(), Value::func_unary("cdr", cdr));
+    env.insert("cons".to_string(), func_binary("cons", Value::pair));
+    env.insert("car".to_string(), func_unary("car", car));
+    env.insert("cdr".to_string(), func_unary("cdr", cdr));
 
     env.insert("quote".to_string(), Value::SpecialForm(SpecialForm::Quote));
 
