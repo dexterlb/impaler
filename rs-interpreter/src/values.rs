@@ -1,6 +1,7 @@
 use std::fmt;
 use std::rc::Rc;
 
+use crate::special_form::SpecialForm;
 use crate::value_list::ValueList;
 
 pub type Cont = Rc<dyn Fn(Value)>;
@@ -22,31 +23,6 @@ pub enum Value {
     SpecialForm(SpecialForm),
 
     ExternalVal(Rc<dyn External>),
-}
-
-#[derive(Debug, Clone)]
-pub enum SpecialForm {
-    Quote,
-}
-
-impl SpecialForm {
-    pub fn show(&self) -> String {
-        match self {
-            SpecialForm::Quote => "#<special-form quote>".to_string(),
-        }
-    }
-
-    pub fn apply(&self, args: ValueList) -> Value {
-        match self {
-            SpecialForm::Quote => match args.to_array::<1>() {
-                Some([arg]) => arg,
-                None => Value::err(
-                    "quote expects exactly one argument",
-                    Value::list(args.to_vec()),
-                ),
-            },
-        }
-    }
 }
 
 impl Value {
