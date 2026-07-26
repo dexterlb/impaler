@@ -1,40 +1,64 @@
 use crate::async_eval::eval_async;
 use crate::parse::parse_value;
 use crate::sandbox::sandbox_env;
+use crate::value_list::ValueList;
 use crate::values::Value;
 
-fn eval_str(source: &str) -> Value {
-    let env = sandbox_env();
-    let expr = parse_value(source).expect("parse");
-    eval_async(env, expr)
+fn list_items(value: &Value) -> Vec<Value> {
+    ValueList::from_val(value)
+        .expect("expected a proper list")
+        .to_vec()
 }
 
-fn parse_str(source: &str) -> Value {
-    parse_value(source).expect("parse")
-}
-
-macro_rules! eval_tests {
-    ($($name:ident: $input:expr => $expected:expr;)*) => {
-        $(
-            #[test]
-            fn $name() {
-                assert_eq!(eval_str($input), parse_str($expected));
+// Look up `(key value)` in a body like `((expr ...) (expected ...))`.
+fn field(body: &Value, key: &str) -> Value {
+    for entry in list_items(body) {
+        if let [Value::Symbol(name), value] = list_items(&entry).as_slice() {
+            if name == key {
+                return value.clone();
             }
-        )*
-    };
+        }
+    }
+    panic!("missing field `{}` in test case", key);
 }
 
-eval_tests! {
-    adds: "(+ 2 3)" => "5";
-    subtracts: "(- 10 4)" => "6";
-    multiplies: "(* 2 3)" => "6";
-    less_than_true: "(< 1 2)" => "#t";
-    less_than_false: "(< 2 1)" => "#f";
-    greater_than: "(> 2 1)" => "#t";
-    equal_true: "(= 2 2)" => "#t";
-    equal_false: "(= 2 3)" => "#f";
-    nested_arithmetic: "(+ (+ 1 1) 3)" => "5";
-    nested_predicate: "(< (- 5 4) 3)" => "#t";
-    quote: "(quote (+ 1 2))" => "(+ 1 2)";
-    mk_lambda: "((mk-lambda (cons (cons (quote +) +) (quote ((c . 42) (d . 3)))) (quote (a b)) (quote (+ a b c d))) 1 2)" => "48";
+// Runs a test file of the form:
+//   (tests
+//     (case "name" ((expr <expr>) (expected <value>)))
+//     ...)
+fn run_test_file(source: &str) {
+    let mut items = list_items(&parse_value(source).expect("parse test file"));
+    let tag = items.remove(0);
+    assert_eq!(tag, Value::symbol("tests"), "file must start with `tests`");
+
+    for case in items {
+        let parts = list_items(&case);
+        let name = match &parts[1] {
+            Value::String(name) => name.clone(),
+            other => panic!("case name must be a string, got {}", other.show()),
+        };
+        let expr = field(&parts[2], "expr");
+        let expected = field(&parts[2], "expected");
+        assert_eq!(
+            eval_async(sandbox_env(), expr),
+            expected,
+            "test case `{}` failed",
+            name
+        );
+    }
+}
+
+#[test]
+fn simple() {
+    run_test_file(include_str!("../expr-tests/simple.ild"));
+}
+
+#[test]
+fn special_form() {
+    run_test_file(include_str!("../expr-tests/special-form.ild"));
+}
+
+#[test]
+fn lambda() {
+    run_test_file(include_str!("../expr-tests/lambda.ild"));
 }

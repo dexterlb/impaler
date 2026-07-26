@@ -1,0 +1,9 @@
+(tests
+  (case "mk-lambda" (
+    (expr (
+      (mk-lambda
+        (cons (cons (quote +) +) (quote ((c . 42) (d . 3))))
+        (quote (a b))
+        (quote (+ a b c d)))
+        1 2))
+     (expected 48))))
