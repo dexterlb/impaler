@@ -17,6 +17,15 @@ pub fn parse_value(input: &str) -> Result<Value, String> {
     }
 }
 
+// Parses a sequence of top-level forms.
+pub fn parse_all(input: &str) -> Result<Vec<Value>, String> {
+    match preceded(ws, many0(terminated(expr, ws)))(input) {
+        Ok(("", values)) => Ok(values),
+        Ok((rest, _)) => Err(format!("unexpected trailing input: {:?}", rest)),
+        Err(e) => Err(format!("parse error: {}", e)),
+    }
+}
+
 // Skips whitespace and `;` line comments.
 fn ws(input: &str) -> IResult<&str, ()> {
     let comment = pair(char(';'), take_while(|c: char| c != '\n' && c != '\r'));

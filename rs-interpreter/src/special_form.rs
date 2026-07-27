@@ -1,4 +1,4 @@
-use crate::env::Env;
+use crate::env::{Env, EnvExt};
 use crate::value_list::ValueList;
 use crate::values::Value;
 
@@ -34,11 +34,6 @@ impl SpecialForm {
     }
 
     fn apply_free_vars(env: Env) -> Value {
-        // TODO: move this into an env.to_val method
-        let pairs: Vec<Value> = env
-            .iter()
-            .map(|(name, value)| Value::pair(Value::symbol(name.clone()), value.clone()))
-            .collect();
-        Value::list(pairs)
+        env.to_val()
     }
 }

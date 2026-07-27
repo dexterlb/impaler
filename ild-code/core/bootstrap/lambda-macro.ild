@@ -1,0 +1,8 @@
+(mk-lambda
+  closure
+  (arg-names body)
+  (cons mk-lambda
+    (cons (free-vars)
+      (cons arg-names
+        (cons body
+          (quote ()))))))

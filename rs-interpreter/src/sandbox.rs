@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::async_eval::eval_async;
 use crate::env::{Env, EnvExt};
 use crate::lambda::mk_lambda;
@@ -7,9 +9,9 @@ use crate::value_builders::{func_binary, func_cps_binary, func_nary, func_ternar
 use crate::value_list::ValueList;
 use crate::values::Value;
 
-// TODO: pass an optional map of paths to expressions,
-// that is used for read_source
-pub fn sandbox_env() -> Env {
+// `sources` maps a path to the source text of a file, consulted by
+// `read-source` before falling back to the filesystem.
+pub fn sandbox_env(sources: HashMap<String, String>) -> Env {
     let mut env = Env::new();
 
     env.insert("+".to_string(), func_nary("+", sum));
@@ -53,11 +55,9 @@ pub fn sandbox_env() -> Env {
         func_ternary("mk-lambda", mk_lambda),
     );
 
-    // TODO: when an optional path->expression map is threaded through
-    // sandbox_env, prefer it over the filesystem here.
     env.insert(
         "read-source".to_string(),
-        func_unary("read-source", read_source),
+        func_unary("read-source", move |path| read_source(&sources, path)),
     );
 
     env
@@ -122,19 +122,25 @@ fn do_eval(ret: &dyn Fn(Value), env_spec: Value, body: Value) {
     }
 }
 
-fn read_source(path: Value) -> Value {
+fn read_source(sources: &HashMap<String, String>, path: Value) -> Value {
     let path = match path {
         Value::String(path) => path,
         other => return Value::err("read-source: expected a string path", other),
     };
-    match std::fs::read_to_string(&path) {
-        Ok(source) => match parse_value(&source) {
-            Ok(value) => value,
-            Err(message) => Value::err("read-source: parse error", Value::string(message)),
+    let source = match sources.get(&path) {
+        Some(source) => source.clone(),
+        None => match std::fs::read_to_string(&path) {
+            Ok(source) => source,
+            Err(error) => {
+                return Value::err(
+                    "read-source: cannot read file",
+                    Value::string(error.to_string()),
+                );
+            }
         },
-        Err(error) => Value::err(
-            "read-source: cannot read file",
-            Value::string(error.to_string()),
-        ),
+    };
+    match parse_value(&source) {
+        Ok(value) => value,
+        Err(message) => Value::err("read-source: parse error", Value::string(message)),
     }
 }

@@ -10,6 +10,7 @@ pub trait EnvExt {
     fn from_val(value: &Value) -> Option<Self>
     where
         Self: Sized;
+    fn to_val(&self) -> Value;
 }
 
 impl EnvExt for Env {
@@ -18,6 +19,14 @@ impl EnvExt for Env {
             Some(value) => value.clone(),
             None => Value::err("unbound symbol", Value::symbol(name)),
         }
+    }
+
+    fn to_val(&self) -> Value {
+        let pairs: Vec<Value> = self
+            .iter()
+            .map(|(name, value)| Value::pair(Value::symbol(name.clone()), value.clone()))
+            .collect();
+        Value::list(pairs)
     }
 
     fn from_val(value: &Value) -> Option<Self> {
