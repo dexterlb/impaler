@@ -50,15 +50,15 @@ fn run_test_file(source: &str) {
 
 #[test]
 fn simple() {
-    run_test_file(include_str!("../expr-tests/simple.ild"));
+    run_test_file(include_str!("../../ild-code/expr-tests/simple.ild"));
 }
 
 #[test]
 fn special_form() {
-    run_test_file(include_str!("../expr-tests/special-form.ild"));
+    run_test_file(include_str!("../../ild-code/expr-tests/special-form.ild"));
 }
 
 #[test]
 fn lambda() {
-    run_test_file(include_str!("../expr-tests/lambda.ild"));
+    run_test_file(include_str!("../../ild-code/expr-tests/lambda.ild"));
 }
