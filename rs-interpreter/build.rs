@@ -32,7 +32,7 @@ fn main() {
         {
             for case in case_names(content) {
                 out.push_str(&format!(
-                    "#[test]\nfn {}__{}() {{\n    run_case({:?}, {:?});\n}}\n\n",
+                    "#[test]\nfn {}_{}() {{\n    run_case({:?}, {:?});\n}}\n\n",
                     ident(stem),
                     ident(&case),
                     path,
