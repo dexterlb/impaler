@@ -1,8 +1,9 @@
 (mk-lambda
-  closure
-  (arg-names body)
-  (cons mk-lambda
-    (cons (free-vars)
-      (cons arg-names
-        (cons body
-          (quote ()))))))
+  (free-vars)       ; this can be replaced with a closure that has just cons, mk-lambda, quote and free-vars
+  (quote (arg-names body))
+  (quote
+    (cons mk-lambda
+      (cons (free-vars)
+        (cons arg-names
+          (cons body
+            (quote ())))))))

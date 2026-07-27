@@ -20,14 +20,13 @@
   (expr (eval (quote ((foo . 42))) (cons free-vars (quote ()))))
   (expected ((foo . 42))))
 
-; lambda-macro: `(c . 42)` is an unquoted dotted pair, which can't be evaluated.
-;  (case "lambda-macro"
-;    (expr (
-;      (eval (free-vars)
-;        ((eval
-;          (cons (c . 42) (free-vars))
-;          (read-source "core/bootstrap/lambda-macro.ild"))
-;          (quote (a b))
-;          (quote (+ a b c))))
-;      1 2))
-;    (expected 45))
+(case "lambda-macro"
+  (expr (
+    (eval (free-vars)
+      ((eval
+        (cons (quote (c . 42)) (free-vars))
+        (read-source "core/bootstrap/lambda-macro.ild"))
+        (quote (a b))
+        (quote (+ a b c))))
+    1 2))
+  (expected 45))
