@@ -6,25 +6,35 @@ use crate::values::{Cont, Value};
 
 pub fn eval(env: Env, ret: Cont, expr: Value) {
     if let Some(items) = NonEmptyValueList::from_val(&expr) {
-        eval_combination(env, ret, items);
+        eval_combination(env, ret, items, eval_args_and_apply);
     } else {
         resume(ret, eval_simple_expr(env, expr));
     }
 }
 
-fn eval_combination(env: Env, ret: Cont, items: NonEmptyValueList) {
+pub(crate) fn eval_combination(
+    env: Env,
+    ret: Cont,
+    items: NonEmptyValueList,
+    apply_fn: impl Fn(Env, Cont, Value, ValueList) + 'static,
+) {
     let NonEmptyValueList { head, tail } = items;
     let env_for_args = env.clone();
     eval(
         env,
         Rc::new(move |callable: Value| {
-            apply_bare(env_for_args.clone(), ret.clone(), callable, tail.clone());
+            apply_fn(env_for_args.clone(), ret.clone(), callable, tail.clone());
         }),
         head,
     );
 }
 
-pub(crate) fn apply_bare(env: Env, ret: Cont, callable: Value, unevaluated_args: ValueList) {
+pub(crate) fn eval_args_and_apply(
+    env: Env,
+    ret: Cont,
+    callable: Value,
+    unevaluated_args: ValueList,
+) {
     match callable {
         Value::SpecialForm(form) => form.apply(env, ret, unevaluated_args),
         _ => eval_all_and_then(

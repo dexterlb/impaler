@@ -1,8 +1,8 @@
 use std::rc::Rc;
 
 use crate::env::{Env, EnvExt};
-use crate::evaluator::{apply, eval};
-use crate::value_list::ValueList;
+use crate::evaluator::{apply, eval, eval_combination};
+use crate::value_list::{NonEmptyValueList, ValueList};
 use crate::values::{Cont, Value};
 
 #[derive(Debug, Clone)]
@@ -37,19 +37,17 @@ impl SpecialForm {
                 return;
             }
         };
-        eval(
-            env.clone(),
-            Rc::new(move |macro_value: Value| {
-                let env = env.clone();
-                let ret = ret.clone();
-                apply(
-                    Rc::new(move |expansion: Value| eval(env.clone(), ret.clone(), expansion)),
-                    macro_value.clone(),
-                    macro_args.clone(),
-                );
-            }),
-            macro_expr,
-        );
+        let items = NonEmptyValueList {
+            head: macro_expr,
+            tail: macro_args,
+        };
+        let eval_expansion: Cont = {
+            let env = env.clone();
+            Rc::new(move |expansion: Value| eval(env.clone(), ret.clone(), expansion))
+        };
+        eval_combination(env, eval_expansion, items, |_env, ret, callable, args| {
+            apply(ret, callable, args)
+        });
     }
 
     fn apply_quote(args: ValueList) -> Value {
