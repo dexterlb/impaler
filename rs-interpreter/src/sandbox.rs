@@ -44,6 +44,10 @@ pub fn sandbox_env(sources: HashMap<String, String>) -> Env {
 
     env.insert("quote".to_string(), Value::SpecialForm(SpecialForm::Quote));
     env.insert(
+        "macroexpand".to_string(),
+        Value::SpecialForm(SpecialForm::MacroExpand),
+    );
+    env.insert(
         "free-vars".to_string(),
         Value::SpecialForm(SpecialForm::FreeVars),
     );

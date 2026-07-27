@@ -24,9 +24,9 @@ fn eval_combination(env: Env, ret: Cont, items: NonEmptyValueList) {
     );
 }
 
-fn apply_bare(env: Env, ret: Cont, callable: Value, unevaluated_args: ValueList) {
+pub(crate) fn apply_bare(env: Env, ret: Cont, callable: Value, unevaluated_args: ValueList) {
     match callable {
-        Value::SpecialForm(form) => resume(ret, form.apply(env, unevaluated_args)),
+        Value::SpecialForm(form) => form.apply(env, ret, unevaluated_args),
         _ => eval_all_and_then(
             env,
             unevaluated_args,
@@ -37,7 +37,7 @@ fn apply_bare(env: Env, ret: Cont, callable: Value, unevaluated_args: ValueList)
     }
 }
 
-fn apply(ret: Cont, callable: Value, args: ValueList) {
+pub(crate) fn apply(ret: Cont, callable: Value, args: ValueList) {
     match callable {
         Value::ExternalVal(ext) => ext.apply(ret, args),
         other => resume(ret, Value::err("cannot apply", other)),

@@ -30,3 +30,13 @@
         (quote (+ a b c))))
     1 2))
   (expected 45))
+
+(case "macroexpand-and-lambda-macro"
+  (expr (
+    (macroexpand
+      (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild"))  ; lambda
+      (a b)
+      (+ a b 42))
+
+      1 2))
+  (expected 45))
