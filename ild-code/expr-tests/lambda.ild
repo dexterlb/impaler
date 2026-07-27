@@ -1,9 +1,33 @@
 (tests
-  (case "mk-lambda" (
+  (case "mk-lambda"
     (expr (
       (mk-lambda
         (cons (cons (quote +) +) (quote ((c . 42) (d . 3))))
         (quote (a b))
         (quote (+ a b c d)))
       1 2))
-    (expected 48))))
+    (expected 48))
+
+  (case "eval"
+    (expr
+      (eval (cons (cons (quote +) +) (quote ())) (quote (+ 40 2))))
+    (expected 42)))
+
+  (case "read-source"
+    (expr (read-source "fourtytwo.ild"))
+    (expected 42))
+
+ (case "free-vars"
+   (expr (eval (quote ((foo . 42)))) (cons free-vars (quote ())))
+   (expected ((foo . 42))))
+
+ (case "lambda-macro"
+   (expr (
+     (eval (free-vars)
+       ((eval                                       ; lambda
+         (cons (c . 42) (free-vars))                ; capture this closure
+         (read-source "core/bootstrap/lambda-macro.ild"))
+         (quote (a b))                              ; argument names
+         (quote (+ a b c))))
+       1 2))                                        ; arguments
+   (expected 45))

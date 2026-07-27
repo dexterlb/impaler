@@ -26,7 +26,7 @@ fn eval_combination(env: Env, ret: Cont, items: NonEmptyValueList) {
 
 fn apply_bare(env: Env, ret: Cont, callable: Value, unevaluated_args: ValueList) {
     match callable {
-        Value::SpecialForm(form) => resume(ret, form.apply(unevaluated_args)),
+        Value::SpecialForm(form) => resume(ret, form.apply(env, unevaluated_args)),
         _ => eval_all_and_then(
             env,
             unevaluated_args,

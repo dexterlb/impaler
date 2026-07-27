@@ -28,6 +28,16 @@ pub fn func(name: impl Into<String>, f: impl Fn(Value) -> Value + 'static) -> Va
     func_cps(name, move |ret, arg| ret(f(arg)))
 }
 
+pub fn func_cps_binary(
+    name: impl Into<String>,
+    f: impl Fn(&dyn Fn(Value), Value, Value) + 'static,
+) -> Value {
+    func_cps_nary(name, move |ret, args| match args.to_array::<2>() {
+        Some([a, b]) => f(ret, a, b),
+        None => ret(Value::Null),
+    })
+}
+
 pub fn func_unary(name: impl Into<String>, f: impl Fn(Value) -> Value + 'static) -> Value {
     func_nary(name, move |args| match args.to_array::<1>() {
         Some([a]) => f(a),

@@ -1,20 +1,29 @@
 use nom::branch::alt;
-use nom::bytes::complete::{escaped_transform, take_while1};
-use nom::character::complete::{char, multispace0, multispace1, none_of};
+use nom::bytes::complete::{escaped_transform, take_while, take_while1};
+use nom::character::complete::{char, multispace1, none_of};
 use nom::combinator::{opt, value as nom_value};
 use nom::error::{Error, ErrorKind};
-use nom::multi::many0;
-use nom::sequence::{delimited, preceded, terminated};
+use nom::multi::{many0, many0_count};
+use nom::sequence::{delimited, pair, preceded, terminated};
 use nom::{Err, IResult};
 
 use crate::values::Value;
 
 pub fn parse_value(input: &str) -> Result<Value, String> {
-    match delimited(multispace0, expr, multispace0)(input) {
+    match delimited(ws, expr, ws)(input) {
         Ok(("", value)) => Ok(value),
         Ok((rest, _)) => Err(format!("unexpected trailing input: {:?}", rest)),
         Err(e) => Err(format!("parse error: {}", e)),
     }
+}
+
+// Skips whitespace and `;` line comments.
+fn ws(input: &str) -> IResult<&str, ()> {
+    let comment = pair(char(';'), take_while(|c: char| c != '\n' && c != '\r'));
+    nom_value(
+        (),
+        many0_count(alt((nom_value((), multispace1), nom_value((), comment)))),
+    )(input)
 }
 
 fn expr(input: &str) -> IResult<&str, Value> {
@@ -22,7 +31,7 @@ fn expr(input: &str) -> IResult<&str, Value> {
 }
 
 fn is_atom_char(c: char) -> bool {
-    !c.is_whitespace() && !"()\"".contains(c)
+    !c.is_whitespace() && !"()\";".contains(c)
 }
 
 fn atom(input: &str) -> IResult<&str, Value> {
@@ -65,11 +74,11 @@ fn string_literal(input: &str) -> IResult<&str, Value> {
 
 fn list(input: &str) -> IResult<&str, Value> {
     let (input, _) = char('(')(input)?;
-    let (input, _) = multispace0(input)?;
-    let (input, items) = many0(terminated(expr, multispace0))(input)?;
+    let (input, _) = ws(input)?;
+    let (input, items) = many0(terminated(expr, ws))(input)?;
     let (input, tail) = opt(preceded(
         terminated(char('.'), multispace1),
-        terminated(expr, multispace0),
+        terminated(expr, ws),
     ))(input)?;
     let (input, _) = char(')')(input)?;
     let tail = tail.unwrap_or(Value::Null);
@@ -106,6 +115,14 @@ mod tests {
     fn parses_booleans() {
         assert_eq!(parse("#t"), Ok(Value::boolean(true)));
         assert_eq!(parse("#f"), Ok(Value::boolean(false)));
+    }
+
+    #[test]
+    fn ignores_comments() {
+        assert_eq!(
+            parse("; leading\n(a ; inline\n  b) ; trailing"),
+            Ok(Value::list([Value::symbol("a"), Value::symbol("b")]))
+        );
     }
 
     #[test]

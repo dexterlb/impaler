@@ -10,10 +10,10 @@ fn list_items(value: &Value) -> Vec<Value> {
         .to_vec()
 }
 
-// Look up `(key value)` in a body like `((expr ...) (expected ...))`.
-fn field(body: &Value, key: &str) -> Value {
-    for entry in list_items(body) {
-        if let [Value::Symbol(name), value] = list_items(&entry).as_slice() {
+// Look up `(key value)` among a case's `(expr ...) (expected ...)` entries.
+fn field(entries: &[Value], key: &str) -> Value {
+    for entry in entries {
+        if let [Value::Symbol(name), value] = list_items(entry).as_slice() {
             if name == key {
                 return value.clone();
             }
@@ -24,7 +24,7 @@ fn field(body: &Value, key: &str) -> Value {
 
 // Runs a test file of the form:
 //   (tests
-//     (case "name" ((expr <expr>) (expected <value>)))
+//     (case "name" (expr <expr>) (expected <value>))
 //     ...)
 fn run_test_file(source: &str) {
     let mut items = list_items(&parse_value(source).expect("parse test file"));
@@ -37,8 +37,9 @@ fn run_test_file(source: &str) {
             Value::String(name) => name.clone(),
             other => panic!("case name must be a string, got {}", other.show()),
         };
-        let expr = field(&parts[2], "expr");
-        let expected = field(&parts[2], "expected");
+        let entries = &parts[2..];
+        let expr = field(entries, "expr");
+        let expected = field(entries, "expected");
         assert_eq!(
             eval_async(sandbox_env(), expr),
             expected,
