@@ -40,3 +40,12 @@
 
       1 2))
   (expected 45))
+
+(case "macroexpand-syntax"
+  (expr (
+    (!(eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild"))  ; lambda
+      (a b)
+      (+ a b 42))
+
+      1 2))
+  (expected 45))

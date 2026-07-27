@@ -90,12 +90,32 @@ fn list(input: &str) -> IResult<&str, Value> {
         terminated(expr, ws),
     ))(input)?;
     let (input, _) = char(')')(input)?;
+    let items = desugar_bang(items);
     let tail = tail.unwrap_or(Value::Null);
     let value = items
         .into_iter()
         .rev()
         .fold(tail, |cdr, car| Value::pair(car, cdr));
     Ok((input, value))
+}
+
+// `(!x rest...)` and `(! x rest...)` desugar to `(macroexpand x rest...)`.
+fn desugar_bang(items: Vec<Value>) -> Vec<Value> {
+    let suffix = match items.first() {
+        Some(Value::Symbol(name)) => name.strip_prefix('!').map(str::to_string),
+        _ => None,
+    };
+    match suffix {
+        Some(suffix) => {
+            let mut out = vec![Value::symbol("macroexpand")];
+            if !suffix.is_empty() {
+                out.push(Value::symbol(suffix));
+            }
+            out.extend(items.into_iter().skip(1));
+            out
+        }
+        None => items,
+    }
 }
 
 #[cfg(test)]
@@ -124,6 +144,12 @@ mod tests {
     fn parses_booleans() {
         assert_eq!(parse("#t"), Ok(Value::boolean(true)));
         assert_eq!(parse("#f"), Ok(Value::boolean(false)));
+    }
+
+    #[test]
+    fn desugars_bang_to_macroexpand() {
+        assert_eq!(parse("(!foo bar baz)"), parse("(macroexpand foo bar baz)"));
+        assert_eq!(parse("(!(f x) bar)"), parse("(macroexpand (f x) bar)"));
     }
 
     #[test]
