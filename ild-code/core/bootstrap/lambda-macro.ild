@@ -3,7 +3,7 @@
   (quote (arg-names body))
   (quote
     (cons mk-lambda
-      (cons (free-vars)
-        (cons arg-names
-          (cons body
+      (cons (cons (quote quote) (cons (free-vars) (quote ())))  ; quoted closure (result of free-vars)
+        (cons (cons (quote quote) (cons arg-names (quote ())))  ; quoted arg-names
+          (cons (cons (quote quote) (cons body (quote ())))     ; quoted body
             (quote ())))))))
