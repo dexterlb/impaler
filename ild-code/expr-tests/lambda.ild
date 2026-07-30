@@ -49,3 +49,12 @@
 
       1 2))
   (expected 45))
+
+(case "can-define-and-then-use-lambda"
+  (expr (
+    (!(eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")) (lambda)
+
+      ((!lambda (a b) (+ a b 42)) 1 2))
+
+      (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild"))))
+  (expected 45))

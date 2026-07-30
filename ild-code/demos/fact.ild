@@ -1,0 +1,14 @@
+(module
+  (doc "this module calculates factorials :)")
+  (exports main)
+  (imports
+    (builtin (macroexpand <= mul add lambda))
+    ("core/prelude.ild" (if))
+    ("core/module-utils.ild" (fn)))
+  (defs
+    (!fn main () (fact 5))
+
+    (!fn fact (x)
+      (!if (<= x 0)
+        1
+        (mul x (fact (add x -1)))))))

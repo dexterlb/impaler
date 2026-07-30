@@ -1,0 +1,7 @@
+(case "fact-calculates-factorial-of-5"
+  (expr
+    ((eval (free-vars) (read-source "core/bootstrap/module_loader.ild"))
+      "demos/fact.ild"
+      (quote main)))
+
+  (expected 120))
