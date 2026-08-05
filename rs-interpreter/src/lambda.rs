@@ -3,7 +3,7 @@ use std::rc::Rc;
 use crate::env::{Env, EnvExt};
 use crate::evaluator::eval;
 use crate::value_list::ValueList;
-use crate::values::{Cont, External, Value};
+use crate::values::{Cont, External, Value, ValueItem};
 
 #[derive(Debug)]
 struct Lambda {
@@ -23,11 +23,11 @@ enum ArgSpec {
 
 impl ArgSpec {
     fn from_val(value: &Value) -> Option<ArgSpec> {
-        match value {
-            Value::Null => Some(ArgSpec::Empty),
-            Value::Symbol(name) => Some(ArgSpec::Wildcard(name.clone())),
-            Value::Pair(cell) => match &cell.0 {
-                Value::Symbol(name) => Some(ArgSpec::Cons(Rc::new((
+        match &value.item {
+            ValueItem::Null => Some(ArgSpec::Empty),
+            ValueItem::Symbol(name) => Some(ArgSpec::Wildcard(name.clone())),
+            ValueItem::Pair(cell) => match &cell.0.item {
+                ValueItem::Symbol(name) => Some(ArgSpec::Cons(Rc::new((
                     name.clone(),
                     ArgSpec::from_val(&cell.1)?,
                 )))),
@@ -49,7 +49,7 @@ impl ArgSpec {
                     cell.1.bind(env, rest);
                 }
                 None => {
-                    env.insert(cell.0.clone(), Value::Null);
+                    env.insert(cell.0.clone(), Value::null());
                     cell.1.bind(env, &[]);
                 }
             },

@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use crate::values::Value;
+use crate::values::{Value, ValueItem};
 
 #[derive(Debug, Clone)]
 pub enum ValueList {
@@ -23,7 +23,7 @@ impl ValueList {
 
     pub fn split(&self) -> Option<(&Value, &ValueList)> {
         match self {
-            ValueList::Cons(cell) => Some((&cell.0, &cell.1)),
+            ValueList::Cons(pair) => Some((&pair.0, &pair.1)),
             ValueList::Empty => None,
         }
     }
@@ -31,9 +31,9 @@ impl ValueList {
     pub fn reverse(&self) -> ValueList {
         let mut out = ValueList::Empty;
         let mut current = self;
-        while let ValueList::Cons(cell) = current {
-            out = out.push(cell.0.clone());
-            current = &cell.1;
+        while let ValueList::Cons(pair) = current {
+            out = out.push(pair.0.clone());
+            current = &pair.1;
         }
         out
     }
@@ -41,9 +41,9 @@ impl ValueList {
     pub fn to_vec(&self) -> Vec<Value> {
         let mut out = Vec::new();
         let mut current = self;
-        while let ValueList::Cons(cell) = current {
-            out.push(cell.0.clone());
-            current = &cell.1;
+        while let ValueList::Cons(pair) = current {
+            out.push(pair.0.clone());
+            current = &pair.1;
         }
         out
     }
@@ -53,9 +53,9 @@ impl ValueList {
     }
 
     pub fn from_val(value: &Value) -> Option<ValueList> {
-        match value {
-            Value::Null => Some(ValueList::Empty),
-            Value::Pair(cell) => Some(ValueList::from_val(&cell.1)?.push(cell.0.clone())),
+        match &value.item {
+            ValueItem::Null => Some(ValueList::Empty),
+            ValueItem::Pair(pair) => Some(ValueList::from_val(&pair.1)?.push(pair.0.clone())),
             _ => None,
         }
     }
@@ -69,10 +69,10 @@ pub struct NonEmptyValueList {
 
 impl NonEmptyValueList {
     pub fn from_val(value: &Value) -> Option<NonEmptyValueList> {
-        match value {
-            Value::Pair(cell) => Some(NonEmptyValueList {
-                head: cell.0.clone(),
-                tail: ValueList::from_val(&cell.1)?,
+        match &value.item {
+            ValueItem::Pair(pair) => Some(NonEmptyValueList {
+                head: pair.0.clone(),
+                tail: ValueList::from_val(&pair.1)?,
             }),
             _ => None,
         }
@@ -92,7 +92,7 @@ mod tests {
 
     #[test]
     fn from_val_empty_is_some() {
-        let items = ValueList::from_val(&Value::Null).expect("empty list");
+        let items = ValueList::from_val(&Value::null()).expect("empty list");
         assert!(items.is_empty());
     }
 
@@ -109,7 +109,7 @@ mod tests {
 
     #[test]
     fn non_empty_from_val_rejects_empty() {
-        assert!(NonEmptyValueList::from_val(&Value::Null).is_none());
+        assert!(NonEmptyValueList::from_val(&Value::null()).is_none());
     }
 
     #[test]

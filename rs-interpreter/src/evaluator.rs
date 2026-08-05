@@ -1,8 +1,8 @@
 use std::rc::Rc;
 
-use crate::env::{Env, EnvExt};
+use crate::env::Env;
 use crate::value_list::{NonEmptyValueList, ValueList};
-use crate::values::{Cont, Value};
+use crate::values::{Cont, Value, ValueItem};
 
 pub fn eval(env: Env, ret: Cont, expr: Value) {
     if let Some(items) = NonEmptyValueList::from_val(&expr) {
@@ -35,8 +35,8 @@ pub(crate) fn eval_args_and_apply(
     callable: Value,
     unevaluated_args: ValueList,
 ) {
-    match callable {
-        Value::SpecialForm(form) => form.apply(env, ret, unevaluated_args),
+    match &callable.item {
+        ValueItem::SpecialForm(form) => form.apply(env, ret, unevaluated_args),
         _ => eval_all_and_then(
             env,
             unevaluated_args,
@@ -48,24 +48,42 @@ pub(crate) fn eval_args_and_apply(
 }
 
 pub(crate) fn apply(ret: Cont, callable: Value, args: ValueList) {
-    match callable {
-        Value::ExternalVal(ext) => ext.apply(ret, args),
-        other => resume(ret, Value::err("cannot apply", other)),
+    match &callable.item {
+        ValueItem::ExternalVal(ext) => ext.apply(ret, args),
+        _ => resume(ret, Value::err("cannot apply", callable)),
     }
 }
 
 fn eval_simple_expr(env: Env, expr: Value) -> Value {
-    match expr {
-        Value::Symbol(name) => env.lookup(&name),
-        Value::Null => Value::err(
-            "trying to evaluate Null - did you forget to quote it?",
-            expr,
+    match &expr.item {
+        ValueItem::Symbol(name) => match env.get(name) {
+            Some(value) => value.clone(),
+            None => Value::err(format!("unbound symbol{}", at(&expr)), expr.clone()),
+        },
+        ValueItem::Null => Value::err(
+            format!(
+                "trying to evaluate Null - did you forget to quote it?{}",
+                at(&expr)
+            ),
+            expr.clone(),
         ),
-        Value::Pair(_) => Value::err(
-            "refusing to evaluate pair; use apply or quote explicitly",
-            expr,
+        ValueItem::Pair(_) => Value::err(
+            format!(
+                "refusing to evaluate pair; use apply or quote explicitly{}",
+                at(&expr)
+            ),
+            expr.clone(),
         ),
-        other => other, // everything else evaluates as itself
+        _ => expr, // everything else evaluates as itself
+    }
+}
+
+// A ` (at file:line:col)` suffix for error messages, or "" when the value
+// carries no source location.
+fn at(value: &Value) -> String {
+    match &value.debug {
+        Some(info) => format!(" (at {})", info.show()),
+        None => String::new(),
     }
 }
 

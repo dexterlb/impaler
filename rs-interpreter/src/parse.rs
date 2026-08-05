@@ -7,10 +7,10 @@ use nom::multi::{many0, many0_count};
 use nom::sequence::{delimited, pair, preceded, terminated};
 use nom::{Err, IResult};
 
-use crate::values::Value;
+use crate::values::{DebugInfo, Value, ValueItem};
 
 pub fn parse_value(input: &str) -> Result<Value, String> {
-    match delimited(ws, expr, ws)(input) {
+    match delimited(ws, |i| expr(input, i), ws)(input) {
         Ok(("", value)) => Ok(value),
         Ok((rest, _)) => Err(format!("unexpected trailing input: {:?}", rest)),
         Err(e) => Err(format!("parse error: {}", e)),
@@ -19,10 +19,27 @@ pub fn parse_value(input: &str) -> Result<Value, String> {
 
 // Parses a sequence of top-level forms.
 pub fn parse_all(input: &str) -> Result<Vec<Value>, String> {
-    match preceded(ws, many0(terminated(expr, ws)))(input) {
+    match preceded(ws, many0(terminated(|i| expr(input, i), ws)))(input) {
         Ok(("", values)) => Ok(values),
         Ok((rest, _)) => Err(format!("unexpected trailing input: {:?}", rest)),
         Err(e) => Err(format!("parse error: {}", e)),
+    }
+}
+
+// `remaining` is always a suffix of `origin`, so the difference of their
+// start pointers is how many bytes we have already consumed.
+fn byte_offset(origin: &str, remaining: &str) -> usize {
+    remaining.as_ptr() as usize - origin.as_ptr() as usize
+}
+
+// Turns a byte offset into `origin` into a 1-based line and column.
+fn debug_at(origin: &str, offset: usize) -> DebugInfo {
+    let consumed = &origin[..offset];
+    let line_start = consumed.rfind('\n').map_or(0, |i| i + 1);
+    DebugInfo {
+        filename: None,
+        line_no: consumed.matches('\n').count() + 1,
+        char_offset: offset - line_start + 1,
     }
 }
 
@@ -35,8 +52,12 @@ fn ws(input: &str) -> IResult<&str, ()> {
     )(input)
 }
 
-fn expr(input: &str) -> IResult<&str, Value> {
-    alt((string_literal, list, atom))(input)
+// `origin` is the whole input; `input` is the not-yet-consumed suffix. We
+// tag each parsed form with the source position where it started.
+fn expr<'a>(origin: &'a str, input: &'a str) -> IResult<&'a str, Value> {
+    let start = byte_offset(origin, input);
+    let (rest, value) = alt((string_literal, |i| list(origin, i), atom))(input)?;
+    Ok((rest, value.with_debug(debug_at(origin, start))))
 }
 
 fn is_atom_char(c: char) -> bool {
@@ -49,20 +70,20 @@ fn atom(input: &str) -> IResult<&str, Value> {
         return Err(Err::Error(Error::new(input, ErrorKind::Verify)));
     }
     if token == "#t" {
-        return Ok((rest, Value::Bool(true)));
+        return Ok((rest, Value::boolean(true)));
     }
     if token == "#f" {
-        return Ok((rest, Value::Bool(false)));
+        return Ok((rest, Value::boolean(false)));
     }
     let looks_numeric = token.chars().next().map_or(false, |c| {
         c.is_ascii_digit() || c == '+' || c == '-' || c == '.'
     });
     if looks_numeric {
         if let Ok(n) = token.parse::<f64>() {
-            return Ok((rest, Value::Number(n)));
+            return Ok((rest, Value::number(n)));
         }
     }
-    Ok((rest, Value::Symbol(token.to_string())))
+    Ok((rest, Value::symbol(token.to_string())))
 }
 
 fn string_literal(input: &str) -> IResult<&str, Value> {
@@ -78,20 +99,20 @@ fn string_literal(input: &str) -> IResult<&str, Value> {
         )),
     ))(input)?;
     let (input, _) = char('"')(input)?;
-    Ok((input, Value::String(contents.unwrap_or_default())))
+    Ok((input, Value::string(contents.unwrap_or_default())))
 }
 
-fn list(input: &str) -> IResult<&str, Value> {
+fn list<'a>(origin: &'a str, input: &'a str) -> IResult<&'a str, Value> {
     let (input, _) = char('(')(input)?;
     let (input, _) = ws(input)?;
-    let (input, items) = many0(terminated(expr, ws))(input)?;
+    let (input, items) = many0(terminated(|i| expr(origin, i), ws))(input)?;
     let (input, tail) = opt(preceded(
         terminated(char('.'), multispace1),
-        terminated(expr, ws),
+        terminated(|i| expr(origin, i), ws),
     ))(input)?;
     let (input, _) = char(')')(input)?;
     let items = desugar_bang(items);
-    let tail = tail.unwrap_or(Value::Null);
+    let tail = tail.unwrap_or_else(Value::null);
     let value = items
         .into_iter()
         .rev()
@@ -101,8 +122,8 @@ fn list(input: &str) -> IResult<&str, Value> {
 
 // `(!x rest...)` and `(! x rest...)` desugar to `(macroexpand x rest...)`.
 fn desugar_bang(items: Vec<Value>) -> Vec<Value> {
-    let suffix = match items.first() {
-        Some(Value::Symbol(name)) => name.strip_prefix('!').map(str::to_string),
+    let suffix = match items.first().map(|value| &value.item) {
+        Some(ValueItem::Symbol(name)) => name.strip_prefix('!').map(str::to_string),
         _ => None,
     };
     match suffix {
@@ -169,7 +190,7 @@ mod tests {
 
     #[test]
     fn parses_empty_list_as_null() {
-        assert_eq!(parse("()"), Ok(Value::Null));
+        assert_eq!(parse("()"), Ok(Value::null()));
     }
 
     #[test]

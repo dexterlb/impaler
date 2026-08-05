@@ -33,7 +33,7 @@ impl SpecialForm {
         let (macro_expr, macro_args) = match args.split() {
             Some((head, tail)) => (head.clone(), tail.clone()),
             None => {
-                (&*ret)(Value::err("macroexpand: missing macro", Value::Null));
+                (&*ret)(Value::err("macroexpand: missing macro", Value::null()));
                 return;
             }
         };

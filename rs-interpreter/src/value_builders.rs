@@ -20,7 +20,7 @@ pub fn func_nary(name: impl Into<String>, f: impl Fn(ValueList) -> Value + 'stat
 pub fn func_cps(name: impl Into<String>, f: impl Fn(&dyn Fn(Value), Value) + 'static) -> Value {
     func_cps_nary(name, move |ret, args| match args.to_array::<1>() {
         Some([a]) => f(ret, a),
-        None => ret(Value::Null),
+        None => ret(Value::null()),
     })
 }
 
@@ -34,21 +34,21 @@ pub fn func_cps_binary(
 ) -> Value {
     func_cps_nary(name, move |ret, args| match args.to_array::<2>() {
         Some([a, b]) => f(ret, a, b),
-        None => ret(Value::Null),
+        None => ret(Value::null()),
     })
 }
 
 pub fn func_unary(name: impl Into<String>, f: impl Fn(Value) -> Value + 'static) -> Value {
     func_nary(name, move |args| match args.to_array::<1>() {
         Some([a]) => f(a),
-        None => Value::Null,
+        None => Value::null(),
     })
 }
 
 pub fn func_binary(name: impl Into<String>, f: impl Fn(Value, Value) -> Value + 'static) -> Value {
     func_nary(name, move |args| match args.to_array::<2>() {
         Some([a, b]) => f(a, b),
-        None => Value::Null,
+        None => Value::null(),
     })
 }
 
@@ -58,7 +58,7 @@ pub fn func_ternary(
 ) -> Value {
     func_nary(name, move |args| match args.to_array::<3>() {
         Some([a, b, c]) => f(a, b, c),
-        None => Value::Null,
+        None => Value::null(),
     })
 }
 
