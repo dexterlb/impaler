@@ -95,7 +95,11 @@ impl Value {
     }
 
     pub fn err(message: impl Into<String>, value: Value) -> Value {
-        panic!("{}: {}", message.into(), value.show())
+        let dbg_suffix = match &value.debug {
+            Some(info) => format!(" (at {})", info.show()),
+            None => String::new(),
+        };
+        panic!("{}: {}{}", message.into(), value.show(), dbg_suffix)
     }
 
     pub fn list<I>(items: I) -> Value

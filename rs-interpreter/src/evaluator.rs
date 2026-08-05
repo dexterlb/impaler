@@ -58,32 +58,17 @@ fn eval_simple_expr(env: Env, expr: Value) -> Value {
     match expr.get() {
         ValueItem::Symbol(name) => match env.get(name) {
             Some(value) => value.clone(),
-            None => Value::err(format!("unbound symbol{}", at(&expr)), expr.clone()),
+            None => Value::err("unbound symbol", expr.clone()),
         },
         ValueItem::Null => Value::err(
-            format!(
-                "trying to evaluate Null - did you forget to quote it?{}",
-                at(&expr)
-            ),
+            "trying to evaluate Null - did you forget to quote it?",
             expr.clone(),
         ),
         ValueItem::Pair(..) => Value::err(
-            format!(
-                "refusing to evaluate pair; use apply or quote explicitly{}",
-                at(&expr)
-            ),
+            "refusing to evaluate pair; use apply or quote explicitly",
             expr.clone(),
         ),
         _ => expr, // everything else evaluates as itself
-    }
-}
-
-// A ` (at file:line:col)` suffix for error messages, or "" when the value
-// carries no source location.
-fn at(value: &Value) -> String {
-    match &value.debug {
-        Some(info) => format!(" (at {})", info.show()),
-        None => String::new(),
     }
 }
 
