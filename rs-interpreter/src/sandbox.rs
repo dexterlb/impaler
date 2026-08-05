@@ -1,13 +1,13 @@
 use std::collections::HashMap;
 
-use crate::async_eval::eval_async;
 use crate::env::{Env, EnvExt};
+use crate::evaluator::{apply, eval};
 use crate::lambda::mk_lambda;
 use crate::parse::parse_value;
 use crate::special_form::SpecialForm;
-use crate::value_builders::{func_binary, func_cps_binary, func_nary, func_ternary, func_unary};
+use crate::value_builders::{func_binary, func_cont_binary, func_nary, func_ternary, func_unary};
 use crate::value_list::ValueList;
-use crate::values::{Value, ValueItem};
+use crate::values::{Cont, Value, ValueItem};
 
 // `sources` maps a path to the source text of a file, consulted by
 // `read-source` before falling back to the filesystem.
@@ -37,12 +37,62 @@ pub fn sandbox_env(sources: HashMap<String, String>) -> Env {
         ">".to_string(),
         func_binary(">", |a, b| compare(">", a, b, |x, y| x > y)),
     );
+    env.insert(
+        "<=".to_string(),
+        func_binary("<=", |a, b| compare("<=", a, b, |x, y| x <= y)),
+    );
+    env.insert(
+        ">=".to_string(),
+        func_binary(">=", |a, b| compare(">=", a, b, |x, y| x >= y)),
+    );
 
     env.insert("cons".to_string(), func_binary("cons", Value::pair));
     env.insert("car".to_string(), func_unary("car", car));
     env.insert("cdr".to_string(), func_unary("cdr", cdr));
 
     env.insert("bool-to-k".to_string(), func_unary("bool-to-k", bool_to_k));
+
+    env.insert(
+        "null?".to_string(),
+        func_unary("null?", |v| {
+            Value::boolean(matches!(v.get(), ValueItem::Null))
+        }),
+    );
+    env.insert(
+        "pair?".to_string(),
+        func_unary("pair?", |v| {
+            Value::boolean(matches!(v.get(), ValueItem::Pair(..)))
+        }),
+    );
+    env.insert(
+        "symbol?".to_string(),
+        func_unary("symbol?", |v| {
+            Value::boolean(matches!(v.get(), ValueItem::Symbol(_)))
+        }),
+    );
+    env.insert(
+        "string?".to_string(),
+        func_unary("string?", |v| {
+            Value::boolean(matches!(v.get(), ValueItem::String(_)))
+        }),
+    );
+    env.insert(
+        "func?".to_string(),
+        func_unary("func?", |v| {
+            Value::boolean(matches!(v.get(), ValueItem::ExternalVal(_)))
+        }),
+    );
+
+    env.insert("apply".to_string(), func_cont_binary("apply", do_apply));
+
+    env.insert(
+        "make-fail".to_string(),
+        func_unary("make-fail", |v| Value::err("make-fail", v)),
+    );
+    env.insert(
+        "fail?".to_string(),
+        func_unary("fail?", |_| Value::boolean(false)),
+    );
 
     env.insert("quote".to_string(), Value::special_form(SpecialForm::Quote));
     env.insert(
@@ -54,7 +104,7 @@ pub fn sandbox_env(sources: HashMap<String, String>) -> Env {
         Value::special_form(SpecialForm::FreeVars),
     );
 
-    env.insert("eval".to_string(), func_cps_binary("eval", do_eval));
+    env.insert("eval".to_string(), func_cont_binary("eval", do_eval));
 
     env.insert(
         "mk-lambda".to_string(),
@@ -129,10 +179,17 @@ fn cdr(value: Value) -> Value {
     }
 }
 
-fn do_eval(ret: &dyn Fn(Value), env_spec: Value, body: Value) {
+fn do_eval(ret: Cont, env_spec: Value, body: Value) {
     match Env::from_val(&env_spec) {
-        Some(env) => ret(eval_async(env, body)),
-        None => ret(Value::err("eval: invalid environment", env_spec)),
+        Some(env) => eval(env, ret, body),
+        None => (&*ret)(Value::err("eval: invalid environment", env_spec)),
+    }
+}
+
+fn do_apply(ret: Cont, callable: Value, args: Value) {
+    match ValueList::from_val(&args) {
+        Some(list) => apply(ret, callable, list),
+        None => (&*ret)(Value::err("apply: expected an argument list", args)),
     }
 }
 

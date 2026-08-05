@@ -13,6 +13,24 @@ pub fn func_cps_nary(
     })
 }
 
+// like func_cps_nary, but converts the Value to a Cont before passing
+pub fn func_cont_nary(name: impl Into<String>, f: impl Fn(Cont, ValueList) + 'static) -> Value {
+    Value::external(Func {
+        name: name.into(),
+        f: Box::new(f),
+    })
+}
+
+pub fn func_cont_binary(
+    name: impl Into<String>,
+    f: impl Fn(Cont, Value, Value) + 'static,
+) -> Value {
+    func_cont_nary(name, move |cont, args| match args.to_array::<2>() {
+        Some([a, b]) => f(cont, a, b),
+        None => (&*cont)(Value::null()),
+    })
+}
+
 pub fn func_nary(name: impl Into<String>, f: impl Fn(ValueList) -> Value + 'static) -> Value {
     func_cps_nary(name, move |ret, args| ret(f(args)))
 }

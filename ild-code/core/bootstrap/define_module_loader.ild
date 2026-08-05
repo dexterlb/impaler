@@ -140,10 +140,6 @@
           (kv-get entrypoint-func-name (load-module entrypoint-module-name))
           entrypoint-func-args)))
 
-      (debug-trace (!lambda (name val)
-        (yield (list (quote trace) name val))
-        val))
-
       (concat (!lambda (l)
         (!if (null? l)
           l
