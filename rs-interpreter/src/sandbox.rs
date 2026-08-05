@@ -106,6 +106,8 @@ pub fn sandbox_env(sources: HashMap<String, String>) -> Env {
 
     env.insert("eval".to_string(), func_cont_binary("eval", do_eval));
 
+    env.insert("poly-fix".to_string(), Value::boolean(false));   // not implemented for now
+
     env.insert(
         "mk-lambda".to_string(),
         func_ternary("mk-lambda", mk_lambda),
