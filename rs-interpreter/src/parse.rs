@@ -9,16 +9,16 @@ use nom::{Err, IResult};
 
 use crate::values::{DebugInfo, Value, ValueItem};
 
-pub fn parse_value(input: &str) -> Result<Value, String> {
-    match delimited(ws, |i| expr(input, i), ws)(input) {
+pub fn parse_value(input: &str, filename: Option<&str>) -> Result<Value, String> {
+    match delimited(ws, |i| expr(filename, input, i), ws)(input) {
         Ok(("", value)) => Ok(value),
         Ok((rest, _)) => Err(format!("unexpected trailing input: {:?}", rest)),
         Err(e) => Err(format!("parse error: {}", e)),
     }
 }
 
-pub fn parse_all(input: &str) -> Result<Vec<Value>, String> {
-    match preceded(ws, many0(terminated(|i| expr(input, i), ws)))(input) {
+pub fn parse_all(input: &str, filename: Option<&str>) -> Result<Vec<Value>, String> {
+    match preceded(ws, many0(terminated(|i| expr(filename, input, i), ws)))(input) {
         Ok(("", values)) => Ok(values),
         Ok((rest, _)) => Err(format!("unexpected trailing input: {:?}", rest)),
         Err(e) => Err(format!("parse error: {}", e)),
@@ -31,11 +31,11 @@ fn byte_offset(origin: &str, remaining: &str) -> usize {
     remaining.as_ptr() as usize - origin.as_ptr() as usize
 }
 
-fn debug_at(origin: &str, offset: usize) -> DebugInfo {
+fn debug_at(filename: Option<&str>, origin: &str, offset: usize) -> DebugInfo {
     let consumed = &origin[..offset];
     let line_start = consumed.rfind('\n').map_or(0, |i| i + 1);
     DebugInfo {
-        filename: None,
+        filename: filename.map(str::to_string),
         line_no: consumed.matches('\n').count() + 1,
         char_offset: offset - line_start + 1,
     }
@@ -50,10 +50,10 @@ fn ws(input: &str) -> IResult<&str, ()> {
     )(input)
 }
 
-fn expr<'a>(origin: &'a str, input: &'a str) -> IResult<&'a str, Value> {
+fn expr<'a>(filename: Option<&'a str>, origin: &'a str, input: &'a str) -> IResult<&'a str, Value> {
     let start = byte_offset(origin, input);
-    let (rest, value) = alt((string_literal, |i| list(origin, i), atom))(input)?;
-    Ok((rest, value.with_debug(debug_at(origin, start))))
+    let (rest, value) = alt((string_literal, |i| list(filename, origin, i), atom))(input)?;
+    Ok((rest, value.with_debug(debug_at(filename, origin, start))))
 }
 
 fn is_atom_char(c: char) -> bool {
@@ -98,13 +98,13 @@ fn string_literal(input: &str) -> IResult<&str, Value> {
     Ok((input, Value::string(contents.unwrap_or_default())))
 }
 
-fn list<'a>(origin: &'a str, input: &'a str) -> IResult<&'a str, Value> {
+fn list<'a>(filename: Option<&'a str>, origin: &'a str, input: &'a str) -> IResult<&'a str, Value> {
     let (input, _) = char('(')(input)?;
     let (input, _) = ws(input)?;
-    let (input, items) = many0(terminated(|i| expr(origin, i), ws))(input)?;
+    let (input, items) = many0(terminated(|i| expr(filename, origin, i), ws))(input)?;
     let (input, tail) = opt(preceded(
         terminated(char('.'), multispace1),
-        terminated(|i| expr(origin, i), ws),
+        terminated(|i| expr(filename, origin, i), ws),
     ))(input)?;
     let (input, _) = char(')')(input)?;
     let items = desugar_bang(items);
@@ -145,7 +145,7 @@ mod tests {
     use super::*;
 
     fn parse(input: &str) -> Result<Value, String> {
-        parse_value(input)
+        parse_value(input, None)
     }
 
     #[test]

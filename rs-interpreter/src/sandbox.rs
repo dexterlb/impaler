@@ -143,7 +143,7 @@ fn read_source(sources: &HashMap<String, String>, path: Value) -> Value {
             }
         },
     };
-    match parse_value(&source) {
+    match parse_value(&source, Some(&path)) {
         Ok(value) => value,
         Err(message) => Value::err("read-source: parse error", Value::string(message)),
     }

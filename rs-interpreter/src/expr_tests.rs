@@ -44,7 +44,7 @@ fn field(entries: &[Value], key: &str) -> Value {
 }
 
 fn run_case(file: &str, case_name: &str) {
-    for form in parse_all(file_contents(file)).expect("parse ild file") {
+    for form in parse_all(file_contents(file), Some(file)).expect("parse ild file") {
         let parts = list_items(&form);
         if parts.len() < 2 || parts[0] != Value::symbol("case") {
             continue;
