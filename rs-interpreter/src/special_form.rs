@@ -53,10 +53,7 @@ impl SpecialForm {
     fn apply_quote(args: ValueList) -> Value {
         match args.to_array::<1>() {
             Some([arg]) => arg,
-            None => Value::err(
-                "quote expects exactly one argument",
-                Value::list(args.to_vec()),
-            ),
+            None => Value::err("quote expects exactly one argument", args.to_value()),
         }
     }
 

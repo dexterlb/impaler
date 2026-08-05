@@ -59,6 +59,13 @@ impl ValueList {
             _ => None,
         }
     }
+
+    pub fn to_value(&self) -> Value {
+        match self {
+            ValueList::Empty => Value::null(),
+            ValueList::Cons(pair) => Value::pair(pair.0.clone(), pair.1.to_value()),
+        }
+    }
 }
 
 #[derive(Debug, Clone)]
