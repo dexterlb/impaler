@@ -25,34 +25,41 @@ impl DebugInfo {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub enum ValueItem {
     Symbol(String),
     Number(f64),
     String(String),
     Bool(bool),
-    Pair(Rc<(Value, Value)>),
+    Pair(Value, Value),
     Null,
 
     SpecialForm(SpecialForm),
 
-    ExternalVal(Rc<dyn External>),
+    ExternalVal(Box<dyn External>),
 }
 
 #[derive(Debug, Clone)]
 pub struct Value {
-    pub item: ValueItem,
+    pub item: Rc<ValueItem>,
     pub debug: Option<Rc<DebugInfo>>,
 }
 
 impl Value {
     fn bare(item: ValueItem) -> Value {
-        Value { item, debug: None }
+        Value {
+            item: Rc::new(item),
+            debug: None,
+        }
     }
 
     pub fn with_debug(mut self, info: DebugInfo) -> Value {
         self.debug = Some(Rc::new(info));
         self
+    }
+
+    pub fn get(&self) -> &ValueItem {
+        &self.item
     }
 
     pub fn symbol(name: impl Into<String>) -> Value {
@@ -72,7 +79,7 @@ impl Value {
     }
 
     pub fn pair(car: Value, cdr: Value) -> Value {
-        Value::bare(ValueItem::Pair(Rc::new((car, cdr))))
+        Value::bare(ValueItem::Pair(car, cdr))
     }
 
     pub fn null() -> Value {
@@ -84,7 +91,7 @@ impl Value {
     }
 
     pub fn external(external: impl External) -> Value {
-        Value::bare(ValueItem::ExternalVal(Rc::new(external)))
+        Value::bare(ValueItem::ExternalVal(Box::new(external)))
     }
 
     pub fn err(message: impl Into<String>, value: Value) -> Value {
@@ -103,7 +110,7 @@ impl Value {
     }
 
     pub fn show(&self) -> String {
-        match &self.item {
+        match self.get() {
             ValueItem::Symbol(name) => name.clone(),
             ValueItem::Number(x) => format!("{}", x),
             ValueItem::String(s) => format!("{:?}", s),
@@ -111,19 +118,19 @@ impl Value {
             ValueItem::SpecialForm(form) => form.show(),
             ValueItem::ExternalVal(external) => external.show(),
             ValueItem::Null => "()".to_string(),
-            ValueItem::Pair(_) => {
+            ValueItem::Pair(..) => {
                 let mut out = String::from("(");
                 let mut current = self;
                 let mut first = true;
                 loop {
-                    match &current.item {
-                        ValueItem::Pair(cell) => {
+                    match current.get() {
+                        ValueItem::Pair(car, cdr) => {
                             if !first {
                                 out.push(' ');
                             }
                             first = false;
-                            out.push_str(&cell.0.show());
-                            current = &cell.1;
+                            out.push_str(&car.show());
+                            current = cdr;
                         }
                         ValueItem::Null => break,
                         _ => {
@@ -143,14 +150,18 @@ impl Value {
 #[cfg(test)]
 impl PartialEq for Value {
     fn eq(&self, other: &Value) -> bool {
-        match (&self.item, &other.item) {
+        match (self.get(), other.get()) {
             (ValueItem::Symbol(a), ValueItem::Symbol(b)) => a == b,
             (ValueItem::Number(a), ValueItem::Number(b)) => a == b,
             (ValueItem::String(a), ValueItem::String(b)) => a == b,
             (ValueItem::Bool(a), ValueItem::Bool(b)) => a == b,
-            (ValueItem::Pair(a), ValueItem::Pair(b)) => a == b,
+            (ValueItem::Pair(a_car, a_cdr), ValueItem::Pair(b_car, b_cdr)) => {
+                a_car == b_car && a_cdr == b_cdr
+            }
             (ValueItem::Null, ValueItem::Null) => true,
-            (ValueItem::ExternalVal(a), ValueItem::ExternalVal(b)) => Rc::ptr_eq(a, b),
+            (ValueItem::ExternalVal(a), ValueItem::ExternalVal(b)) => {
+                std::ptr::eq(a.as_ref(), b.as_ref())
+            }
             _ => false,
         }
     }

@@ -53,9 +53,9 @@ impl ValueList {
     }
 
     pub fn from_val(value: &Value) -> Option<ValueList> {
-        match &value.item {
+        match value.get() {
             ValueItem::Null => Some(ValueList::Empty),
-            ValueItem::Pair(pair) => Some(ValueList::from_val(&pair.1)?.push(pair.0.clone())),
+            ValueItem::Pair(car, cdr) => Some(ValueList::from_val(cdr)?.push(car.clone())),
             _ => None,
         }
     }
@@ -69,10 +69,10 @@ pub struct NonEmptyValueList {
 
 impl NonEmptyValueList {
     pub fn from_val(value: &Value) -> Option<NonEmptyValueList> {
-        match &value.item {
-            ValueItem::Pair(pair) => Some(NonEmptyValueList {
-                head: pair.0.clone(),
-                tail: ValueList::from_val(&pair.1)?,
+        match value.get() {
+            ValueItem::Pair(car, cdr) => Some(NonEmptyValueList {
+                head: car.clone(),
+                tail: ValueList::from_val(cdr)?,
             }),
             _ => None,
         }

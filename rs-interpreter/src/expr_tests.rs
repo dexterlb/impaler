@@ -33,7 +33,7 @@ fn list_items(value: &Value) -> Vec<Value> {
 fn field(entries: &[Value], key: &str) -> Value {
     for entry in entries {
         if let [key_value, value] = list_items(entry).as_slice() {
-            if let ValueItem::Symbol(name) = &key_value.item {
+            if let ValueItem::Symbol(name) = key_value.get() {
                 if name == key {
                     return value.clone();
                 }
@@ -49,7 +49,7 @@ fn run_case(file: &str, case_name: &str) {
         if parts.len() < 2 || parts[0] != Value::symbol("case") {
             continue;
         }
-        let name = match &parts[1].item {
+        let name = match parts[1].get() {
             ValueItem::String(name) => name,
             _ => continue,
         };

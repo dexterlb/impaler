@@ -70,7 +70,7 @@ pub fn sandbox_env(sources: HashMap<String, String>) -> Env {
 fn sum(args: ValueList) -> Value {
     let mut total = 0.0;
     for arg in args.to_vec() {
-        match &arg.item {
+        match arg.get() {
             ValueItem::Number(n) => total += *n,
             _ => return Value::err("+: expected number", arg),
         }
@@ -81,7 +81,7 @@ fn sum(args: ValueList) -> Value {
 fn product(args: ValueList) -> Value {
     let mut total = 1.0;
     for arg in args.to_vec() {
-        match &arg.item {
+        match arg.get() {
             ValueItem::Number(n) => total *= *n,
             _ => return Value::err("*: expected number", arg),
         }
@@ -90,7 +90,7 @@ fn product(args: ValueList) -> Value {
 }
 
 fn arithmetic(name: &str, a: Value, b: Value, op: impl Fn(f64, f64) -> f64) -> Value {
-    match (&a.item, &b.item) {
+    match (a.get(), b.get()) {
         (ValueItem::Number(x), ValueItem::Number(y)) => Value::number(op(*x, *y)),
         (ValueItem::Number(_), _) => Value::err(format!("{}: expected number", name), b),
         _ => Value::err(format!("{}: expected number", name), a),
@@ -98,7 +98,7 @@ fn arithmetic(name: &str, a: Value, b: Value, op: impl Fn(f64, f64) -> f64) -> V
 }
 
 fn compare(name: &str, a: Value, b: Value, op: impl Fn(f64, f64) -> bool) -> Value {
-    match (&a.item, &b.item) {
+    match (a.get(), b.get()) {
         (ValueItem::Number(x), ValueItem::Number(y)) => Value::boolean(op(*x, *y)),
         (ValueItem::Number(_), _) => Value::err(format!("{}: expected number", name), b),
         _ => Value::err(format!("{}: expected number", name), a),
@@ -106,15 +106,15 @@ fn compare(name: &str, a: Value, b: Value, op: impl Fn(f64, f64) -> bool) -> Val
 }
 
 fn car(value: Value) -> Value {
-    match &value.item {
-        ValueItem::Pair(cell) => cell.0.clone(),
+    match value.get() {
+        ValueItem::Pair(car, _) => car.clone(),
         _ => Value::err("car: expected pair", value),
     }
 }
 
 fn cdr(value: Value) -> Value {
-    match &value.item {
-        ValueItem::Pair(cell) => cell.1.clone(),
+    match value.get() {
+        ValueItem::Pair(_, cdr) => cdr.clone(),
         _ => Value::err("cdr: expected pair", value),
     }
 }
@@ -127,7 +127,7 @@ fn do_eval(ret: &dyn Fn(Value), env_spec: Value, body: Value) {
 }
 
 fn read_source(sources: &HashMap<String, String>, path: Value) -> Value {
-    let path = match &path.item {
+    let path = match path.get() {
         ValueItem::String(path) => path.clone(),
         _ => return Value::err("read-source: expected a string path", path),
     };

@@ -122,7 +122,7 @@ fn list<'a>(origin: &'a str, input: &'a str) -> IResult<&'a str, Value> {
 
 // `(!x rest...)` and `(! x rest...)` desugar to `(macroexpand x rest...)`.
 fn desugar_bang(items: Vec<Value>) -> Vec<Value> {
-    let suffix = match items.first().map(|value| &value.item) {
+    let suffix = match items.first().map(|value| value.get()) {
         Some(ValueItem::Symbol(name)) => name.strip_prefix('!').map(str::to_string),
         _ => None,
     };

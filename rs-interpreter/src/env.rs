@@ -24,10 +24,10 @@ impl EnvExt for Env {
     fn from_val(value: &Value) -> Option<Self> {
         let mut env = Env::new();
         for pair in ValueList::from_val(value)?.to_vec() {
-            match &pair.item {
-                ValueItem::Pair(cell) => match &cell.0.item {
+            match pair.get() {
+                ValueItem::Pair(car, cdr) => match car.get() {
                     ValueItem::Symbol(name) => {
-                        env.insert(name.clone(), cell.1.clone());
+                        env.insert(name.clone(), cdr.clone());
                     }
                     _ => return None,
                 },

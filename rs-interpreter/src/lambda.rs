@@ -23,13 +23,13 @@ enum ArgSpec {
 
 impl ArgSpec {
     fn from_val(value: &Value) -> Option<ArgSpec> {
-        match &value.item {
+        match value.get() {
             ValueItem::Null => Some(ArgSpec::Empty),
             ValueItem::Symbol(name) => Some(ArgSpec::Wildcard(name.clone())),
-            ValueItem::Pair(cell) => match &cell.0.item {
+            ValueItem::Pair(car, cdr) => match car.get() {
                 ValueItem::Symbol(name) => Some(ArgSpec::Cons(Rc::new((
                     name.clone(),
-                    ArgSpec::from_val(&cell.1)?,
+                    ArgSpec::from_val(cdr)?,
                 )))),
                 _ => None,
             },

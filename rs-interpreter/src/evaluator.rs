@@ -35,7 +35,7 @@ pub(crate) fn eval_args_and_apply(
     callable: Value,
     unevaluated_args: ValueList,
 ) {
-    match &callable.item {
+    match callable.get() {
         ValueItem::SpecialForm(form) => form.apply(env, ret, unevaluated_args),
         _ => eval_all_and_then(
             env,
@@ -48,14 +48,14 @@ pub(crate) fn eval_args_and_apply(
 }
 
 pub(crate) fn apply(ret: Cont, callable: Value, args: ValueList) {
-    match &callable.item {
+    match callable.get() {
         ValueItem::ExternalVal(ext) => ext.apply(ret, args),
         _ => resume(ret, Value::err("cannot apply", callable)),
     }
 }
 
 fn eval_simple_expr(env: Env, expr: Value) -> Value {
-    match &expr.item {
+    match expr.get() {
         ValueItem::Symbol(name) => match env.get(name) {
             Some(value) => value.clone(),
             None => Value::err(format!("unbound symbol{}", at(&expr)), expr.clone()),
@@ -67,7 +67,7 @@ fn eval_simple_expr(env: Env, expr: Value) -> Value {
             ),
             expr.clone(),
         ),
-        ValueItem::Pair(_) => Value::err(
+        ValueItem::Pair(..) => Value::err(
             format!(
                 "refusing to evaluate pair; use apply or quote explicitly{}",
                 at(&expr)
