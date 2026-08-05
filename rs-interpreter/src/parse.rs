@@ -17,7 +17,6 @@ pub fn parse_value(input: &str) -> Result<Value, String> {
     }
 }
 
-// Parses a sequence of top-level forms.
 pub fn parse_all(input: &str) -> Result<Vec<Value>, String> {
     match preceded(ws, many0(terminated(|i| expr(input, i), ws)))(input) {
         Ok(("", values)) => Ok(values),
@@ -32,7 +31,6 @@ fn byte_offset(origin: &str, remaining: &str) -> usize {
     remaining.as_ptr() as usize - origin.as_ptr() as usize
 }
 
-// Turns a byte offset into `origin` into a 1-based line and column.
 fn debug_at(origin: &str, offset: usize) -> DebugInfo {
     let consumed = &origin[..offset];
     let line_start = consumed.rfind('\n').map_or(0, |i| i + 1);
@@ -52,8 +50,6 @@ fn ws(input: &str) -> IResult<&str, ()> {
     )(input)
 }
 
-// `origin` is the whole input; `input` is the not-yet-consumed suffix. We
-// tag each parsed form with the source position where it started.
 fn expr<'a>(origin: &'a str, input: &'a str) -> IResult<&'a str, Value> {
     let start = byte_offset(origin, input);
     let (rest, value) = alt((string_literal, |i| list(origin, i), atom))(input)?;
@@ -122,21 +118,26 @@ fn list<'a>(origin: &'a str, input: &'a str) -> IResult<&'a str, Value> {
 
 // `(!x rest...)` and `(! x rest...)` desugar to `(macroexpand x rest...)`.
 fn desugar_bang(items: Vec<Value>) -> Vec<Value> {
-    let suffix = match items.first().map(|value| value.get()) {
-        Some(ValueItem::Symbol(name)) => name.strip_prefix('!').map(str::to_string),
-        _ => None,
+    let (suffix, debug) = match items.first() {
+        Some(head) => match head.get() {
+            ValueItem::Symbol(name) => match name.strip_prefix('!') {
+                Some(rest) => (rest.to_string(), head.debug.clone()),
+                None => return items,
+            },
+            _ => return items,
+        },
+        None => return items,
     };
-    match suffix {
-        Some(suffix) => {
-            let mut out = vec![Value::symbol("macroexpand")];
-            if !suffix.is_empty() {
-                out.push(Value::symbol(suffix));
-            }
-            out.extend(items.into_iter().skip(1));
-            out
-        }
-        None => items,
+    let tag = |value: Value| Value {
+        debug: debug.clone(),
+        ..value
+    };
+    let mut out = vec![tag(Value::symbol("macroexpand"))];
+    if !suffix.is_empty() {
+        out.push(tag(Value::symbol(suffix)));
     }
+    out.extend(items.into_iter().skip(1));
+    out
 }
 
 #[cfg(test)]
