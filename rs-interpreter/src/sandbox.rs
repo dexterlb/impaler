@@ -42,6 +42,8 @@ pub fn sandbox_env(sources: HashMap<String, String>) -> Env {
     env.insert("car".to_string(), func_unary("car", car));
     env.insert("cdr".to_string(), func_unary("cdr", cdr));
 
+    env.insert("bool-to-k".to_string(), func_unary("bool-to-k", bool_to_k));
+
     env.insert("quote".to_string(), Value::special_form(SpecialForm::Quote));
     env.insert(
         "macroexpand".to_string(),
@@ -102,6 +104,14 @@ fn compare(name: &str, a: Value, b: Value, op: impl Fn(f64, f64) -> bool) -> Val
         (ValueItem::Number(x), ValueItem::Number(y)) => Value::boolean(op(*x, *y)),
         (ValueItem::Number(_), _) => Value::err(format!("{}: expected number", name), b),
         _ => Value::err(format!("{}: expected number", name), a),
+    }
+}
+
+fn bool_to_k(value: Value) -> Value {
+    match value.get() {
+        ValueItem::Bool(true) => func_binary("k", |a, _b| a),
+        ValueItem::Bool(false) => func_binary("k*", |_a, b| b),
+        _ => Value::err("bool-to-k: expected boolean", value),
     }
 }
 

@@ -6,6 +6,6 @@
     ("core/prelude.ild" (expand-lambda list))
     )
   (defs
-    '(fn (!lambda (name arg-spec body)
+    (quote (fn (!lambda (name arg-spec body)
         (list quote
-            (list name (expand-lambda arg-spec body)))))))
+            (list name (expand-lambda arg-spec body))))))))

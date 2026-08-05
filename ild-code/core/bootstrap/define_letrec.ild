@@ -12,7 +12,7 @@
                   (cons (list car list-name)
                         (map (!lambda (subl) (list (car subl) (cons cdr (cdr subl))))
                             (rec list-name (cdr l))))
-                  (make-fail (list 'list-of-letrec-elements-not-a-list l))))))))
+                  (make-fail (list (quote list-of-letrec-elements-not-a-list) l))))))))
               ; polyvariate Y combinator (operates on a list of functions instead of a single function)
               (polyY
                 ; if poly-fix is already available, use it
@@ -57,7 +57,7 @@
                 l
                 (!if (pair? l)
                   (cons (f (car l)) (map f (cdr l)))
-                  (make-fail (list 'not-a-list l)))))))))
+                  (make-fail (list (quote not-a-list) l)))))))))
 
       ; definition of "Y"
       (!if (func? poly-fix)
@@ -82,17 +82,17 @@
     ; (if cond foo bar) -> (((bool-to-k cond) (!lambda () foo) (!lambda () bar)))
     (!lambda (cond a b)
       (cons
-        (cons (cons 'bool-to-k (cons cond ()))
-        (cons (expand-lambda '() a)
-        (cons (expand-lambda '() b)
-        ())))
+        (cons (cons (quote bool-to-k) (cons cond (quote ())))
+        (cons (expand-lambda (quote ()) a)
+        (cons (expand-lambda (quote ()) b)
+        (quote ()))))
 
-        ()))
+        (quote ())))
 
       ))
 
 ; definition of "expand-lambda"
-(!lambda (args body) (cons macroexpand (cons lambda (cons args (cons body ())))))
+(!lambda (args body) (cons macroexpand (cons lambda (cons args (cons body (quote ()))))))
 
 ; definition of "builtins"
 (free-vars))

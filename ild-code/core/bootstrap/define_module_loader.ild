@@ -8,8 +8,8 @@
         (list                          ; eval the result with no arguments to force the lazy value
           (list                        ; eval the K or K*, getting one of the two lazy values
             (list bool-to-k cond)      ; convert the boolean condition to K or K* to do the selection
-            (expand-lambda '() t)      ; lazy value that evals the "true" branch
-            (expand-lambda '() f)))))  ; lazy value that evals the "false" branch
+            (expand-lambda (quote ()) t)      ; lazy value that evals the "true" branch
+            (expand-lambda (quote ()) f)))))  ; lazy value that evals the "false" branch
 
       (not (!lambda (b)
         (!if b
@@ -23,7 +23,7 @@
             (if (car items)
               #t
               (apply or (cdr items)))
-            (make-fail (list 'unexpected-arg-to-or items))))))
+            (make-fail (list (quote unexpected-arg-to-or) items))))))
 
       (and (!lambda items
         (!if (null? items)
@@ -32,7 +32,7 @@
             (if (car items)
               (apply and (cdr items))
               #f)
-            (make-fail (list 'unexpected-arg-to-and items))))))
+            (make-fail (list (quote unexpected-arg-to-and) items))))))
 
       (cadr (!lambda (p) (car (cdr p))))
       (caar (!lambda (p) (car (car p))))
@@ -61,14 +61,14 @@
               (!if (sym-eq? (car (car kvl)) k)
                 (f (car kvl))
                 (kv-find k (cdr kvl) empty f))
-              (make-fail (list 'not-a-kv-pair (car kvl))))
-            (make-fail (list 'not-a-list kvl))))))
+              (make-fail (list (quote not-a-kv-pair) (car kvl))))
+            (make-fail (list (quote not-a-list) kvl))))))
 
       (kv-fetch (!lambda (k dflt kvl)
         (kv-find k kvl dflt cdr)))
 
       (kv-get (!lambda (k kvl)
-        (kv-fetch k (make-fail (list 'key-not-found (list 'key k) (list 'kv-list kvl))) kvl)))
+        (kv-fetch k (make-fail (list (quote key-not-found) (list (quote key) k) (list (quote kv-list) kvl))) kvl)))
 
       (kv-has? (!lambda (k kvl)
         (kv-find k kvl #f
@@ -93,9 +93,9 @@
         (!let* (
           (items (cdr mod-expr))
 
-          (imports  (kv-fetch 'imports  (list) items))
-          (defs     (kv-fetch 'defs     (list) items))
-          (exports  (kv-fetch 'exports  (list) items))
+          (imports  (kv-fetch (quote imports)  (list) items))
+          (defs     (kv-fetch (quote defs)     (list) items))
+          (exports  (kv-fetch (quote exports)  (list) items))
 
           (env (process-imports imports))
           (eval-def (!lambda (def)
@@ -110,12 +110,12 @@
 
       (process-import (!lambda (import-spec)
         (!if (not (pair? import-spec))
-          (make-fail (list 'import-spec-must-be-list import-spec))
-          (!if (!and (symbol? (car import-spec)) (sym-eq? (car import-spec) 'builtin))
+          (make-fail (list (quote import-spec-must-be-list) import-spec))
+          (!if (!and (symbol? (car import-spec)) (sym-eq? (car import-spec) (quote builtin)))
             (process-import-items builtins (cdr import-spec))
             (!if (string? (car import-spec))
               (process-import-items (load-module (car import-spec)) (cdr import-spec))
-              (make-fail (list 'import-spec-invalid import-spec)))))))
+              (make-fail (list (quote import-spec-invalid) import-spec)))))))
 
       (process-import-items (!lambda (items spec-tail)
         (!if (!and
@@ -124,13 +124,13 @@
           (pair? (car spec-tail)))
 
           (concat (map (!lambda (picker) (execute-picker picker items)) (car spec-tail)))
-          (make-fail (list 'expected-picker-list spec-tail)))))
+          (make-fail (list (quote expected-picker-list) spec-tail)))))
 
       (execute-picker (!lambda (picker items)
         (!if (symbol? picker)
           ; symbol pickers refer a single exported object
           (list (cons picker (kv-get picker items)))
-          'not-implemented)))
+          (quote not-implemented))))
 
       (sym-item-pair (!lambda (sym)
         (list cons (list quote sym) sym)))
@@ -141,18 +141,18 @@
           entrypoint-func-args)))
 
       (debug-trace (!lambda (name val)
-        (yield (list 'trace name val))
+        (yield (list (quote trace) name val))
         val))
 
       (concat (!lambda (l)
         (!if (null? l)
           l
           (!if (not (pair? l))
-            (make-fail (list 'expected-list-of-lists l))
+            (make-fail (list (quote expected-list-of-lists) l))
             (!if (null? (car l))
               (concat (cdr l))
               (!if (not (pair? (car l)))
-                (make-fail (list 'expected-list (car l)))
+                (make-fail (list (quote expected-list) (car l)))
                 (cons (car (car l)) (concat (cons (cdr (car l)) (cdr l))))))))))
 
       (map (!lambda (f l)
@@ -160,14 +160,14 @@
           l
           (!if (pair? l)
             (cons (f (car l)) (map f (cdr l)))
-            (make-fail (list 'not-a-list l))))))
+            (make-fail (list (quote not-a-list) l))))))
 
       (try-map (!lambda (f l)
         (call/cc (!lambda (return)
           (return (map
             (!lambda (x)
               (!if (fail? (f x))
-                (return (make-fail (list 'fail-in-element x (f x))))
+                (return (make-fail (list (quote fail-in-element) x (f x))))
                 (f x))) l))))))
 
       (reciprocate (!lambda (x) (div 1 x))))
