@@ -21,14 +21,16 @@
   (expected ((foo . 42))))
 
 (case "lambda-macro"
-  (expr (
-    (eval (free-vars)
-      ((eval
-        (cons (quote (c . 42)) (free-vars))
-        (read-source "core/bootstrap/lambda-macro.ild"))
-        (quote (a b))
-        (quote (+ a b c))))
-    1 2))
+  (expr
+    (eval
+      (cons (cons (quote lambda) (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")))
+        (cons (quote (c . 42)) (free-vars)))
+      (quote
+        ((eval (free-vars)
+          (lambda
+            (quote (a b))
+            (quote (+ a b c))))
+          1 2))))
   (expected 45))
 
 (case "macroexpand-and-lambda-macro"
