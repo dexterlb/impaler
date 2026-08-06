@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::async_eval::eval_async;
+use crate::eval_to_value::eval_to_value;
 use crate::parse::parse_all;
 use crate::sandbox::sandbox_env;
 use crate::value_list::ValueList;
@@ -71,8 +71,8 @@ fn run_case_inner(file: &str, case_name: &str) {
         }
         let entries = &parts[2..];
         assert_eq!(
-            eval_async(sandbox_env(sources()), field(entries, "expr")),
-            field(entries, "expected"),
+            eval_to_value(sandbox_env(sources()), field(entries, "expr")),
+            Some(field(entries, "expected")),
             "test case `{}` failed",
             case_name
         );
