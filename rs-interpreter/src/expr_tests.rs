@@ -47,7 +47,7 @@ fn run_case(file: &str, case_name: &str) {
     std::thread::scope(|scope| {
         // use thread with a huge stack size
         let handle = std::thread::Builder::new()
-            .stack_size(1024 * 1024 * 1024)
+            .stack_size(8 * 1024 * 1024 * 1024)
             .spawn_scoped(scope, || run_case_inner(file, case_name))
             .expect("spawn test thread");
         if let Err(payload) = handle.join() {

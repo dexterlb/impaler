@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 use crate::env::{Env, EnvExt};
 use crate::evaluator::{apply, eval};
@@ -52,6 +53,8 @@ pub fn sandbox_env(sources: HashMap<String, String>) -> Env {
 
     env.insert("bool-to-k".to_string(), func_unary("bool-to-k", bool_to_k));
 
+    env.insert("gensym".to_string(), func_unary("gensym", gensym));
+
     env.insert(
         "null?".to_string(),
         func_unary("null?", |v| {
@@ -84,6 +87,8 @@ pub fn sandbox_env(sources: HashMap<String, String>) -> Env {
     );
 
     env.insert("apply".to_string(), func_cont_binary("apply", do_apply));
+
+    env.insert("sym-eq?".to_string(), func_binary("sym-eq?", sym_eq));
 
     env.insert(
         "make-fail".to_string(),
@@ -156,6 +161,24 @@ fn compare(name: &str, a: Value, b: Value, op: impl Fn(f64, f64) -> bool) -> Val
         (ValueItem::Number(x), ValueItem::Number(y)) => Value::boolean(op(*x, *y)),
         (ValueItem::Number(_), _) => Value::err(format!("{}: expected number", name), b),
         _ => Value::err(format!("{}: expected number", name), a),
+    }
+}
+
+fn gensym(prefix: Value) -> Value {
+    static COUNTER: AtomicU64 = AtomicU64::new(0);
+    match prefix.get() {
+        ValueItem::String(s) => {
+            let n = COUNTER.fetch_add(1, Ordering::Relaxed);
+            Value::symbol(format!("{s}{n}"))
+        }
+        _ => Value::err("gensym: expected a string prefix", prefix),
+    }
+}
+
+fn sym_eq(a: Value, b: Value) -> Value {
+    match (a.get(), b.get()) {
+        (ValueItem::Symbol(x), ValueItem::Symbol(y)) => Value::boolean(x == y),
+        _ => Value::err("sym-eq?: expected two symbols", Value::list([a, b])),
     }
 }
 
