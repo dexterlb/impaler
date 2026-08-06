@@ -44,6 +44,19 @@ fn field(entries: &[Value], key: &str) -> Value {
 }
 
 fn run_case(file: &str, case_name: &str) {
+    std::thread::scope(|scope| {
+        // use thread with a huge stack size
+        let handle = std::thread::Builder::new()
+            .stack_size(1024 * 1024 * 1024)
+            .spawn_scoped(scope, || run_case_inner(file, case_name))
+            .expect("spawn test thread");
+        if let Err(payload) = handle.join() {
+            std::panic::resume_unwind(payload);
+        }
+    });
+}
+
+fn run_case_inner(file: &str, case_name: &str) {
     for form in parse_all(file_contents(file), Some(file)).expect("parse ild file") {
         let parts = list_items(&form);
         if parts.len() < 2 || parts[0] != Value::symbol("case") {
