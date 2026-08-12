@@ -4,8 +4,8 @@
   (imports
     (builtin (car cdr cons lambda macroexpand quote bool-to-k))
     ("core/prelude.ild" (expand-lambda list))
-    )
+  )
   (defs
-    (quote (fn (!lambda (name arg-spec body)
-        (list quote
-            (list name (expand-lambda arg-spec body))))))))
+    '(fn (!lambda (name arg-spec body)
+      (list quote
+        (list name (expand-lambda arg-spec body)))))))

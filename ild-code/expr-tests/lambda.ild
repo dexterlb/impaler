@@ -1,15 +1,15 @@
 (case "mk-lambda"
   (expr (
     (mk-lambda
-      (cons (cons (quote +) +) (quote ((c . 42) (d . 3))))
-      (quote (a b))
-      (quote (+ a b c d)))
+      (cons (cons '+ +) '((c . 42) (d . 3)))
+      '(a b)
+      '(+ a b c d))
     1 2))
   (expected 48))
 
 (case "eval"
   (expr
-    (eval (cons (cons (quote +) +) (quote ())) (quote (+ 40 2))))
+    (eval (cons (cons '+ +) '()) '(+ 40 2)))
   (expected 42))
 
 (case "read-source"
@@ -17,20 +17,19 @@
   (expected 42))
 
 (case "free-vars"
-  (expr (eval (quote ((foo . 42))) (cons free-vars (quote ()))))
+  (expr (eval '((foo . 42)) (cons free-vars '())))
   (expected ((foo . 42))))
 
 (case "lambda-macro"
   (expr
     (eval
-      (cons (cons (quote lambda) (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")))
-        (cons (quote (c . 42)) (free-vars)))
-      (quote
-        ((eval (free-vars)
-          (lambda
-            (quote (a b))
-            (quote (+ a b c))))
-          1 2))))
+      (cons (cons 'lambda (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")))
+        (cons '(c . 42) (free-vars)))
+      '((eval (free-vars)
+        (lambda
+          '(a b)
+          '(+ a b c)))
+        1 2)))
   (expected 45))
 
 (case "macroexpand-and-lambda-macro"
@@ -40,7 +39,7 @@
       (a b)
       (+ a b 42))
 
-      1 2))
+    1 2))
   (expected 45))
 
 (case "macroexpand-syntax"
@@ -49,7 +48,7 @@
       (a b)
       (+ a b 42))
 
-      1 2))
+    1 2))
   (expected 45))
 
 (case "can-define-and-then-use-lambda"
@@ -58,5 +57,5 @@
 
       ((!lambda (a b) (+ a b 42)) 1 2))
 
-      (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild"))))
+    (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild"))))
   (expected 45))

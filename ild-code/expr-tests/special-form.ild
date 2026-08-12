@@ -1,1 +1,1 @@
-(case "quote" (expr (quote (+ 1 2))) (expected (+ 1 2)))
+(case "quote" (expr '(+ 1 2)) (expected (+ 1 2)))

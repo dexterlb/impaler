@@ -1,9 +1,8 @@
 (mk-lambda
   (free-vars)       ; this can be replaced with a closure that has just cons, mk-lambda, quote and free-vars
-  (quote (arg-names body))
-  (quote
-    (cons mk-lambda
-      (cons (cons free-vars (quote ()))                       ; closure, equal to the call site's env
-        (cons (cons quote (cons arg-names (quote ())))        ; quoted arg-names
-          (cons (cons quote (cons body (quote ())))           ; quoted body
-            (quote ())))))))
+  '(arg-names body)
+  '(cons mk-lambda
+    (cons (cons free-vars '())                       ; closure, equal to the call site's env
+      (cons (cons quote (cons arg-names '()))        ; quoted arg-names
+        (cons (cons quote (cons body '()))           ; quoted body
+          '())))))

@@ -1,0 +1,10 @@
+((!(eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")) (lambda)
+  ((!lambda (letrec)
+    (eval (free-vars) (read-source "core/bootstrap/define-module-loader.ild")))
+
+    ; definition of 'letrec':
+    (eval (free-vars) (read-source "core/bootstrap/define-letrec.ild"))))
+
+  ; definition of 'lambda'
+  (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")))
+

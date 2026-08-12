@@ -10,9 +10,9 @@
                 l
                 (!if (pair? l)
                   (cons (list car list-name)
-                        (map (!lambda (subl) (list (car subl) (cons cdr (cdr subl))))
-                            (rec list-name (cdr l))))
-                  (make-fail (list (quote list-of-letrec-elements-not-a-list) l))))))))
+                    (map (!lambda (subl) (list (car subl) (cons cdr (cdr subl))))
+                      (rec list-name (cdr l))))
+                  (make-fail (list 'list-of-letrec-elements-not-a-list l))))))))
               ; polyvariate Y combinator (operates on a list of functions instead of a single function)
               (polyY
                 ; if poly-fix is already available, use it
@@ -21,8 +21,8 @@
                   poly-fix
                   (!lambda l
                     ((!lambda (x) (x x))
-                    (!lambda (p)
-                      (map (!lambda (li) (!lambda args (apply (apply li (p p)) args))) l)))))))
+                      (!lambda (p)
+                        (map (!lambda (li) (!lambda args (apply (apply li (p p)) args))) l)))))))
 
             (!let
               ; definition of "letrec"
@@ -30,19 +30,19 @@
                 (!let
                   ((args (map car defs))
                     (item-bodies (map cadr defs)))
+                  (!let (
+                    (arg-bodies (map (!lambda (def-body) (expand-lambda args def-body)) item-bodies))
+                    (flist (gensym "flist")))
+
                     (!let (
-                      (arg-bodies (map (!lambda (def-body) (expand-lambda args def-body)) item-bodies))
-                      (flist (gensym "flist")))
+                      (result-body (cons
+                        (expand-lambda args body)
+                        (generate-element-getters flist args))))
 
-                      (!let (
-                        (result-body (cons
-                          (expand-lambda args body)
-                          (generate-element-getters flist args))))
+                      (list (expand-lambda (list flist) result-body) (cons polyY arg-bodies))))))))
 
-                        (list (expand-lambda (list flist) result-body) (cons polyY arg-bodies))))))))
-
-                  ; we have now defined letrec - return it!
-                  letrec)))
+              ; we have now defined letrec - return it!
+              letrec)))
 
           ; definition of "let"
           (!lambda (letlist body)
@@ -52,12 +52,12 @@
 
         ; definition of "map"
         (Y (!lambda (map)
-            (!lambda (f l)
-              (!if (null? l)
-                l
-                (!if (pair? l)
-                  (cons (f (car l)) (map f (cdr l)))
-                  (make-fail (list (quote not-a-list) l)))))))))
+          (!lambda (f l)
+            (!if (null? l)
+              l
+              (!if (pair? l)
+                (cons (f (car l)) (map f (cdr l)))
+                (make-fail (list 'not-a-list l)))))))))
 
       ; definition of "Y"
       (!if (func? poly-fix)
@@ -69,8 +69,8 @@
         (!lambda (f)
           ((!lambda (x)
             (f (!lambda args (apply (x x) args))))
-          (!lambda (x)
-            (f (!lambda args (apply (x x) args)))))))))
+            (!lambda (x)
+              (f (!lambda args (apply (x x) args)))))))))
 
     ; definition of "list"
     (!lambda args args)
@@ -82,17 +82,17 @@
     ; (if cond foo bar) -> (((bool-to-k cond) (!lambda () foo) (!lambda () bar)))
     (!lambda (cond a b)
       (cons
-        (cons (cons (quote bool-to-k) (cons cond (quote ())))
-        (cons (expand-lambda (quote ()) a)
-        (cons (expand-lambda (quote ()) b)
-        (quote ()))))
+        (cons (cons 'bool-to-k (cons cond '()))
+          (cons (expand-lambda '() a)
+            (cons (expand-lambda '() b)
+              '())))
 
-        (quote ())))
+        '()))
 
-      ))
+))
 
-; definition of "expand-lambda"
-(!lambda (args body) (cons macroexpand (cons lambda (cons args (cons body (quote ()))))))
+  ; definition of "expand-lambda"
+  (!lambda (args body) (cons macroexpand (cons lambda (cons args (cons body '())))))
 
-; definition of "builtins"
-(free-vars))
+  ; definition of "builtins"
+  (free-vars))

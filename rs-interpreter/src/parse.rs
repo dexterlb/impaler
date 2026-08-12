@@ -52,12 +52,27 @@ fn ws(input: &str) -> IResult<&str, ()> {
 
 fn expr<'a>(filename: Option<&'a str>, origin: &'a str, input: &'a str) -> IResult<&'a str, Value> {
     let start = byte_offset(origin, input);
-    let (rest, value) = alt((string_literal, |i| list(filename, origin, i), atom))(input)?;
+    let (rest, value) = alt((
+        string_literal,
+        |i| list(filename, origin, i),
+        |i| quoted(filename, origin, i),
+        atom,
+    ))(input)?;
     Ok((rest, value.with_debug(debug_at(filename, origin, start))))
 }
 
 fn is_atom_char(c: char) -> bool {
-    !c.is_whitespace() && !"()\";".contains(c)
+    !c.is_whitespace() && !"()\";'".contains(c)
+}
+
+fn quoted<'a>(
+    filename: Option<&'a str>,
+    origin: &'a str,
+    input: &'a str,
+) -> IResult<&'a str, Value> {
+    let (input, _) = char('\'')(input)?;
+    let (input, inner) = expr(filename, origin, input)?;
+    Ok((input, Value::list([Value::symbol("quote"), inner])))
 }
 
 fn atom(input: &str) -> IResult<&str, Value> {
@@ -166,6 +181,14 @@ mod tests {
     fn parses_booleans() {
         assert_eq!(parse("#t"), Ok(Value::boolean(true)));
         assert_eq!(parse("#f"), Ok(Value::boolean(false)));
+    }
+
+    #[test]
+    fn desugars_quote_shorthand() {
+        assert_eq!(parse("'foo"), parse("(quote foo)"));
+        assert_eq!(parse("'(a b)"), parse("(quote (a b))"));
+        assert_eq!(parse("'()"), parse("(quote ())"));
+        assert_eq!(parse("'(a 'b)"), parse("(quote (a (quote b)))"));
     }
 
     #[test]

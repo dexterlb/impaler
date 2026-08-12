@@ -1,5 +1,5 @@
-pub mod eval_to_value;
 pub mod env;
+pub mod eval_to_value;
 pub mod evaluator;
 pub mod lambda;
 pub mod parse;

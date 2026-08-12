@@ -4,13 +4,13 @@
   (imports
     (builtin (lambda macroexpand quote bool-to-k)))
   (defs
-    (quote (list (!lambda args args)))
+    '(list (!lambda args args))
 
-    (quote (if (!lambda (cond t f)     ; read this definition bottom to top
+    '(if (!lambda (cond t f)     ; read this definition bottom to top
       (list                          ; eval the result with no arguments to force the lazy value
         (list                        ; eval the K or K*, getting one of the two lazy values
           (list bool-to-k cond)      ; convert the boolean condition to K or K* to do the selection
-          (expand-lambda (quote ()) t)      ; lazy value that evals the "true" branch
-          (expand-lambda (quote ()) f))))))  ; lazy value that evals the "false" branch
+          (expand-lambda '() t)      ; lazy value that evals the "true" branch
+          (expand-lambda '() f)))))  ; lazy value that evals the "false" branch
 
-    (quote (expand-lambda (!lambda (args body) (list macroexpand lambda args body))))))
+    '(expand-lambda (!lambda (args body) (list macroexpand lambda args body)))))
