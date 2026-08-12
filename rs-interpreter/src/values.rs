@@ -31,8 +31,11 @@ pub enum ValueItem {
     Number(f64),
     String(String),
     Bool(bool),
+
     Pair(Value, Value),
     Null,
+
+    Fail(Value),
 
     SpecialForm(SpecialForm),
 
@@ -86,6 +89,10 @@ impl Value {
         Value::bare(ValueItem::Null)
     }
 
+    pub fn fail(value: Value) -> Value {
+        Value::bare(ValueItem::Fail(value))
+    }
+
     pub fn special_form(form: SpecialForm) -> Value {
         Value::bare(ValueItem::SpecialForm(form))
     }
@@ -95,11 +102,7 @@ impl Value {
     }
 
     pub fn err(message: impl Into<String>, value: Value) -> Value {
-        let dbg_suffix = match &value.debug {
-            Some(info) => format!(" (at {})", info.show()),
-            None => String::new(),
-        };
-        panic!("{}: {}{}", message.into(), value.show(), dbg_suffix)
+        Value::fail(Value::list([Value::string(message), value]))
     }
 
     pub fn list<I>(items: I) -> Value
@@ -121,6 +124,7 @@ impl Value {
             ValueItem::Bool(value) => if *value { "#t" } else { "#f" }.to_string(),
             ValueItem::SpecialForm(form) => form.show(),
             ValueItem::ExternalVal(external) => external.show(),
+            ValueItem::Fail(value) => format!("#<fail {}>", value.show()),
             ValueItem::Null => "()".to_string(),
             ValueItem::Pair(..) => {
                 let mut out = String::from("(");
@@ -163,6 +167,7 @@ impl PartialEq for Value {
                 a_car == b_car && a_cdr == b_cdr
             }
             (ValueItem::Null, ValueItem::Null) => true,
+            (ValueItem::Fail(a), ValueItem::Fail(b)) => a == b,
             (ValueItem::ExternalVal(a), ValueItem::ExternalVal(b)) => {
                 std::ptr::eq(a.as_ref(), b.as_ref())
             }

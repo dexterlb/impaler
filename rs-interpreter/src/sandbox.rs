@@ -93,11 +93,13 @@ pub fn sandbox_env(sources: HashMap<String, String>) -> Env {
 
     env.insert(
         "make-fail".to_string(),
-        func_unary("make-fail", |v| Value::err("make-fail", v)),
+        func_unary("make-fail", Value::fail),
     );
     env.insert(
         "fail?".to_string(),
-        func_unary("fail?", |_| Value::boolean(false)),
+        func_unary("fail?", |v| {
+            Value::boolean(matches!(v.get(), ValueItem::Fail(_)))
+        }),
     );
 
     env.insert("quote".to_string(), Value::special_form(SpecialForm::Quote));
@@ -114,7 +116,7 @@ pub fn sandbox_env(sources: HashMap<String, String>) -> Env {
 
     env.insert(
         "poly-fix".to_string(),
-        func_nary("poly-fix", |funcs| poly_fix_list(funcs).to_value()),
+        func_nary("poly-fix", |funcs| poly_fix_list(&funcs).to_value()),
     );
 
     env.insert(

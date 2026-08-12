@@ -20,7 +20,7 @@ struct Rec {
 
 impl External for Rec {
     fn apply(&self, gret: Cont, garg: ValueList) {
-        let gs_list = tie_all(&self.funcs);
+        let gs_list = poly_fix_list(&self.funcs);
         let call_with_args: Cont = Rc::new(move |g: Value| apply(gret.clone(), g, garg.clone()));
         apply(call_with_args, self.f.clone(), gs_list);
     }
