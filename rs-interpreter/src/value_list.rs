@@ -48,6 +48,16 @@ impl ValueList {
         out
     }
 
+    pub fn map(&self, f: impl Fn(&Value) -> Value) -> ValueList {
+        let mut mapped = ValueList::Empty;
+        let mut current = self;
+        while let ValueList::Cons(pair) = current {
+            mapped = mapped.push(f(&pair.0));
+            current = &pair.1;
+        }
+        mapped.reverse()
+    }
+
     pub fn to_array<const N: usize>(&self) -> Option<[Value; N]> {
         <[Value; N]>::try_from(self.to_vec()).ok()
     }

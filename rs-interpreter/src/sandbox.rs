@@ -5,6 +5,7 @@ use crate::env::{Env, EnvExt};
 use crate::evaluator::{apply, eval};
 use crate::lambda::mk_lambda;
 use crate::parse::parse_value;
+use crate::recursion::poly_fix_list;
 use crate::special_form::SpecialForm;
 use crate::value_builders::{func_binary, func_cont_binary, func_nary, func_ternary, func_unary};
 use crate::value_list::ValueList;
@@ -111,7 +112,10 @@ pub fn sandbox_env(sources: HashMap<String, String>) -> Env {
 
     env.insert("eval".to_string(), func_cont_binary("eval", do_eval));
 
-    env.insert("poly-fix".to_string(), Value::boolean(false)); // not implemented for now
+    env.insert(
+        "poly-fix".to_string(),
+        func_nary("poly-fix", |funcs| poly_fix_list(funcs).to_value()),
+    );
 
     env.insert(
         "mk-lambda".to_string(),
