@@ -166,7 +166,7 @@
                 (return (make-fail (list (quote fail-in-element) x (f x))))
                 (f x))) l))))))
 
-      (reciprocate (!lambda (x) (div 1 x))))
+      (reciprocate (!lambda (x) (/ 1 x))))
 
 
     ;finally, return the module loader
