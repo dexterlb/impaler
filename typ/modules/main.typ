@@ -1,3 +1,7 @@
+#set document(
+  title: [Implementing a non-trivial module system in a minimal LISP-like programming language]
+)
+
 #import "/lib/paper.typ": paper_template
 #show: paper_template
 
@@ -5,6 +9,8 @@
 #show: ild-stuff
 
 #import "/lib/misc.typ": citneeded, paraphrase
+
+#title()
 
 == Glossary
 Henceforth:
@@ -48,18 +54,19 @@ functions during their runtime.
 (display (even? 42))
 ```
 
-LLPLs like Scheme allow implementing most of the language in itself
-at the expense of heavy use of mutability in the definitions of core
-constructs (macros).
+LLPLs like Scheme allow implementing most of the language constructs in itself
+at the expense of heavy use of mutability in the definitions of core constructs
+(macros).
 
 Other LLPLs, such as LFE#citneeded guarantee immutability of all data, but
-handle a lot of the complexity in the interpreter itself. For example,
-functions defined in the global namespace are distinct from locally defined
-lambda objects, and the interpreter takes special care to #paraphrase[allow]
-recursion and mutual recursion without allowing programs to mutate data. In
-fact, in LFE it is not even possible to create a cyclic data structure
-altogether! The price that is paid to achieve this is that `define` and
-similar constructs are special forms.
+handle a lot of the complexity in the interpreter itself: the language features
+are written in the host language that implements the interpreter, and not in
+the language itself. For example, functions defined in the global namespace are
+distinct from locally defined lambda objects, and the interpreter takes special
+care to #paraphrase[allow] recursion and mutual recursion without allowing
+programs to mutate data. In fact, in LFE it is not even possible to create a
+cyclic data structure altogether! The price that is paid to achieve this is
+that `define` and similar constructs are special forms.
 
 We aim to construct an LLPL that is at the same time:
 - Fully immutable
