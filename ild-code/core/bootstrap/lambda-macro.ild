@@ -3,7 +3,7 @@
   (quote (arg-names body))
   (quote
     (cons mk-lambda
-      (cons (cons free-vars (quote ()))                         ; closure, equal to the call site's env
-        (cons (cons (quote quote) (cons arg-names (quote ())))  ; quoted arg-names
-          (cons (cons (quote quote) (cons body (quote ())))     ; quoted body
+      (cons (cons free-vars (quote ()))                       ; closure, equal to the call site's env
+        (cons (cons quote (cons arg-names (quote ())))        ; quoted arg-names
+          (cons (cons quote (cons body (quote ())))           ; quoted body
             (quote ())))))))
