@@ -3,7 +3,7 @@ pub mod eval_to_value;
 pub mod evaluator;
 pub mod lambda;
 pub mod parse;
-pub mod recursion;
+pub mod recursion_dag;
 pub mod sandbox;
 pub mod special_form;
 pub mod value_builders;
