@@ -1,4 +1,4 @@
-use std::rc::{Rc, Weak};
+use std::rc::Rc;
 
 use crate::evaluator::apply;
 use crate::value_list::ValueList;
@@ -10,47 +10,23 @@ type ListOfCallables = ValueList; // duckily assume that the user has provided v
 // second-order functions ("operators") that each expect to be passed the funcs
 // as arguments and produce their respective result function
 pub fn poly_fix_list(operators: &ListOfCallables) -> ListOfCallables {
-    let rec_refs = Rc::new_cyclic(|rec_refs_weak: &Weak<ListOfCallables>| {
-        operators.map(|operator| RecRef::weak(rec_refs_weak, operator).val())
-    });
-    operators.map(|operator| RecRef::strong(&rec_refs, operator).val())
+    poly_fix_list_rc(&Rc::new(operators.clone()))
 }
 
-#[derive(Debug, Clone)]
-enum Rec {
-    Strong(Rc<ListOfCallables>),
-    Weak(Weak<ListOfCallables>),
-}
-
-impl Rec {
-    fn funcs(&self) -> Rc<ListOfCallables> {
-        match self {
-            Rec::Strong(rec_refs) => rec_refs.clone(),
-            Rec::Weak(weak) => match weak.upgrade() {
-                Some(rec_refs) => rec_refs,
-                None => panic!("Rec used after being dropped, this must be impossible!"),
-            },
-        }
-    }
+pub fn poly_fix_list_rc(operators: &Rc<ListOfCallables>) -> ListOfCallables {
+    operators.map(|operator| Rec::new(operators, operator).val())
 }
 
 #[derive(Debug)]
-struct RecRef {
-    rec: Rec,
+struct Rec {
+    all_operators: Rc<ListOfCallables>,
     operator: Value,
 }
 
-impl RecRef {
-    fn weak(funcs: &Weak<ListOfCallables>, operator: &Value) -> RecRef {
-        RecRef {
-            rec: Rec::Weak(funcs.clone()),
-            operator: operator.clone(),
-        }
-    }
-
-    fn strong(funcs: &Rc<ListOfCallables>, operator: &Value) -> RecRef {
-        RecRef {
-            rec: Rec::Strong(funcs.clone()),
+impl Rec {
+    fn new(all_operators: &Rc<ListOfCallables>, operator: &Value) -> Self {
+        Rec {
+            all_operators: all_operators.clone(),
             operator: operator.clone(),
         }
     }
@@ -60,18 +36,18 @@ impl RecRef {
     }
 }
 
-impl External for RecRef {
+impl External for Rec {
     fn apply(&self, ret: Cont, arg: ValueList) {
-        let funcs = self.rec.funcs();
+        let funcs = poly_fix_list_rc(&self.all_operators);
         let operator = self.operator.clone();
-        let call_func = Rc::new(move |f: Value| apply(ret.clone(), f, arg.clone()));
 
         // first apply the operator to the funcs to obtain a func `f`,
         // then give it to call_func who will call it with the given arg
-        apply(call_func, operator, (*funcs).clone());
+        let call_func = Rc::new(move |f: Value| apply(ret.clone(), f, arg.clone()));
+        apply(call_func, operator, funcs);
     }
 
     fn show(&self) -> String {
-        "#<rec-ref>".to_string()
+        "#<rec>".to_string()
     }
 }
