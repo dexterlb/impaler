@@ -5,7 +5,7 @@ use crate::env::{Env, EnvExt};
 use crate::evaluator::{apply, eval};
 use crate::lambda::mk_lambda;
 use crate::parse::parse_value;
-use crate::recursion_dag::poly_fix_list;
+use crate::recursion_fix::poly_fix_list;
 use crate::special_form::SpecialForm;
 use crate::value_builders::{func_binary, func_cont_binary, func_nary, func_ternary, func_unary};
 use crate::value_list::ValueList;

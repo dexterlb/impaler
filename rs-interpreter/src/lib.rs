@@ -4,6 +4,7 @@ pub mod evaluator;
 pub mod lambda;
 pub mod parse;
 pub mod recursion_dag;
+pub mod recursion_fix;
 pub mod sandbox;
 pub mod special_form;
 pub mod value_builders;
