@@ -1,0 +1,7 @@
+(case "letrec-result-usable-after-scope-exit"
+  (expr
+    ((eval (free-vars) (read-source "core/bootstrap/module-loader.ild"))
+      "demos/letrec-escape.ild"
+      'main))
+
+  (expected 15))

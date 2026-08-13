@@ -1,0 +1,14 @@
+(module
+  (doc "a value built by letrec stays usable after its defining scope returns")
+  (exports main)
+  (imports
+    (builtin (macroexpand <= + lambda letrec))
+    ("core/prelude.ild" (if))
+    ("core/module-utils.ild" (fn)))
+  (defs
+    (!fn make-summer ()
+      (!letrec ((sum (!lambda (n) (!if (<= n 0) 0 (+ n (sum (+ n -1)))))))
+        sum))
+
+    (!fn main ()
+      ((make-summer) 5))))
