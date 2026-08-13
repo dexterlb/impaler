@@ -1,31 +1,41 @@
-use std::rc::Rc;
+use std::cell::RefCell;
+use std::rc::{Rc, Weak};
 
 use crate::evaluator::apply;
 use crate::value_list::ValueList;
-use crate::values::{Cont, External, Value};
+use crate::values::{Cont, External, Value, ValueItem};
 
 pub fn poly_fix_list(funcs: &ValueList) -> ValueList {
-    funcs.map(|f| Value::external(tie(f.clone(), funcs.clone())))
+    Rec::build(funcs)
 }
 
-fn tie(f: Value, funcs: ValueList) -> Rec {
-    Rec { f, funcs }
-}
-
-#[derive(Debug)]
 struct Rec {
-    f: Value,
-    funcs: ValueList,
+    funcs: ValueList
+    rec_refs: ValueList
 }
 
-impl External for Rec {
+impl Rec {
+    fn build(funcs: &ValueList) -> &Self {
+        // TODO: funcs -> funcs
+        // TODO: rec_refs -> build RecRef objects
+    }
+
+    fn apply_ith(&self, i: uint, ret: Cont, arg: ValueList) {
+        // TODO: apply ith function to the rec_refs and then apply the result to the arg
+    }
+}
+
+struct RecRef {
+    rec: Rc<Rec>
+    func_idx: uint
+}
+
+impl External for RecRef {
     fn apply(&self, gret: Cont, garg: ValueList) {
-        let gs_list = poly_fix_list(&self.funcs);
-        let call_with_args: Cont = Rc::new(move |g: Value| apply(gret.clone(), g, garg.clone()));
-        apply(call_with_args, self.f.clone(), gs_list);
+        // TODO: call Rec.apply
     }
 
     fn show(&self) -> String {
-        "#<poly-fix>".to_string()
+        "#<rec-ref>".to_string()
     }
 }
