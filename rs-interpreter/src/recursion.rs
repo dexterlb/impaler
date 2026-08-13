@@ -10,10 +10,10 @@ type ListOfCallables = ValueList; // duckily assume that the user has provided v
 // second-order functions ("operators") that each expect to be passed the funcs
 // as arguments and produce their respective result function
 pub fn poly_fix_list(operators: &ListOfCallables) -> ListOfCallables {
-    let rec_refs = Rc::new_cyclic(|weak: &Weak<ListOfCallables>| {
-        operators.map(|operator| RecRef::weak(weak, operator.clone()).val())
+    let rec_refs = Rc::new_cyclic(|rec_refs_weak: &Weak<ListOfCallables>| {
+        operators.map(|operator| RecRef::weak(rec_refs_weak, operator).val())
     });
-    operators.map(|operator| RecRef::strong(&rec_refs, operator.clone()).val())
+    operators.map(|operator| RecRef::strong(&rec_refs, operator).val())
 }
 
 #[derive(Debug, Clone)]
@@ -41,17 +41,17 @@ struct RecRef {
 }
 
 impl RecRef {
-    fn weak(funcs: &Weak<ListOfCallables>, operator: Value) -> RecRef {
+    fn weak(funcs: &Weak<ListOfCallables>, operator: &Value) -> RecRef {
         RecRef {
             rec: Rec::Weak(funcs.clone()),
-            operator,
+            operator: operator.clone(),
         }
     }
 
-    fn strong(funcs: &Rc<ListOfCallables>, operator: Value) -> RecRef {
+    fn strong(funcs: &Rc<ListOfCallables>, operator: &Value) -> RecRef {
         RecRef {
             rec: Rec::Strong(funcs.clone()),
-            operator,
+            operator: operator.clone(),
         }
     }
 
@@ -64,13 +64,11 @@ impl External for RecRef {
     fn apply(&self, ret: Cont, arg: ValueList) {
         let funcs = self.rec.funcs();
         let operator = self.operator.clone();
-        apply(
-            // first apply the operator to the funcs to obtain a func `f`,
-            // then apply f to the given arg
-            Rc::new(move |f: Value| apply(ret.clone(), f, arg.clone())),
-            operator,
-            (*funcs).clone(),
-        );
+        let call_func = Rc::new(move |f: Value| apply(ret.clone(), f, arg.clone()));
+
+        // first apply the operator to the funcs to obtain a func `f`,
+        // then give it to call_func who will call it with the given arg
+        apply(call_func, operator, (*funcs).clone());
     }
 
     fn show(&self) -> String {
