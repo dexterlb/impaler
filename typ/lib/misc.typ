@@ -18,3 +18,4 @@
 })
 
 #let paraphrase(body) = squiggly_underline(body, orange)
+#let todo(body) = squiggly_underline(body, green)

@@ -8,7 +8,7 @@
 #import "/lib/ild-stuff.typ": ild-stuff
 #show: ild-stuff
 
-#import "/lib/misc.typ": citneeded, paraphrase
+#import "/lib/misc.typ": citneeded, paraphrase, todo
 
 #title()
 
@@ -31,11 +31,11 @@ A tradeoff is usually#citneeded made between:
 + Few (and simple) special forms
 
 For example, Scheme (and Lisp, and most "serious" LLPLs, for that matter) allow
-_mutability_, thus making, it easy to #paraphrase[create] mutually-recursive
-data structures, and, in a special case, mutually-recursive functions. The
-toplevel expressions are usually _statements_, such as `define`, that mutate a
-global _environment_ which is then seen in the execution scope of the defined
-functions during their runtime.
+_mutability_, thus making it easy to #paraphrase[create] mutually-recursive
+data structures, and, #paraphrase[in a special case], mutually-recursive
+functions. The toplevel expressions are usually _statements_, such as `define`,
+that mutate a global _environment_ which is then seen in the execution scope of
+the defined functions during their runtime.
 
 ```scheme
 (define (even? x)
@@ -89,7 +89,6 @@ blah blah macroexpand
 === Base stuff
 - symbols, pairs, dots, lists
 - numbers and strings (these aren't formally needed)
-- `!lambda` (creating closures)
 
 === Metaprogramming
 - quote
@@ -97,9 +96,11 @@ blah blah macroexpand
 - mechanism of action
     - macros in ILD, as implemented now, get evaluated from
       the outside towards the inside. Is this different to other LLPLs? Is it better or worse?
-- `lambda` is actually a macro!
 
 == Bootstrapping
+First, we need to define `lambda`.
+#todo[definition of lambda]
+
 First of all, one would like to be able to define some #paraphrase[items] and
 use them in other code. As the reader is probably used to from
 #{sym.lambda}-calculus, the most "low-level" way to do that is by using a closure:
