@@ -19,3 +19,13 @@
 
 #let paraphrase(body) = squiggly_underline(body, orange)
 #let todo(body) = squiggly_underline(body, green)
+
+#let review(body) = block(
+  width: 100%,
+  breakable: true,
+  fill: rgb("#fff8dc"),
+  inset: (x: 8pt, y: 6pt),
+  radius: 2pt,
+  stroke: (left: 2pt + rgb("#e0b000")),
+  body,
+)
