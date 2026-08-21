@@ -8,7 +8,7 @@
 #import "/lib/ild-stuff.typ": ild-stuff
 #show: ild-stuff
 
-#import "/lib/misc.typ": citneeded, paraphrase, todo, review, note
+#import "/lib/misc.typ": citneeded, paraphrase, todo, review, note, comment
 
 #set heading(numbering: "1.")
 
@@ -76,13 +76,14 @@ _module loader_ that is able to in turn run programs that are decomposed into
 ergonomic to read and write files called _modules_. Functions defined in these
 modules can be #paraphrase[ref-to-mutually-recursive].
 
+== PE for performance <pe-later>
 In further research, we aim to also meet the #paraphrase[ref-to-Performance]
 constraint by showing that the severe performance overhead incurred by
 implementing such complex metaprogramming constructs using a very limited set
 of base special forms can be significantly reduced by employing partial
 evaluation as an optimisation step.
 
-= ILD definition
+= The language ILD
 
 == Programs and values
 
@@ -108,6 +109,9 @@ functions that operate on them. To facillitate this, external values may be
 callable, which means that `apply` is defined for external values that are
 treated as functions #paraphrase[see section explaining how apply works].
 
+#comment[Note on lists: we will use $(v_1, v_2, ..., v_n)$ to denote
+the value $(v_1 . (v_2 . (... (v_n . ())...)))$, which we will call a _list_.]
+
 == Syntax
 A subset of ILD values, which we call _programs_, can be represented as text:
 the syntax is based on standard S-expressions#citneeded with two extra syntax
@@ -121,121 +125,180 @@ for numeric, string and boolean external value types.
 #note[instead of using `foo`, we should define an ILD-specific inline block that
 is pretty]
 
-#review[
-== Environments and evaluation
+== Semantics of ILD <semantics>
+=== Environments
+An _environment_ is a finite partial map $rho : "Sym" #paraphrase[$- ->$] V$ that gives semantics
+to symbols. Let $"Env"$ be the set of all such environments.
 
-An _environment_ $rho$ is a finite partial map from symbols to values. There is
-no mutation: evaluation never changes $rho$, it only consults and extends copies
-of it. Evaluation is a _total_ function $lr(⟦dot.c⟧)_rho : V -> V$ -- there is no
-separate error channel, because an ill-formed evaluation simply yields a
-$mono("Fail")$ value:
+Looking up a symbol in an environment shall be defined as:
 
-$ lr(⟦ e ⟧)_rho = cases(
-  e & quad e "is a number, string, boolean," mono("Fail")", procedure" phi "or special form" xi "(self-evaluating)",
-  rho(s) & quad e = s "and" s in "dom" rho,
-  mono("Fail")(mono("\"unbound\""); s) & quad e = s "and" s in.not "dom" rho,
-  mono("Fail")(mono("\"eval-null\"")) & quad e = (),
-  mono("Fail")(mono("\"eval-pair\""); e) & quad e = (a . d) "improper",
-  C lr([ (f #h(2pt) a_1 #h(2pt) dots.c #h(2pt) a_n) ], size: #120%)_rho & quad e = (f #h(2pt) a_1 #h(2pt) dots.c #h(2pt) a_n) "a proper list," n >= 0,
+$ mono("get")(rho, s) = cases(
+  v & s in "Sym" and rho(s) = v,
+  mono("Fail")("<err: unbound symbol>") & s in ("Sym" \\ "dom"rho),
 ) $
 
-Crucially $()$ and improper pairs are _not_ self-evaluating: data that happens to
-look like a form must be `quote`d. This is exactly what gives a proper list its
-meaning as a _combination_.
+=== Apply
+We say that certain external values $v in "Ext"$ are _callable_ if $mono("apply")(v, a_1, a_2, ..., a_n) in V$
+is defined for some natural $n$ and $v, a_1, a_2, ..., a_n in V$.
 
-To evaluate a combination $C lr([(f #h(2pt) a_1 #h(2pt) dots.c #h(2pt) a_n)])_rho$
-the head is evaluated first, $h = lr(⟦ f ⟧)_rho$, and then one of two rules fires
-depending on what $h$ is:
+We can extend $mono("apply")$ to a total function over $V$ by making it return
+a $mono("Fail")$ in cases where it is not defined. We will not cause further
+boredom for the reader by formally defining this extension.
 
-$ C lr([(f #h(2pt) a_1 #h(2pt) dots.c #h(2pt) a_n)])_rho = cases(
-  xi(rho; #h(2pt) a_1, dots.c, a_n) & quad h = xi "a special form",
-  mono("apply")(h, #h(2pt) [lr(⟦ a_1 ⟧)_rho, dots.c, lr(⟦ a_n ⟧)_rho]) & quad "otherwise.",
+=== Eval
+Now we can define the evaluation function as so:
+
+$ ⟦v⟧_rho = cases(
+  mono("get")(rho, v) & v in "Sym",
+  mono("apply")(⟦f⟧_rho, ⟦a_1⟧_rho, ..., ⟦a_n⟧_rho) & v = (f, a_1, a_2, ... a_n) and ⟦f⟧_rho in.not "SF",
+  mono("apply-sf")(rho, ⟦xi⟧_rho, a_1, ..., a_n) & v = (xi, a_1, a_2, ... a_n) and ⟦xi⟧_rho in "SF",
+  mono("Fail")("<err: cannot eval ()>") & v = (),
+  v & v in "SF" union "Ext" union { mono("Fail")(w) | w in V },
 ) $
 
-A special form $xi$ receives its operands _unevaluated_, together with the
-environment, and dictates everything that follows (the three forms are defined
-below). Otherwise the operands are _evaluated_, left to right, and handed to
-$mono("apply")$, which yields a result only for a procedure $phi$:
-$ mono("apply")(h, [v_1, dots.c, v_n]) = cases(
-  "the value" phi "yields on" [v_1, dots.c, v_n] & quad h = phi "a procedure",
-  mono("Fail")(mono("\"cannot-apply\""); h) & quad "otherwise.",
-) $
-A procedure $phi$ is precisely a value that carries such a rule; applying
-anything else (a number, a pair, a $mono("Fail")$) is itself a $mono("Fail")$, so
-a failed operator surfaces as a failure rather than being silently ignored.
+#note[why is spacing so tight??]
 
-Because ILD has no mutable state and no side effects, evaluation is _pure_: the
-left-to-right order of operand evaluation is unobservable, and a $mono("Fail")$
-does not short-circuit a combination -- an operand that evaluates to a failure is
-handed to the procedure like any other argument, and propagating it is the
-procedure's responsibility by convention. The base language contributes _no_
-procedures at all; every $phi$ a program can name originates in the initial
-environment. The core provides only the rule above and the following three
-special forms $xi$.
-]
+Informally:
+- Symbols are looked up in the currently-scoped environment
+- Proper nonempty lists are evaluated by first evaluating their head, and then:
+  - If the evaluated head is a special form, apply that special form to the *unevaluated* rest of the elements of the list
+  - If the evaluated head is not a special form, apply the evaluated head to the *evaluated* rest of the elements of the list
+- Trying to evaluate an improper or empty list results in a $mono("Fail")$
+- All other values evaluate to themselves
 
-#review[
-== Special forms <special-forms>
+=== Evaluating special forms
 
-A _special form_ $xi$ is a distinguished head value that suspends the default
-operand-evaluation rule. The base of ILD has exactly three, and none of them
-mutates anything.
+==== Quote
+$ mono("apply-sf")(rho, mono("quote"), v) = v $
 
-*`quote`* returns its single operand verbatim,
-$ mono("quote")(rho; #h(2pt) x) = x, $
-turning a fragment of program into inert data (surface syntax #raw("'x", lang: "ild")).
+Quote works similarly to other LISP-like languages.
 
-*`free-vars`* reifies the current environment as an association list,
-$ mono("free-vars")(rho; #h(2pt)) = ((s_1 . rho(s_1)) #h(3pt) dots.c #h(3pt) (s_k . rho(s_k))), quad {s_1, dots.c, s_k} = "dom" rho $
-(the order of pairs is unspecified). It is the only way a running program can
-capture the bindings visible at a point as a first-class value; @bootstrapping
-relies on it to let a macro-produced closure snapshot its definition environment.
+==== Macro expansion
+$ mono("apply-sf")(rho, mono("macroexpand"), m, a_1, a_2, ... a_n) = ⟦ mono("apply")(⟦m⟧_rho, a_1, a_2, ..., a_n) ⟧_rho $
 
-*`macroexpand`* is the sole metaprogramming primitive. On operands
-$m, a_1, dots.c, a_n$ (surface syntax #raw("!m a_1 … a_n", lang: "ild")) it is
-defined by
-$ mono("macroexpand")(rho; #h(2pt) m, a_1, dots.c, a_n) = lr(⟦ #h(2pt) mono("apply")(lr(⟦ m ⟧)_rho, #h(2pt) [a_1, dots.c, a_n]) #h(2pt) ⟧)_rho. $
-Read inside-out: evaluate $m$ to a procedure $mu$ (the _macro_); apply $mu$ to the
-_unevaluated_ operand forms to obtain an _expansion_ $x$, itself an expression;
-then evaluate $x$ in the _caller's_ environment $rho$.
+The $mono("macroexpand")$ special form allows metaprogramming by treating a certain function
+as a _macro_. A regular function evaluation $(f a_1 a_2 ... a_n)$ evaluates f and all
+arguments and then passes the evaluated arguments to the evaluated f. In contrast,
+$(mono("macroexpand") f a_1 a_2 ... a_n)$ evaluates just $f$ and then passes the
+*unevaluated* arguments to it. The result is then in turn evaluated. This allows $f$
+to treat the program passed to it as data and to transform it arbitrarily before it
+gets evaluated. This is similar to unhygienic macro systems like the one in LISP.
+#note[ILD macros are evaluated from outside-in. Is this true for LISP macros?]
 
-A macro is therefore nothing more than an ordinary function from syntax to
-syntax. `macroexpand` supplies only the two ingredients that make it a macro --
-"do not evaluate my operands" and "do evaluate my result, here, now" -- so ILD
-needs neither a separate class of macro values nor a distinct expansion phase.
-]
+Unlike LISP, ILD denotes macro expansion at the callsite rather than differentiating
+between _functions_ and _macros_. This is mainly a stylistic choice that greatly
+simplifies the semantics and implementation.
 
-#review[
-== Mechanism of action: expansion is evaluation
+Another difference from LISP macros is that ILD does not have a separate macro expansion
+phase: instead, macros are evaluated as encountered. We will call this _runtime semantics
+of macro expansion_. The astute reader will notice that this defeats one of the
+reasons macros are used in the first place, which is to move some code execution
+ahead-of-time. We argue that this is not a problem #paraphrase[because in future
+research] we extend ILD with another, more powerful, method of AOT code execution,
+namely _partial evaluation_ (as per @pe-later).
 
-Expansion proceeds _outside-in_. `(macroexpand m …)` runs the outermost macro
-`m` first; any `macroexpand` forms sitting _inside_ the resulting expansion are
-untouched until the final $lr(⟦x⟧)_rho$ reaches them. Since that last step is an
-ordinary evaluation, a macro that expands into further macro calls simply has
-those calls expanded as evaluation walks into them. There is no fixed-point
-pre-pass over the whole form: in ILD, macro expansion and evaluation are _one and
-the same traversal_.
+==== Capturing the binding environment <free-vars>
+$mono("apply-sf")(rho, mono("free-vars"))$ shall return a
+list-of-pairs#footnote[For the sake of performance, implementations may use a
+more efficient data structure. However, this is not relevant at the moment.]
+representation of $rho$.
 
-The outermost-first _ordering_ is shared with Lisp and Scheme#citneeded. What
-differs is _phase_: those languages expand macros completely, ahead of time, in a
-dedicated expander with its own notion of environment, and only then evaluate the
-fully expanded form. ILD has no such separation -- the head `m` of a macro call
-is an ordinary value produced by evaluation, so macros are first-class (they can
-be passed, returned, and built by other macros) and live in the same single
-namespace and environment as everything else.
+For all other cases, $mono("apply-sf")$ shall return a suitable $mono("Fail")$.
 
-This buys a genuinely minimal core at two costs. First, there is no hygiene: an
-expansion sees whatever the caller's environment holds, and any discipline over
-name capture must be arranged explicitly by the macro author, typically via
-`free-vars`. Second, because a form is re-expanded every time evaluation reaches
-it rather than once in advance, repeatedly evaluated code pays for its expansion
-repeatedly -- the performance overhead whose removal, by partial evaluation, we
-identify as the target of further research (@motivation).
-]
+Since ILD has no function definition special form, $mono("free-vars")$ is used
+by the lambda macro (#paraphrase[ref-to-the-lambda-macro]) to capture the binding
+environment.
+
+== A minimal host environment
+ILD, as defined in @semantics, is useless by itself.
+#note[why? show that nothing useful can be computed with just the base language]
+
+We define a host environment $rho$. We will write $(mono("foo") v_1 v_2 ... v_n) := v$
+to denote that $mono("apply")(rho(mono("foo")), v_1, v_2, ..., v_n) = v$ for a
+$mono("foo") in "Sym"$. Similarly to $mono("apply-sf")$, we assume that the result
+of $mono("apply")$ is a $mono("Fail")$ for all improper cases.
+
+=== Boring values
+- Access to the special forms
+  - $rho(mono("quote")) = mono("quote")$
+  - $rho(mono("free-vars")) = mono("free-vars")$
+  - $rho(mono("macroexpand")) = mono("macroexpand")$
+  #note[special forms should be rendered not with mono() but with something that looks different from symbols]
+- Numbers, and associated functions for manipulating them
+  - $Q subset "Ext"$
+  - $(mono("add") x_1 x_2 ... x_n) := x_1 + x_2 + ... + x_n$ for $x_1 ... x_n in Q$
+  - #paraphrase[...]
+- Functions for working with lists
+  - #paraphrase[cons, car, cdr, null?, etc]
+- Predicates
+  - #paraphrase[is-sym?, is-pair?, sym-eq?, etc]
+
+=== Abstractions <abstraction>
+For ILD to become turing-complete, and, equivalently, a superset of the $lambda$-calculus,
+we give it a mechanism for building $lambda$-abstractions.
+
+Let
+
+$ { lambda(eta, P = (alpha_1, alpha_2, ..., alpha_n), B) | eta in "Env", alpha_1 ... alpha_n in "Sym", B in v} subset "Ext" $
+
+be the set of abstractions. Each abstraction carries a binding environment ($eta$),
+a list of formal parameters ($P$) and a body ($B$).
+
+An abstraction is applied by substituting the formal parameters by the #paraphrase[concrete]
+operands in the binding environment, and then evaluating the body in the resulting environment:
+
+$ mono("apply")(lambda(eta, P = (alpha_1, alpha_2, ..., alpha_n), B), a_1, a_2, ..., a_n) = ⟦B⟧_rho $
+where
+$ rho = eta [ alpha_1 / a_1 ] [ alpha_2 / a_2 ] ... [ alpha_n / a_n ] $
+
+The function $mono("mk-lambda")$ shall be provided in order to allow constructing such abstractions:
+$ (mono("mk-lambda") e P B) = lambda(eta, P, B) $
+where $eta$ is an environment constructed from the key-value list $e$
+(the opposite operation of the one done in @free-vars)#footnote[Instead of encoding/decoding
+environments into key/value lists, we may encode them directly as an external value. High-performance
+implementations will do that, but for us it is a stylistic choice.]
+
+=== A recursion operator
+A meta-operator $mono("poly-fix")$ shall be provided to allow constructing
+mutually-recursive functions.
+
+#comment[If we don't care about performance and have infinite memory, the external implementation
+of $mono("poly-fix")$ is optional, since we can just implement the Y-combinator in ILD itself.
+For this exercise, see @poly-fix-Y.]
+
+$ (mono("poly-fix") Gamma_1 Gamma_2 ... Gamma_n) := (f_1, f_2, ..., f_n) $
+
+where $f_1, ..., f_n$ are such that:
+
+$ mono("apply")(f_i, a_1, ..., a_n) = mono("apply")(Gamma_i (f_1, f_2, ..., f_n), a_1, ..., a_n) $
+
+#comment[A stronger definition of $f_1, ..., f_n$ would be $f_i = Gamma_i (f_1, f_2, ..., f_n)$,
+but this leads to divergence problems when the language has strict (non-lazy) semantics.#citneeded
+Indeed, other strictly-evaluated languages, like Scheme, only support the weaker version
+of the recursion operator: `letrec` in Scheme does not allow non-functional right-hand
+sides#citneeded. Lazy languages do not have this problem -- for example, the `rec` operator
+in Nix has the stroger version of this semantic.#citneeded]
 
 = Bootstrapping <bootstrapping>
-First, we need to define `lambda`.
-#todo[definition of lambda]
+Now that we have defined our minimal language with its minimal host environment,
+we can build upon them using metaprogramming and macros to incrementally define
+more complex ergonomic syntax.
+
+First, we define a macro called `lambda` that will let us build abstractions (@abstraction)
+easily:
+```ild
+(mk-lambda
+  (free-vars)
+  '(arg-names body)
+  '(cons mk-lambda
+    (cons (cons free-vars '())                       ; closure, equal to the call site's env
+      (cons (cons quote (cons arg-names '()))        ; quoted arg-names
+        (cons (cons quote (cons body '()))           ; quoted body
+          '())))))
+```
+
+#comment[The `(free-vars)` closure given to the external `mk-lambda` can be replaced
+by a closure that contains only `cons`, `mk-lambda`, `quote` and `free-vars`.]
 
 First of all, one would like to be able to define some #paraphrase[items] and
 use them in other code. As the reader is probably used to from
@@ -266,9 +329,15 @@ To be able to do this more ergonomically, we define a _macro_ called `let`:
 (!foo "bar" bar qux)
 ```
 
-== Glossary
-Henceforth:
+== Appendix
 
-- _LLPL_ shall mean "lisp-like programming language" -- informally, a language
-  whose programs are S-expressions, is homoiconic and lists get evaluated as
-  function calls (combinations)
+=== Polyvariate Y-combinator <poly-fix-Y>
+Instead of relying on an external implementation of $mono("poly-fix")$, we can
+quite elegantly define it as such:
+
+```ild
+(!lambda l
+  ((!lambda (x) (x x))
+    (!lambda (p)
+      (map (!lambda (li) (!lambda args (apply (apply li (p p)) args))) l)))))))
+```

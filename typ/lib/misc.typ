@@ -39,3 +39,13 @@
   stroke: (top: 2pt + rgb("#e0b000")),
   body,
 )
+
+#let comment(body) = block(
+  width: 100%,
+  breakable: true,
+  fill: rgb("#aadcff"),
+  inset: (x: 8pt, y: 6pt),
+  radius: 2pt,
+  stroke: (top: 2pt + rgb("#e0b022")),
+  body,
+)
