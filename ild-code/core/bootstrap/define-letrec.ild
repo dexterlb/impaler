@@ -1,4 +1,4 @@
-((!lambda (expand-lambda builtins)
+((!lambda (expand-lambda)
   ((!lambda (list cadr if)
     ((!lambda (Y)
       ((!lambda (map)
@@ -92,7 +92,4 @@
 ))
 
   ; definition of "expand-lambda"
-  (!lambda (args body) (cons macroexpand (cons lambda (cons args (cons body '())))))
-
-  ; definition of "builtins"
-  (free-vars))
+  (!lambda (args body) (cons macroexpand (cons lambda (cons args (cons body '()))))))
