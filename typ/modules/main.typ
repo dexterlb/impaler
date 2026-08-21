@@ -1,5 +1,5 @@
 #set document(
-  title: [Implementing a non-trivial module system in a minimal LISP-like programming language]
+  title: [Implementing a module system in a minimal LISP-like language]
 )
 
 #import "/lib/paper.typ": paper_template
@@ -8,36 +8,36 @@
 #import "/lib/ild-stuff.typ": ild-stuff
 #show: ild-stuff
 
-#import "/lib/misc.typ": citneeded, paraphrase, todo, review
+#import "/lib/misc.typ": citneeded, paraphrase, todo, review, note
 
 #set heading(numbering: "1.")
 
 #title()
 
-= Glossary
-Henceforth:
-
-- _LLPL_ shall mean "lisp-like programming language" -- informally, a language
-  whose programs are S-expressions, is homoiconic and lists get evaluated as
-  function calls (combinations)
-
 = Motivation <motivation>
-To write a nontrivial program in a LLPL, one needs to be able to define functions,
-constants, and possibly other #paraphrase[items], in a way that allows them to
-reference each other. #paraphrase[Even more], all but the most trivial LLPLs also
-allow mutual recursion.
 
-A tradeoff is usually#citneeded made between:
+#paraphrase[We wish to build] a programming language that is as minimal as possible
+while being expressive enough for general-purpose use. #paraphrase[This] is characterised
+by the following properties:
++ Minimality
+  + Homoiconicity, provided by LISP-like syntax
+  + Immutability
+  + Few (and simple) special forms
++ Expressiveness
+  + Mutual recursion
+  + Metaprogramming (allow implementing #paraphrase[convenience structures] as
+    libraries written in the language rather than compiler/interpreter
+    features)
++ Performance
 
-+ True immutability
-+ Few (and simple) special forms
-
-For example, Scheme (and Lisp, and most "serious" LLPLs, for that matter) allow
-_mutability_, thus making it easy to #paraphrase[create] mutually-recursive
-data structures, and, #paraphrase[in a special case], mutually-recursive
-functions. The toplevel expressions are usually _statements_, such as `define`,
-that mutate a global _environment_ which is then seen in the execution scope of
-the defined functions during their runtime.
+Some of these properties are at odds at each other: in particular, it is
+difficult#citneeded to provide mutual recursion and immutability while at the
+same time #paraphrase[having few and simple special forms]. For example,
+Scheme, LISP and other similar languages forgo the "immutability" constraint,
+which makes it easy#citneeded to implement cyclic data structures like
+mutually-recursive function definitions. The toplevel expressions in such
+languages are usually _statements_ like `define` that _mutate_ a global
+_environment_.
 
 ```scheme
 (define (even? x)
@@ -56,78 +56,70 @@ the defined functions during their runtime.
 (display (even? 42))
 ```
 
-LLPLs like Scheme allow implementing most of the language constructs in itself
-at the expense of heavy use of mutability in the definitions of core constructs
-(macros).
+Other LISP-like languages, such as LFE#citneeded, guarantee immutability of all
+data, but handle a lot of the complexity in the interpreter itself: the
+language features are written in the host language that implements the
+interpreter, and not in the language itself. For example, functions defined in
+the global namespace are distinct from locally defined lambda objects, and the
+interpreter takes special care to #paraphrase[allow] recursion and mutual
+recursion without allowing programs to mutate data. In fact, in LFE it is not
+even possible to create a cyclic data structure altogether! The price that is
+paid to achieve this is that the global namespace of defined functions is not
+#paraphrase[manipulatable] by the program (which violates homoiconicity to some
+extent) and that `define` and similar constructs are special forms.
 
-Other LLPLs, such as LFE#citneeded guarantee immutability of all data, but
-handle a lot of the complexity in the interpreter itself: the language features
-are written in the host language that implements the interpreter, and not in
-the language itself. For example, functions defined in the global namespace are
-distinct from locally defined lambda objects, and the interpreter takes special
-care to #paraphrase[allow] recursion and mutual recursion without allowing
-programs to mutate data. In fact, in LFE it is not even possible to create a
-cyclic data structure altogether! The price that is paid to achieve this is
-that `define` and similar constructs are special forms.
+It is therefore interesting to see if we can design a language that meets all
+these goals at the same time. We define a language (which we will call ILD)
+which adheres to the #paraphrase[ref-to-Minimality] constraints, and then
+demonstrate expressiveness by #paraphrase[writing] a program in ILD called a
+_module loader_ that is able to in turn run programs that are decomposed into
+ergonomic to read and write files called _modules_. Functions defined in these
+modules can be #paraphrase[ref-to-mutually-recursive].
 
-We define an LLPL (which we will call ILD) that is at the same time:
-- Fully immutable
-- Expressive enough to write nontrivial programs in
-- Minimal at its core (few special forms, none of which deal with state mutation)
-
-After defining such a language, we show a way to decompose programs into
-ergonomic _modules_, and define a program called a _module loader_ which
-lets us run such #paraphrase[programs].
-
-In further research, we aim to show that the severe performance overhead
-incurred by implementing such complex metaprogramming constructs using a very
-limited set of base special forms can be significantly reduced by employing
-partial evaluation as an optimisation step.
+In further research, we aim to also meet the #paraphrase[ref-to-Performance]
+constraint by showing that the severe performance overhead incurred by
+implementing such complex metaprogramming constructs using a very limited set
+of base special forms can be significantly reduced by employing partial
+evaluation as an optimisation step.
 
 = ILD definition
+
+== Programs and values
+
+Due to ILD being homoiconic, programs and values share the same domain $V$:
+$ V = "Sym" union { () } union { (v_1 . v_2) | v_1, v_2 in V } union "SF" union "Ext" union { "Fail"(v) | v in V } $
+
+a value being one of:
+- Base syntax
+  - a _Symbol_ -- $s in "Sym"$
+  - a _Pair_ -- $(v_1 . v_2) | v_1, v_2 in V$
+  - _Null_ (the empty list) -- $()$
+- Non-syntax values
+  - an _external value_ -- $phi in "Ext"$ -- opaque to ILD
+  - one of the three special forms -- $xi in "SF" = { mono("free-vars"), mono("quote"), mono("macroexpand") }$
+  - a _Fail_ -- $mono("Fail")(v) | v in V$ -- signifies failure, carries a value that
+    describes the failure
+
+ILD is designed to be embedded#citneeded into a host environment that provides
+a set of external data structures. #note[I don't like to call these "external
+values", a better term is needed] #paraphrase[Inhabitants] of these data
+structures are treated as #paraphrase[ref-to-external-values], and so are the
+functions that operate on them. To facillitate this, external values may be
+callable, which means that `apply` is defined for external values that are
+treated as functions #paraphrase[see section explaining how apply works].
+
 == Syntax
-The syntax is based on standard S-expressions#citneeded with two extra
-syntax sugars:
-- Quote: `'<expr>` $arrow.r.double.bar$ `(quote <expr>)`
+A subset of ILD values, which we call _programs_, can be represented as text:
+the syntax is based on standard S-expressions#citneeded with two extra syntax
+sugars:
+- Quote: `'<expr>` $arrow.r.double.bar$ `(quote <expr>)` -- see #paraphrase[ref-to-section-that-explains-quote]
 - Macroexpand: `(!<expr1> ... <exprN>)` $arrow.r.double.bar$
-  `(macroexpand <expr1> ... <exprN>)`
+  `(macroexpand <expr1> ... <exprN>)` -- used in #paraphrase[ref-to-section-that-explains-macroexpand]
+Additionally, although formally unnecessary, the parser is assumed to allow syntax
+for numeric, string and boolean external value types.
 
-#review[
-The base of ILD is deliberately tiny: a grammar of S-expression _values_, a
-single evaluation rule that reads a list as a function call, three special
-forms, and a first-class notion of _failure_. Nothing else -- not arithmetic,
-not `cons`/`car`/`cdr`, not `lambda`, `let`, `letrec` or the module system -- is
-part of the language. Those are ordinary values supplied by the initial
-environment and, for the most part, written in ILD itself (@bootstrapping). This
-section fixes only what a program can assume before any such library exists;
-everything provided by the initial environment is deferred to @sandbox.
-]
-
-#review[
-== Values and surface syntax
-
-ILD is homoiconic: a program _is_ a value, and evaluation is a function on
-values. The value domain $V$ is
-
-$ v ::= s | n | c | b | () | (v . v) | mono("Fail")(v) | phi | xi $
-
-with $s$ a _symbol_, $n$ a _number_, $c$ a _string_, $b in {mono(\#t), mono(\#f)}$
-a _boolean_, $()$ the empty list (_null_), $(v . v)$ a _pair_ (cons cell),
-$mono("Fail")(v)$ a _failure_ carrying an arbitrary payload, $phi$ a _procedure_
-(an external value), and $xi$ a _special form_ (@special-forms). The two kinds of
-_callable_, $phi$ and $xi$, are opaque and observable only by being applied,
-and they are applied by different rules.
-
-A _list_ is the usual right-nested sugar,
-$ (v_1 #h(3pt) v_2 #h(3pt) dots.c #h(3pt) v_n) quad eq.delta quad (v_1 . (v_2 . (dots.c . (v_n . ())))), $
-and a pair whose right spine does not terminate in $()$ is _improper_ (dotted).
-Only symbols, pairs and $()$ are essential to the calculus; numbers, strings and
-booleans are convenience atoms on which the core evaluator never branches.
-
-Two purely notational abbreviations are expanded by the reader, before
-evaluation, and are used freely in examples:
-$ #raw("'x", lang: "ild") eq.delta (mono("quote") #h(3pt) x), quad quad #raw("!f a_1 … a_n", lang: "ild") eq.delta (mono("macroexpand") #h(3pt) f #h(3pt) a_1 #h(3pt) dots.c #h(3pt) a_n). $
-]
+#note[instead of using `foo`, we should define an ILD-specific inline block that
+is pretty]
 
 #review[
 == Environments and evaluation
@@ -273,3 +265,10 @@ To be able to do this more ergonomically, we define a _macro_ called `let`:
 ```ild
 (!foo "bar" bar qux)
 ```
+
+== Glossary
+Henceforth:
+
+- _LLPL_ shall mean "lisp-like programming language" -- informally, a language
+  whose programs are S-expressions, is homoiconic and lists get evaluated as
+  function calls (combinations)

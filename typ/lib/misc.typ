@@ -29,3 +29,13 @@
   stroke: (left: 2pt + rgb("#e0b000")),
   body,
 )
+
+#let note(body) = block(
+  width: 100%,
+  breakable: true,
+  fill: rgb("#ffdcf8"),
+  inset: (x: 8pt, y: 6pt),
+  radius: 2pt,
+  stroke: (top: 2pt + rgb("#e0b000")),
+  body,
+)
