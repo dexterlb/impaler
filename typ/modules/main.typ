@@ -84,6 +84,7 @@ of base special forms can be significantly reduced by employing partial
 evaluation as an optimisation step.
 
 = The language ILD
+#note[TODO: transform all definitions to CPS]
 
 == Programs and values
 
@@ -103,11 +104,13 @@ a value being one of:
 
 ILD is designed to be embedded#citneeded into a host environment that provides
 a set of external data structures. #note[I don't like to call these "external
-values", a better term is needed] #paraphrase[Inhabitants] of these data
-structures are treated as #paraphrase[ref-to-external-values], and so are the
-functions that operate on them. To facillitate this, external values may be
-callable, which means that `apply` is defined for external values that are
-treated as functions #paraphrase[see section explaining how apply works].
+values", a better term is needed - for example, "host". TODO: rename "external
+value to "host value" everywhere, and also rename "builtin" to "host" in the
+module loader code] #paraphrase[Inhabitants] of these data structures are
+treated as #paraphrase[ref-to-external-values], and so are the functions that
+operate on them. To facillitate this, external values may be callable, which
+means that `apply` is defined for external values that are treated as functions
+#paraphrase[see section explaining how apply works].
 
 #comment[Note on lists: we will use $(v_1, v_2, ..., v_n)$ to denote
 the value $(v_1 . (v_2 . (... (v_n . ())...)))$, which we will call a _list_.]
@@ -239,6 +242,8 @@ of $mono("apply")$ is a $mono("Fail")$ for all improper cases.
 === Abstractions <abstraction>
 For ILD to become turing-complete, and, equivalently, a superset of the $lambda$-calculus,
 we give it a mechanism for building $lambda$-abstractions.
+
+#note[TODO: B should be a list of expressions to execute in order, not a single expression; this must be fixed in rust code as well]
 
 Let
 
@@ -399,6 +404,49 @@ We can now rewrite the above example into:
 == The module loader
 
 #note[this section is unfinished]
+
+== An example program
+```ild
+
+#note[this section is unfinished]
+
+(module
+  (doc "this module calculates the factorial of 5")
+  (exports main)
+  (imports
+    (builtin (macroexpand <= * + lambda))
+    ("core/prelude.ild" (if))
+    ("core/module-utils.ild" (fn)))
+  (defs
+    (!fn main () (fact 5))
+
+    (!fn fact (x)
+      (!if (<= x 0)
+        1
+        (* x (fact (+ x -1)))))))
+```
+
+== Complex control flow on top of CPS
+
+#note[this section is unfinished]
+
+The following example illustrates early return from the recursive computation
+enacted by `map`:
+```ild
+(!fn try-map (f l)
+  (call/cc (!lambda (return)
+    (return (map
+      (!lambda (x)
+        (!if (fail? (f x))
+          (return (make-fail (list 'fail-in-element x (f x))))
+          (f x))) l)))))
+```
+If `f` returns failure for an item in the list, the subsequent items will not
+be processed.
+
+This technique can also be used to implement mechanisms like scoped try/catch,
+iterative loops and other constructs that are separate features in other
+languages.
 
 = Appendix
 
