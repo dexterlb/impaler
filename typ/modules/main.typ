@@ -8,7 +8,7 @@
 #import "/lib/ild-stuff.typ": ild-stuff
 #show: ild-stuff
 
-#import "/lib/misc.typ": citneeded, paraphrase, todo, review, note, comment
+#import "/lib/misc.typ": citneeded, clink, paraphrase, todo, review, note, comment
 
 #set heading(numbering: "1.")
 
@@ -19,7 +19,7 @@
 #paraphrase[We wish to build] a programming language that is as minimal as possible
 while being expressive enough for general-purpose use. #paraphrase[This] is characterised
 by the following properties:
-+ Minimality
++ Minimality <c-minimality>
   + Homoiconicity, provided by LISP-like syntax
   + Immutability
   + Few (and simple) special forms
@@ -28,7 +28,7 @@ by the following properties:
   + Metaprogramming (allow implementing #paraphrase[convenience structures] as
     libraries written in the language rather than compiler/interpreter
     features)
-+ Performance
++ Performance <c-performance>
 
 Some of these properties are at odds at each other: in particular, it is
 difficult#citneeded to provide mutual recursion and immutability while at the
@@ -70,14 +70,14 @@ extent) and that `define` and similar constructs are special forms.
 
 It is therefore interesting to see if we can design a language that meets all
 these goals at the same time. We define a language (which we will call ILD)
-which adheres to the #paraphrase[ref-to-Minimality] constraints, and then
+which adheres to the #clink(<c-minimality>)[minimality] constraints, and then
 demonstrate expressiveness by #paraphrase[writing] a program in ILD called a
 _module loader_ that is able to in turn run programs that are decomposed into
 ergonomic to read and write files called _modules_. Functions defined in these
-modules can be #paraphrase[ref-to-mutually-recursive].
+modules can be mutually recursive (@bootstrapping).
 
 == PE for performance <pe-later>
-In further research, we aim to also meet the #paraphrase[ref-to-Performance]
+In further research, we aim to also meet the #clink(<c-performance>)[performance]
 constraint by showing that the severe performance overhead incurred by
 implementing such complex metaprogramming constructs using a very limited set
 of base special forms can be significantly reduced by employing partial
@@ -86,7 +86,7 @@ evaluation as an optimisation step.
 = The language ILD
 #note[TODO: transform all definitions to CPS]
 
-== Programs and values
+== Programs and values <values>
 
 Due to ILD being homoiconic, programs and values share the same domain $V$:
 $ V = "Sym" union { () } union { (v_1 . v_2) | v_1, v_2 in V } union "SF" union "Ext" union { "Fail"(v) | v in V } $
@@ -107,10 +107,10 @@ a set of external data structures. #note[I don't like to call these "external
 values", a better term is needed - for example, "host". TODO: rename "external
 value to "host value" everywhere, and also rename "builtin" to "host" in the
 module loader code] #paraphrase[Inhabitants] of these data structures are
-treated as #paraphrase[ref-to-external-values], and so are the functions that
+treated as external values (@values), and so are the functions that
 operate on them. To facillitate this, external values may be callable, which
 means that `apply` is defined for external values that are treated as functions
-#paraphrase[see section explaining how apply works].
+(@apply).
 
 #comment[Note on lists: we will use $(v_1, v_2, ..., v_n)$ to denote
 the value $(v_1 . (v_2 . (... (v_n . ())...)))$, which we will call a _list_.]
@@ -119,9 +119,9 @@ the value $(v_1 . (v_2 . (... (v_n . ())...)))$, which we will call a _list_.]
 A subset of ILD values, which we call _programs_, can be represented as text:
 the syntax is based on standard S-expressions#citneeded with two extra syntax
 sugars:
-- Quote: `'<expr>` $arrow.r.double.bar$ `(quote <expr>)` -- see #paraphrase[ref-to-section-that-explains-quote]
+- Quote: `'<expr>` $arrow.r.double.bar$ `(quote <expr>)` -- see @quote
 - Macroexpand: `(!<expr1> ... <exprN>)` $arrow.r.double.bar$
-  `(macroexpand <expr1> ... <exprN>)` -- used in #paraphrase[ref-to-section-that-explains-macroexpand]
+  `(macroexpand <expr1> ... <exprN>)` -- used in @macroexpand
 Additionally, although formally unnecessary, the parser is assumed to allow syntax
 for numeric, string and boolean external value types.
 
@@ -130,7 +130,7 @@ is pretty]
 
 == Semantics of ILD <semantics>
 === Environments
-An _environment_ is a finite partial map $rho : "Sym" #paraphrase[$- ->$] V$ that gives semantics
+An _environment_ is a finite partial map $rho : "Sym" harpoon.rt V$ that gives semantics
 to symbols. Let $"Env"$ be the set of all such environments.
 
 Looking up a symbol in an environment shall be defined as:
@@ -140,7 +140,7 @@ $ mono("get")(rho, s) = cases(
   mono("Fail")("<err: unbound symbol>") & s in ("Sym" \\ "dom"rho),
 ) $
 
-=== Apply
+=== Apply <apply>
 We say that certain external values $v in "Ext"$ are _callable_ if $mono("apply")(v, a_1, a_2, ..., a_n) in V$
 is defined for some natural $n$ and $v, a_1, a_2, ..., a_n in V$.
 
@@ -171,12 +171,12 @@ Informally:
 
 === Evaluating special forms
 
-==== Quote
+==== Quote <quote>
 $ mono("apply-sf")(rho, mono("quote"), v) = v $
 
 Quote works similarly to other LISP-like languages.
 
-==== Macro expansion
+==== Macro expansion <macroexpand>
 $ mono("apply-sf")(rho, mono("macroexpand"), m, a_1, a_2, ... a_n) = ⟦ mono("apply")(⟦m⟧_rho, a_1, a_2, ..., a_n) ⟧_rho $
 
 The $mono("macroexpand")$ special form allows metaprogramming by treating a certain function

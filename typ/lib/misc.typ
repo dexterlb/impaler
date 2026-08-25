@@ -1,5 +1,7 @@
 #let citneeded = text(fill: blue)[[citation needed]]
 
+#let clink(dest, body) = link(dest, text(fill: blue, body))
+
 #let squiggly_underline(body, color) = box(context {
   let w = measure(body).width
   let amp = 1pt
