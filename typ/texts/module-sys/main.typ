@@ -2,11 +2,11 @@
   title: [Implementing a module system in a minimal LISP-like language]
 )
 
-#import "/lib/paper.typ": paper_template
-#show: paper_template
+#import "/lib/paper.typ": paper-template
+#show: paper-template
 
-#import "/lib/ild-stuff.typ": ild-stuff
-#show: ild-stuff
+#import "/lib/ild-stuff.typ": ild-template, ildfail, ildsf, ildsym, interop
+#show: ild-template
 
 #import "/lib/misc.typ": citneeded, clink, paraphrase, todo, review, note, comment
 
@@ -98,8 +98,8 @@ a value being one of:
   - _Null_ (the empty list) -- $()$
 - Non-syntax values
   - an _external value_ -- $phi in "Ext"$ -- opaque to ILD
-  - one of the three special forms -- $xi in "SF" = { mono("free-vars"), mono("quote"), mono("macroexpand") }$
-  - a _Fail_ -- $mono("Fail")(v) | v in V$ -- signifies failure, carries a value that
+  - one of the three special forms -- $xi in "SF" = { ildsf("free-vars"), ildsf("quote"), ildsf("macroexpand") }$
+  - a _Fail_ -- $ildfail(v) | v in V$ -- signifies failure, carries a value that
     describes the failure
 
 ILD is designed to be embedded#citneeded into a host environment that provides
@@ -112,8 +112,9 @@ operate on them. To facillitate this, external values may be callable, which
 means that `apply` is defined for external values that are treated as functions
 (@apply).
 
-#comment[Note on lists: we will use $(v_1, v_2, ..., v_n)$ to denote
-the value $(v_1 . (v_2 . (... (v_n . ())...)))$, which we will call a _list_.]
+#comment[Note on lists: since ILD is a LISP, we will use $(v_1, v_2, ..., v_n)$
+to denote the value $(v_1 . (v_2 . (... (v_n . ())...)))$, which we will call a
+_list_.]
 
 == Syntax
 A subset of ILD values, which we call _programs_, can be represented as text:
@@ -135,28 +136,28 @@ to symbols. Let $"Env"$ be the set of all such environments.
 
 Looking up a symbol in an environment shall be defined as:
 
-$ mono("get")(rho, s) = cases(
+$ interop("get")(rho, s) = cases(
   v & s in "Sym" and rho(s) = v,
-  mono("Fail")("<err: unbound symbol>") & s in ("Sym" \\ "dom"rho),
+  ildfail("<err: unbound symbol>") & s in ("Sym" \\ "dom"rho),
 ) $
 
 === Apply <apply>
-We say that certain external values $v in "Ext"$ are _callable_ if $mono("apply")(v, a_1, a_2, ..., a_n) in V$
+We say that certain external values $v in "Ext"$ are _callable_ if $interop("apply")(v, a_1, a_2, ..., a_n) in V$
 is defined for some natural $n$ and $v, a_1, a_2, ..., a_n in V$.
 
-We can extend $mono("apply")$ to a total function over $V$ by making it return
-a $mono("Fail")$ in cases where it is not defined. We will not cause further
+We can extend $interop("apply")$ to a total function over $V$ by making it return
+a $ildfail("_")$ in cases where it is not defined. We will not cause further
 boredom for the reader by formally defining this extension.
 
 === Eval
 Now we can define the evaluation function as so:
 
 $ ⟦v⟧_rho = cases(
-  mono("get")(rho, v) & v in "Sym",
-  mono("apply")(⟦f⟧_rho, ⟦a_1⟧_rho, ..., ⟦a_n⟧_rho) & v = (f, a_1, a_2, ... a_n) and ⟦f⟧_rho in.not "SF",
-  mono("apply-sf")(rho, ⟦xi⟧_rho, a_1, ..., a_n) & v = (xi, a_1, a_2, ... a_n) and ⟦xi⟧_rho in "SF",
-  mono("Fail")("<err: cannot eval ()>") & v = (),
-  v & v in "SF" union "Ext" union { mono("Fail")(w) | w in V },
+  interop("get")(rho, v) & v in "Sym",
+  interop("apply")(⟦f⟧_rho, ⟦a_1⟧_rho, ..., ⟦a_n⟧_rho) & v = (f, a_1, a_2, ... a_n) and ⟦f⟧_rho in.not "SF",
+  interop("apply-sf")(rho, ⟦xi⟧_rho, a_1, ..., a_n) & v = (xi, a_1, a_2, ... a_n) and ⟦xi⟧_rho in "SF",
+  ildfail("<err: cannot eval ()>") & v = (),
+  v & v in "SF" union "Ext" union { ildfail(w) | w in V },
 ) $
 
 #note[why is spacing so tight??]
@@ -166,23 +167,23 @@ Informally:
 - Proper nonempty lists are evaluated by first evaluating their head, and then:
   - If the evaluated head is a special form, apply that special form to the *unevaluated* rest of the elements of the list
   - If the evaluated head is not a special form, apply the evaluated head to the *evaluated* rest of the elements of the list
-- Trying to evaluate an improper or empty list results in a $mono("Fail")$
+- Trying to evaluate an improper or empty list results in a $ildfail("...")$
 - All other values evaluate to themselves
 
 === Evaluating special forms
 
 ==== Quote <quote>
-$ mono("apply-sf")(rho, mono("quote"), v) = v $
+$ interop("apply-sf")(rho, ildsf("quote"), v) = v $
 
 Quote works similarly to other LISP-like languages.
 
 ==== Macro expansion <macroexpand>
-$ mono("apply-sf")(rho, mono("macroexpand"), m, a_1, a_2, ... a_n) = ⟦ mono("apply")(⟦m⟧_rho, a_1, a_2, ..., a_n) ⟧_rho $
+$ interop("apply-sf")(rho, ildsf("macroexpand"), m, a_1, a_2, ... a_n) = ⟦ interop("apply")(⟦m⟧_rho, a_1, a_2, ..., a_n) ⟧_rho $
 
-The $mono("macroexpand")$ special form allows metaprogramming by treating a certain function
+The $ildsf("macroexpand")$ special form allows metaprogramming by treating a certain function
 as a _macro_. A regular function evaluation $(f a_1 a_2 ... a_n)$ evaluates f and all
 arguments and then passes the evaluated arguments to the evaluated f. In contrast,
-$(mono("macroexpand") f a_1 a_2 ... a_n)$ evaluates just $f$ and then passes the
+$(ildsf("macroexpand") f a_1 a_2 ... a_n)$ evaluates just $f$ and then passes the
 *unevaluated* arguments to it. The result is then in turn evaluated. This allows $f$
 to treat the program passed to it as data and to transform it arbitrarily before it
 gets evaluated. This is similar to unhygienic macro systems like the one in LISP.
@@ -201,14 +202,14 @@ research] we extend ILD with another, more powerful, method of AOT code executio
 namely _partial evaluation_ (as per @pe-later).
 
 ==== Capturing the binding environment <free-vars>
-$mono("apply-sf")(rho, mono("free-vars"))$ shall return a
+$interop("apply-sf")(rho, ildsf("free-vars"))$ shall return a
 list-of-pairs#footnote[For the sake of performance, implementations may use a
 more efficient data structure. However, this is not relevant at the moment.]
 representation of $rho$.
 
-For all other cases, $mono("apply-sf")$ shall return a suitable $mono("Fail")$.
+For all other cases, $interop("apply-sf")$ shall return a suitable $ildfail("...")$.
 
-Since ILD has no function definition special form, $mono("free-vars")$ is used
+Since ILD has no function definition special form, $ildsf("free-vars")$ is used
 by the lambda macro (@lambda-macro) to capture the binding
 environment.
 
@@ -216,27 +217,26 @@ environment.
 ILD, as defined in @semantics, is useless by itself.
 #note[why? show that nothing useful can be computed with just the base language]
 
-We define a host environment $rho$. We will write $(mono("foo") v_1 v_2 ... v_n) := v$
-to denote that $mono("apply")(rho(mono("foo")), v_1, v_2, ..., v_n) = v$ for a
-$mono("foo") in "Sym"$. Similarly to $mono("apply-sf")$, we assume that the result
-of $mono("apply")$ is a $mono("Fail")$ for all improper cases.
+We define a host environment $rho$. We will write $(ildsym("foo") v_1 v_2 ... v_n) := v$
+to denote that $interop("apply")(rho(ildsym("foo")), v_1, v_2, ..., v_n) = v$ for a
+$ildsym("foo") in "Sym"$. Similarly to $interop("apply-sf")$, we assume that the result
+of $interop("apply")$ is a $ildfail("...")$ for all improper cases.
 
 === Boring values
 - Access to the special forms
-  - $rho(mono("quote")) = mono("quote")$
-  - $rho(mono("free-vars")) = mono("free-vars")$
-  - $rho(mono("macroexpand")) = mono("macroexpand")$
-  #note[special forms should be rendered not with mono() but with something that looks different from symbols]
+  - $rho(ildsym("quote")) = ildsf("quote")$
+  - $rho(ildsym("free-vars")) = ildsf("free-vars")$
+  - $rho(ildsym("macroexpand")) = ildsf("macroexpand")$
 - Numbers, and associated functions for manipulating them
   - $Q subset "Ext"$
-  - $(mono("add") x_1 x_2 ... x_n) := x_1 + x_2 + ... + x_n$ for $x_1 ... x_n in Q$
+  - $(ildsym("add") x_1 x_2 ... x_n) := x_1 + x_2 + ... + x_n$ for $x_1 ... x_n in Q$
   - #paraphrase[...]
 - Functions for working with lists
   - #paraphrase[cons, car, cdr, null?, etc]
 - Predicates
   - #paraphrase[is-sym?, is-pair?, sym-eq?, etc]
 - Read source
-  - $(mono("read-source") x)$ is a facillity function that returns an ILD program whose
+  - $(ildsym("read-source") x)$ is a facillity function that returns an ILD program whose
     name is $x$ (typically implemented by parsing an ILD source file).
 
 === Abstractions <abstraction>
@@ -255,30 +255,30 @@ a list of formal parameters ($P$) and a body ($B$).
 An abstraction is applied by substituting the formal parameters by the #paraphrase[concrete]
 operands in the binding environment, and then evaluating the body in the resulting environment:
 
-$ mono("apply")(lambda(eta, P = (alpha_1, alpha_2, ..., alpha_n), B), a_1, a_2, ..., a_n) = ⟦B⟧_rho $
+$ interop("apply")(lambda(eta, P = (alpha_1, alpha_2, ..., alpha_n), B), a_1, a_2, ..., a_n) = ⟦B⟧_rho $
 where
 $ rho = eta [ alpha_1 / a_1 ] [ alpha_2 / a_2 ] ... [ alpha_n / a_n ] $
 
-The function $mono("mk-lambda")$ shall be provided in order to allow constructing such abstractions:
-$ (mono("mk-lambda") e P B) = lambda(eta, P, B) $
+The function $ildsym("mk-lambda")$ shall be provided in order to allow constructing such abstractions:
+$ (ildsym("mk-lambda") e P B) = lambda(eta, P, B) $
 where $eta$ is an environment constructed from the key-value list $e$
 (the opposite operation of the one done in @free-vars)#footnote[Instead of encoding/decoding
 environments into key/value lists, we may encode them directly as an external value. High-performance
 implementations will do that, but for us it is a stylistic choice.]
 
 === A recursion operator
-A meta-operator $mono("poly-fix")$ shall be provided to allow constructing
+A meta-operator $ildsym("poly-fix")$ shall be provided to allow constructing
 mutually-recursive functions.
 
 #comment[If we don't care about performance and have infinite memory, the external implementation
-of $mono("poly-fix")$ is optional, since we can just implement the Y-combinator in ILD itself.
+of $ildsym("poly-fix")$ is optional, since we can just implement the Y-combinator in ILD itself.
 For this exercise, see @poly-fix-Y.]
 
-$ (mono("poly-fix") Gamma_1 Gamma_2 ... Gamma_n) := (f_1, f_2, ..., f_n) $
+$ (ildsym("poly-fix") Gamma_1 Gamma_2 ... Gamma_n) := (f_1, f_2, ..., f_n) $
 
 where $f_1, ..., f_n$ are such that:
 
-$ mono("apply")(f_i, a_1, ..., a_n) = mono("apply")(Gamma_i (f_1, f_2, ..., f_n), a_1, ..., a_n) $
+$ interop("apply")(f_i, a_1, ..., a_n) = interop("apply")(Gamma_i (f_1, f_2, ..., f_n), a_1, ..., a_n) $
 
 #comment[A stronger definition of $f_1, ..., f_n$ would be $f_i = Gamma_i (f_1, f_2, ..., f_n)$,
 but this leads to divergence problems when the language has strict (non-lazy) semantics.#citneeded
@@ -406,10 +406,9 @@ We can now rewrite the above example into:
 #note[this section is unfinished]
 
 == An example program
-```ild
-
 #note[this section is unfinished]
 
+```ild
 (module
   (doc "this module calculates the factorial of 5")
   (exports main)
@@ -451,7 +450,7 @@ languages.
 = Appendix
 
 == Polyvariate Y-combinator <poly-fix-Y>
-Instead of relying on an external implementation of $mono("poly-fix")$, we can
+Instead of relying on an external implementation of $ildsym("poly-fix")$, we can
 quite elegantly define it as such:
 
 ```ild
