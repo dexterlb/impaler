@@ -1,5 +1,5 @@
 ### building the texts
 
 ```
-typst compile --root . modules/main.typ /tmp/out.pdf
+typst compile --root . texts/module-sys/main.typ /tmp/out.pdf
 ```
