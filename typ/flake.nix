@@ -29,6 +29,8 @@
         lib.filterAttrs (_: type: type == "directory") (builtins.readDir (typstRoot + "/texts"))
       );
 
+      font-path = pkgs: "${pkgs.stix-two}/share/fonts";
+
       build-pdf =
         pkgs: name: main-file:
         pkgs.stdenvNoCC.mkDerivation {
@@ -38,7 +40,7 @@
           nativeBuildInputs = [ pkgs.typst ];
           buildPhase = ''
             runHook preBuild
-            typst compile --root . ${lib.escapeShellArg main-file} ${lib.escapeShellArg "${name}.pdf"}
+            typst compile --root . --font-path ${lib.escapeShellArg (font-path pkgs)} ${lib.escapeShellArg main-file} ${lib.escapeShellArg "${name}.pdf"}
             runHook postBuild
           '';
           installPhase = ''
@@ -53,7 +55,7 @@
         {
           type = "app";
           program = "${pkgs.writeShellScript "${name}-watch" ''
-            exec ${pkgs.typst}/bin/typst watch --root . ${lib.escapeShellArg main-file} "''${1:-/tmp/out.pdf}"
+            exec ${pkgs.typst}/bin/typst watch --root . --font-path ${pkgs.stix-two}/share/fonts ${lib.escapeShellArg main-file} "''${1:-/tmp/out.pdf}"
           ''}";
         };
     in
