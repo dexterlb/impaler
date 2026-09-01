@@ -149,6 +149,7 @@ We can extend $interop("apply")$ to a total function over $V$ by making it retur
 a $ildfail("_")$ in cases where it is not defined. We will not cause further
 boredom for the reader by formally defining this extension.
 
+
 === Eval
 Now we can define the evaluation function as so:
 
@@ -459,3 +460,62 @@ quite elegantly define it as such:
     (!lambda (p)
       (map (!lambda (li) (!lambda args (apply (apply li (p p)) args))) l)))))))
 ```
+== CPS notations under consideration <cps-notations>
+#note[Scratch section: three candidate notations for rewriting @semantics in
+continuation-passing style (see the TODO on @semantics). Pick one and inline it
+into the Eval section, then delete this appendix.]
+
+In all three, let $R$ be an answer domain, $K = V -> R$ the set of continuations,
+and let $interop("apply")$, $interop("apply-sf")$ take an extra continuation argument.
+An auxiliary $interop("eval")^*$ (resp. $⟦dot⟧^*_rho$) evaluates a list of operands
+left-to-right and hands the resulting tuple to its continuation.
+
+=== Option 1 -- explicit continuation argument
+$interop("eval")$ becomes a plain function taking $kappa$ as a third argument;
+continuations are written as explicit $lambda$-abstractions. Most operational;
+mirrors the Rust `eval(env, ret, expr)` closely.
+
+$ interop("eval")(rho, v, kappa) = cases(
+  kappa(interop("get")(rho, v)) & v in "Sym",
+  interop("eval")(rho, f, lambda phi. cases(
+    interop("apply-sf")(rho, phi, (a_1, ..., a_n), kappa) & phi in "SF",
+    interop("eval")^*(rho, (a_1, ..., a_n), lambda accent(a, arrow). interop("apply")(phi, accent(a, arrow), kappa)) & phi in.not "SF",
+  )) & v = (f, a_1, ..., a_n),
+  kappa(ildfail("<err: cannot eval ()>")) & v = (),
+  kappa(v) & "otherwise",
+) $
+$ interop("eval")^*(rho, (e_1, ..., e_n), kappa) = interop("eval")(rho, e_1, lambda w_1. ... interop("eval")(rho, e_n, lambda w_n. kappa(w_1, ..., w_n))) $
+
+=== Option 2 -- denotational brackets carrying a continuation
+Keep the semantic brackets $⟦dot⟧_rho$ but make the denotation a function of a
+continuation, $⟦v⟧_rho kappa$. Classic Scott--Strachey / Wadsworth continuation
+semantics; closest to the paper's current style.
+
+$ ⟦dot⟧ : V -> "Env" -> (K -> R) $
+$ ⟦v⟧_rho kappa = cases(
+  kappa(interop("get")(rho, v)) & v in "Sym",
+  ⟦f⟧_rho (lambda phi. cases(
+    interop("apply-sf")(rho, phi, (a_1, ..., a_n), kappa) & phi in "SF",
+    ⟦a_1, ..., a_n⟧^*_rho (lambda accent(a, arrow). interop("apply")(phi, accent(a, arrow), kappa)) & phi in.not "SF",
+  )) & v = (f, a_1, ..., a_n),
+  kappa(ildfail("<err: cannot eval ()>")) & v = (),
+  kappa(v) & "otherwise",
+) $
+$ ⟦e_1, ..., e_n⟧^*_rho kappa = ⟦e_1⟧_rho (lambda w_1. ... ⟦e_n⟧_rho (lambda w_n. kappa(w_1, ..., w_n))) $
+
+=== Option 3 -- monadic do-notation
+Work in the continuation monad $M$; $kappa$ is threaded implicitly by bind
+($x <- m ";" k$) and $interop("ret")$. Cleanest to read, furthest from the
+implementation, and requires defining the monad once.
+
+$ ⟦dot⟧_rho : V -> M(V) $
+$ ⟦v⟧_rho = cases(
+  interop("ret")(interop("get")(rho, v)) & v in "Sym",
+  (phi <- ⟦f⟧_rho ";" cases(
+    interop("apply-sf")(rho, phi, a_1, ..., a_n) & phi in "SF",
+    accent(a, arrow) <- ⟦a_1, ..., a_n⟧^*_rho ";" interop("apply")(phi, accent(a, arrow)) & phi in.not "SF",
+  )) & v = (f, a_1, ..., a_n),
+  interop("ret")(ildfail("<err: cannot eval ()>")) & v = (),
+  interop("ret")(v) & "otherwise",
+) $
+$ ⟦e_1, ..., e_n⟧^*_rho = (w_1 <- ⟦e_1⟧_rho ";" ... ";" w_n <- ⟦e_n⟧_rho ";" interop("ret")(w_1, ..., w_n)) $
