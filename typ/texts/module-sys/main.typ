@@ -321,12 +321,14 @@ in Nix has the stroger version of this semantic.#citneeded]
 To allow ILD programs to implement complex #paraphrase[flow control], we define a host
 function $ildsym("call/cc")$ that passes the current continuation as a first-class
 value to a given callable:
+$ interop("apply")(ildsym("call/cc"), f) = interop("apply")(f, c(retbare)) $
+$c(retbare) in V$ for $retbare : V -> contmonad(V)$ is a value that encapsulates
+a continuation, such that
+$ interop("apply")(c(retbare'), accent(v, arrow)) = retbare' (accent(v, arrow)) $
+Note that the original continuation $retbare$ is discarded in favour of $retbare'$,
+so execution continues from $retbare'$ and never returns to $retbare$.
 
-$ interop("apply")_(rho)(ildsym("call/cc"), f) = { interop("apply")(f, retbare) } $
-
-#note[when the monadic syntax has been properly established, fix this definition
-to pass a noop continuation as the implicit monadic continuation used by the internal
-apply - otherwise, we will return twice!]
+#note[Need a more rigorous monadic definition]
 
 = Bootstrapping <bootstrapping>
 Now that we have defined our minimal language with its minimal host environment,
