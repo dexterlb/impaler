@@ -317,6 +317,17 @@ in Nix has the stroger version of this semantic.#citneeded]
 === Gensym
 #note[describe gensym here]
 
+=== First-class continuations
+To allow ILD programs to implement complex #paraphrase[flow control], we define a host
+function $ildsym("call/cc")$ that passes the current continuation as a first-class
+value to a given callable:
+
+$ interop("apply")_(rho)(ildsym("call/cc"), f) = { interop("apply")(f, retbare) } $
+
+#note[when the monadic syntax has been properly established, fix this definition
+to pass a noop continuation as the implicit monadic continuation used by the internal
+apply - otherwise, we will return twice!]
+
 = Bootstrapping <bootstrapping>
 Now that we have defined our minimal language with its minimal host environment,
 we can build upon them using metaprogramming and macros to incrementally define
