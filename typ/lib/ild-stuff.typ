@@ -7,4 +7,9 @@
 #let interop(body) = $mono(body)$
 #let ildsym(body) = $mono(body)$
 #let ildsf(body) = $mono(body)$
-#let ildfail(v) = $mono("Fail") (v)$
+#let ildfail(body) = $mono("Fail") (body)$
+
+#let sem(body) = $⟦ body ⟧$
+#let contmonad(body) = $C (body)$
+#let retbare = $mono("ret")$
+#let ret(body) = $retbare (body)$

@@ -5,7 +5,7 @@
 #import "/lib/paper.typ": paper-template
 #show: paper-template
 
-#import "/lib/ild-stuff.typ": ild-template, ildfail, ildsf, ildsym, interop
+#import "/lib/ild-stuff.typ": ild-template, ildfail, ildsf, ildsym, interop, sem, contmonad, retbare, ret
 #show: ild-template
 
 #import "/lib/misc.typ": citneeded, clink, paraphrase, todo, review, note, comment
@@ -130,19 +130,29 @@ for numeric, string and boolean external value types.
 is pretty]
 
 == Semantics of ILD <semantics>
+
 === Environments
 An _environment_ is a finite partial map $rho : "Sym" harpoon.rt V$ that gives semantics
 to symbols. Let $"Env"$ be the set of all such environments.
 
 Looking up a symbol in an environment shall be defined as:
 
-$ interop("get")(rho, s) = cases(
+$ interop("lookup")_(rho)(s) = cases(
   v & s in "Sym" and rho(s) = v,
   ildfail("<err: unbound symbol>") & s in ("Sym" \\ "dom"rho),
 ) $
 
+=== Continuations
+
+We define the semantics of ILD values in terms of the continuation monad $ contmonad(V)$:
+$ sem(dot)_rho : V -> contmonad(V) $
+
+$contmonad(V)$ provides the current continuation as $retbare : V -> contmonad(V)$.
+
+#note[TODO: define the monad itself]
+
 === Apply <apply>
-We say that certain external values $v in "Ext"$ are _callable_ if $interop("apply")(v, a_1, a_2, ..., a_n) in V$
+We say that certain external values $v in "Ext"$ are _callable_ if $interop("apply")(v, a_1, a_2, ..., a_n) in contmonad(V)$
 is defined for some natural $n$ and $v, a_1, a_2, ..., a_n in V$.
 
 We can extend $interop("apply")$ to a total function over $V$ by making it return
@@ -153,33 +163,44 @@ boredom for the reader by formally defining this extension.
 === Eval
 Now we can define the evaluation function as so:
 
-$ ⟦v⟧_rho = cases(
-  interop("get")(rho, v) & v in "Sym",
-  interop("apply")(⟦f⟧_rho, ⟦a_1⟧_rho, ..., ⟦a_n⟧_rho) & v = (f, a_1, a_2, ... a_n) and ⟦f⟧_rho in.not "SF",
-  interop("apply-sf")(rho, ⟦xi⟧_rho, a_1, ..., a_n) & v = (xi, a_1, a_2, ... a_n) and ⟦xi⟧_rho in "SF",
-  ildfail("<err: cannot eval ()>") & v = (),
-  v & v in "SF" union "Ext" union { ildfail(w) | w in V },
+$ sem(v)_rho = cases(
+  ret(interop("lookup")(rho, v)) & v in "Sym",
+  interop("eval-combination")_(rho)(f, a_1, a_2, ..., a_n) & v = (f, a_1, a_2, ... a_n),
+  ret(ildfail("<err: cannot eval ()>")) & v = (),
+  ret(v) & v in "SF" union "Ext" union { ildfail(w) | w in V },
 ) $
+
+Symbols are looked up in the environment. Proper lists are evaluated as *combinations*.
+Attempts to evaluate improper lists result in a failure. All other values evaluate to
+themselves.
+
+To evaluate a combination, we first evaluate its head, and then decide how to proceed
+depending on the result:
+
+$ interop("eval-combination")_(rho)(f, accent(a, arrow)) = {phi <- sem(f)_(rho); interop("apply-cases")_(rho)(phi, accent(a, arrow))} $
+
+$ interop("apply-cases")_(rho)(phi, accent(a, arrow)) = cases(
+  interop("apply-sf")_(rho)(phi, accent(a, arrow)) & phi in "SF",
+  interop("apply-func")_(rho)(phi, accent(a, arrow)) & phi in.not "SF",
+) $
+
+If the head evaluated to a special form, use special-form rules (@eval-special-form).
+Otherwise, evaluate the list of arguments in order, and pass the resulting list of
+values to the function $phi$ via $interop("apply")$:
+
+$ interop("apply-func")_(rho)(phi, a_1, ..., a_n) = { alpha_1 <- #sem[$a_1$]_rho; ...; alpha_n <- #sem[$a_n$]_rho; interop("apply")(phi, alpha_1, ..., alpha_n) } $
 
 #note[why is spacing so tight??]
 
-Informally:
-- Symbols are looked up in the currently-scoped environment
-- Proper nonempty lists are evaluated by first evaluating their head, and then:
-  - If the evaluated head is a special form, apply that special form to the *unevaluated* rest of the elements of the list
-  - If the evaluated head is not a special form, apply the evaluated head to the *evaluated* rest of the elements of the list
-- Trying to evaluate an improper or empty list results in a $ildfail("...")$
-- All other values evaluate to themselves
-
-=== Evaluating special forms
+=== Evaluating special forms <eval-special-form>
 
 ==== Quote <quote>
-$ interop("apply-sf")(rho, ildsf("quote"), v) = v $
+$ interop("apply-sf")_(rho)(ildsf("quote"), v) = ret(v) $
 
 Quote works similarly to other LISP-like languages.
 
 ==== Macro expansion <macroexpand>
-$ interop("apply-sf")(rho, ildsf("macroexpand"), m, a_1, a_2, ... a_n) = ⟦ interop("apply")(⟦m⟧_rho, a_1, a_2, ..., a_n) ⟧_rho $
+$ interop("apply-sf")_(rho)(ildsf("macroexpand"), m, accent(a, arrow)) = { mu <- sem(m)_(rho) ; nu <- interop("apply")(mu, accent(a, arrow)) ; #sem[$ nu $]_rho } $
 
 The $ildsf("macroexpand")$ special form allows metaprogramming by treating a certain function
 as a _macro_. A regular function evaluation $(f a_1 a_2 ... a_n)$ evaluates f and all
@@ -203,23 +224,25 @@ research] we extend ILD with another, more powerful, method of AOT code executio
 namely _partial evaluation_ (as per @pe-later).
 
 ==== Capturing the binding environment <free-vars>
-$interop("apply-sf")(rho, ildsf("free-vars"))$ shall return a
+$interop("apply-sf")_(rho)(ildsf("free-vars"))$ shall return a
 list-of-pairs#footnote[For the sake of performance, implementations may use a
 more efficient data structure. However, this is not relevant at the moment.]
 representation of $rho$.
 
-For all other cases, $interop("apply-sf")$ shall return a suitable $ildfail("...")$.
-
 Since ILD has no function definition special form, $ildsf("free-vars")$ is used
 by the lambda macro (@lambda-macro) to capture the binding
 environment.
+
+==== All else
+$interop("apply-sf")_(rho)$ shall return an appropriate $ildfail(...)$ if given
+arguments unlike those listed in the previous sections.
 
 == A minimal host environment
 ILD, as defined in @semantics, is useless by itself.
 #note[why? show that nothing useful can be computed with just the base language]
 
 We define a host environment $rho$. We will write $(ildsym("foo") v_1 v_2 ... v_n) := v$
-to denote that $interop("apply")(rho(ildsym("foo")), v_1, v_2, ..., v_n) = v$ for a
+to denote that $interop("apply")_(rho)(ildsym("foo"), v_1, v_2, ..., v_n) = ret(v)$ for a
 $ildsym("foo") in "Sym"$. Similarly to $interop("apply-sf")$, we assume that the result
 of $interop("apply")$ is a $ildfail("...")$ for all improper cases.
 
@@ -244,8 +267,6 @@ of $interop("apply")$ is a $ildfail("...")$ for all improper cases.
 For ILD to become turing-complete, and, equivalently, a superset of the $lambda$-calculus,
 we give it a mechanism for building $lambda$-abstractions.
 
-#note[TODO: B should be a list of expressions to execute in order, not a single expression; this must be fixed in rust code as well]
-
 Let
 
 $ { lambda(eta, P = (alpha_1, alpha_2, ..., alpha_n), B) | eta in "Env", alpha_1 ... alpha_n in "Sym", B in v} subset "Ext" $
@@ -256,16 +277,21 @@ a list of formal parameters ($P$) and a body ($B$).
 An abstraction is applied by substituting the formal parameters by the #paraphrase[concrete]
 operands in the binding environment, and then evaluating the body in the resulting environment:
 
-$ interop("apply")(lambda(eta, P = (alpha_1, alpha_2, ..., alpha_n), B), a_1, a_2, ..., a_n) = ⟦B⟧_rho $
+$ interop("apply")(lambda(eta, P = (alpha_1, alpha_2, ..., alpha_n), B), a_1, a_2, ..., a_n) = sem(B)_rho $
 where
 $ rho = eta [ alpha_1 / a_1 ] [ alpha_2 / a_2 ] ... [ alpha_n / a_n ] $
 
 The function $ildsym("mk-lambda")$ shall be provided in order to allow constructing such abstractions:
-$ (ildsym("mk-lambda") e P B) = lambda(eta, P, B) $
+$ (ildsym("mk-lambda") e P B) := lambda(eta, P, B) $
 where $eta$ is an environment constructed from the key-value list $e$
 (the opposite operation of the one done in @free-vars)#footnote[Instead of encoding/decoding
 environments into key/value lists, we may encode them directly as an external value. High-performance
 implementations will do that, but for us it is a stylistic choice.]
+
+#comment[Note that $ildsym("mk-lambda")$ accepts a single body expression instead
+of a list of body expressions to be evaluated in order. This is just for the sake
+of simplicity/minimality: sequential execution can easily be implemented in the form
+of a $ildsym("do")$ procedure.]
 
 === A recursion operator
 A meta-operator $ildsym("poly-fix")$ shall be provided to allow constructing
@@ -279,7 +305,7 @@ $ (ildsym("poly-fix") Gamma_1 Gamma_2 ... Gamma_n) := (f_1, f_2, ..., f_n) $
 
 where $f_1, ..., f_n$ are such that:
 
-$ interop("apply")(f_i, a_1, ..., a_n) = interop("apply")(Gamma_i (f_1, f_2, ..., f_n), a_1, ..., a_n) $
+$ interop("apply")(f_i, a_1, ..., a_n) = { phi <- interop("apply")(Gamma_i, f_1, f_2, ..., f_n); interop("apply")(phi, a_1, ..., a_n) } $
 
 #comment[A stronger definition of $f_1, ..., f_n$ would be $f_i = Gamma_i (f_1, f_2, ..., f_n)$,
 but this leads to divergence problems when the language has strict (non-lazy) semantics.#citneeded
@@ -460,62 +486,3 @@ quite elegantly define it as such:
     (!lambda (p)
       (map (!lambda (li) (!lambda args (apply (apply li (p p)) args))) l)))))))
 ```
-== CPS notations under consideration <cps-notations>
-#note[Scratch section: three candidate notations for rewriting @semantics in
-continuation-passing style (see the TODO on @semantics). Pick one and inline it
-into the Eval section, then delete this appendix.]
-
-In all three, let $R$ be an answer domain, $K = V -> R$ the set of continuations,
-and let $interop("apply")$, $interop("apply-sf")$ take an extra continuation argument.
-An auxiliary $interop("eval")^*$ (resp. $⟦dot⟧^*_rho$) evaluates a list of operands
-left-to-right and hands the resulting tuple to its continuation.
-
-=== Option 1 -- explicit continuation argument
-$interop("eval")$ becomes a plain function taking $kappa$ as a third argument;
-continuations are written as explicit $lambda$-abstractions. Most operational;
-mirrors the Rust `eval(env, ret, expr)` closely.
-
-$ interop("eval")(rho, v, kappa) = cases(
-  kappa(interop("get")(rho, v)) & v in "Sym",
-  interop("eval")(rho, f, lambda phi. cases(
-    interop("apply-sf")(rho, phi, (a_1, ..., a_n), kappa) & phi in "SF",
-    interop("eval")^*(rho, (a_1, ..., a_n), lambda accent(a, arrow). interop("apply")(phi, accent(a, arrow), kappa)) & phi in.not "SF",
-  )) & v = (f, a_1, ..., a_n),
-  kappa(ildfail("<err: cannot eval ()>")) & v = (),
-  kappa(v) & "otherwise",
-) $
-$ interop("eval")^*(rho, (e_1, ..., e_n), kappa) = interop("eval")(rho, e_1, lambda w_1. ... interop("eval")(rho, e_n, lambda w_n. kappa(w_1, ..., w_n))) $
-
-=== Option 2 -- denotational brackets carrying a continuation
-Keep the semantic brackets $⟦dot⟧_rho$ but make the denotation a function of a
-continuation, $⟦v⟧_rho kappa$. Classic Scott--Strachey / Wadsworth continuation
-semantics; closest to the paper's current style.
-
-$ ⟦dot⟧ : V -> "Env" -> (K -> R) $
-$ ⟦v⟧_rho kappa = cases(
-  kappa(interop("get")(rho, v)) & v in "Sym",
-  ⟦f⟧_rho (lambda phi. cases(
-    interop("apply-sf")(rho, phi, (a_1, ..., a_n), kappa) & phi in "SF",
-    ⟦a_1, ..., a_n⟧^*_rho (lambda accent(a, arrow). interop("apply")(phi, accent(a, arrow), kappa)) & phi in.not "SF",
-  )) & v = (f, a_1, ..., a_n),
-  kappa(ildfail("<err: cannot eval ()>")) & v = (),
-  kappa(v) & "otherwise",
-) $
-$ ⟦e_1, ..., e_n⟧^*_rho kappa = ⟦e_1⟧_rho (lambda w_1. ... ⟦e_n⟧_rho (lambda w_n. kappa(w_1, ..., w_n))) $
-
-=== Option 3 -- monadic do-notation
-Work in the continuation monad $M$; $kappa$ is threaded implicitly by bind
-($x <- m ";" k$) and $interop("ret")$. Cleanest to read, furthest from the
-implementation, and requires defining the monad once.
-
-$ ⟦dot⟧_rho : V -> M(V) $
-$ ⟦v⟧_rho = cases(
-  interop("ret")(interop("get")(rho, v)) & v in "Sym",
-  (phi <- ⟦f⟧_rho ";" cases(
-    interop("apply-sf")(rho, phi, a_1, ..., a_n) & phi in "SF",
-    accent(a, arrow) <- ⟦a_1, ..., a_n⟧^*_rho ";" interop("apply")(phi, accent(a, arrow)) & phi in.not "SF",
-  )) & v = (f, a_1, ..., a_n),
-  interop("ret")(ildfail("<err: cannot eval ()>")) & v = (),
-  interop("ret")(v) & "otherwise",
-) $
-$ ⟦e_1, ..., e_n⟧^*_rho = (w_1 <- ⟦e_1⟧_rho ";" ... ";" w_n <- ⟦e_n⟧_rho ";" interop("ret")(w_1, ..., w_n)) $
