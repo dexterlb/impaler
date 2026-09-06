@@ -29,7 +29,12 @@
         lib.filterAttrs (_: type: type == "directory") (builtins.readDir (typstRoot + "/texts"))
       );
 
-      font-path = pkgs: "${pkgs.stix-two}/share/fonts";
+      font-flags =
+        pkgs:
+        lib.concatMapStringsSep " " (d: "--font-path ${lib.escapeShellArg d}") [
+          "${pkgs.stix-two}/share/fonts"
+          "${pkgs.ibm-plex}/share/fonts"
+        ];
 
       build-pdf =
         pkgs: name: main-file:
@@ -40,7 +45,7 @@
           nativeBuildInputs = [ pkgs.typst ];
           buildPhase = ''
             runHook preBuild
-            typst compile --root . --font-path ${lib.escapeShellArg (font-path pkgs)} ${lib.escapeShellArg main-file} ${lib.escapeShellArg "${name}.pdf"}
+            typst compile --root . ${font-flags pkgs} ${lib.escapeShellArg main-file} ${lib.escapeShellArg "${name}.pdf"}
             runHook postBuild
           '';
           installPhase = ''
@@ -55,7 +60,7 @@
         {
           type = "app";
           program = "${pkgs.writeShellScript "${name}-watch" ''
-            exec ${pkgs.typst}/bin/typst watch --root . --font-path ${pkgs.stix-two}/share/fonts ${lib.escapeShellArg main-file} "''${1:-/tmp/out.pdf}"
+            exec ${pkgs.typst}/bin/typst watch --root . ${font-flags pkgs} ${lib.escapeShellArg main-file} "''${1:-/tmp/out.pdf}"
           ''}";
         };
     in

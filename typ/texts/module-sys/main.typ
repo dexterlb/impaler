@@ -5,10 +5,10 @@
 #import "/lib/paper.typ": paper-template
 #show: paper-template
 
-#import "/lib/ild-stuff.typ": ild-template, ildfail, ildsf, ildsym, interop, sem, contmonad, retbare, ret
+#import "/lib/ild-stuff.typ": ild-template, ildfail, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont
 #show: ild-template
 
-#import "/lib/misc.typ": citneeded, clink, paraphrase, todo, review, note, comment
+#import "/lib/misc.typ": citneeded, clink, paraphrase, todo, review, note, comment, cases, definition
 
 #set heading(numbering: "1.")
 
@@ -84,12 +84,11 @@ of base special forms can be significantly reduced by employing partial
 evaluation as an optimisation step.
 
 = The language ILD
-#note[TODO: transform all definitions to CPS]
 
 == Programs and values <values>
 
 Due to ILD being homoiconic, programs and values share the same domain $V$:
-$ V = "Sym" union { () } union { (v_1 . v_2) | v_1, v_2 in V } union "SF" union "Ext" union { "Fail"(v) | v in V } $
+$ V = "Sym" union { () } union { (v_1 . v_2) | v_1, v_2 in V } union "SF" union "Ext" union { ildfail(v) | v in V } $
 
 a value being one of:
 - Base syntax
@@ -144,12 +143,35 @@ $ interop("lookup")_(rho)(s) = cases(
 
 === Continuations
 
-We define the semantics of ILD values in terms of the continuation monad $ contmonad(V)$:
+We define the semantics of ILD in terms of a _continuation monad_
+#cite(<wadler>, supplement: [Section 3]), in order to be able to reason about
+first-class continuations (@first-class-continuations) and side effects (@side-effects).
+
+#definition[
+$contmonad(A, W)$ is the set of computations of type $(W -> A) -> A$, where A
+is a set of "answers".
+
+The unit computation is:
+$ ret(x) = lambda c (c x) $
+The bind operation is defined as:
+$ (bindop) : contmonad(A, W) -> (W -> contmonad(A, U)) -> contmonad(A, U) $
+$ (phi bindop f) = lambda c (phi (lambda x (f x c))) $
+
+Throughout this paper we use the standard monadic $ildmono("do")$-notation as
+sugar for $bindop$:
+$ mdo(bind(x_1, m_1), bind(x_2, m_2), ..., bind(x_n, m_n), e) $
+stands for the nested binds:
+$ m_1 bindop (lambda x_1 (m_2 bindop (lambda x_2 (dots.h m_n bindop (lambda x_n (e)) dots.h)))). $
+]
+
+The interpretation of ILD values is defined as:
 $ sem(dot)_rho : V -> contmonad(V) $
-
-$contmonad(V)$ provides the current continuation as $retbare : V -> contmonad(V)$.
-
-#note[TODO: define the monad itself]
+#comment[
+In these definitions, we do not care what the set of answers is, so we will
+denote the continuation monad as simply $contmonad(V)$. For a simple, _pure_ version
+of the language, passing the identity function to a continuation returned by $sem(dot)$
+yields the resulting value as answer. For modeling side-effects, see @side-effects.
+]
 
 === Apply <apply>
 We say that certain external values $v in "Ext"$ are _callable_ if $interop("apply")(v, a_1, a_2, ..., a_n) in contmonad(V)$
@@ -177,7 +199,7 @@ themselves.
 To evaluate a combination, we first evaluate its head, and then decide how to proceed
 depending on the result:
 
-$ interop("eval-combination")_(rho)(f, accent(a, arrow)) = {phi <- sem(f)_(rho); interop("apply-cases")_(rho)(phi, accent(a, arrow))} $
+$ interop("eval-combination")_(rho)(f, accent(a, arrow)) = mdo(bind(phi, sem(f)_(rho)), interop("apply-cases")_(rho)(phi, accent(a, arrow))) $
 
 $ interop("apply-cases")_(rho)(phi, accent(a, arrow)) = cases(
   interop("apply-sf")_(rho)(phi, accent(a, arrow)) & phi in "SF",
@@ -188,7 +210,7 @@ If the head evaluated to a special form, use special-form rules (@eval-special-f
 Otherwise, evaluate the list of arguments in order, and pass the resulting list of
 values to the function $phi$ via $interop("apply")$:
 
-$ interop("apply-func")_(rho)(phi, a_1, ..., a_n) = { alpha_1 <- #sem[$a_1$]_rho; ...; alpha_n <- #sem[$a_n$]_rho; interop("apply")(phi, alpha_1, ..., alpha_n) } $
+$ interop("apply-func")_(rho)(phi, a_1, ..., a_n) = mdo(bind(alpha_1, sem(a_1)_rho), ..., bind(alpha_n, sem(a_n)_rho), interop("apply")(phi, alpha_1, ..., alpha_n)) $
 
 #note[why is spacing so tight??]
 
@@ -200,7 +222,7 @@ $ interop("apply-sf")_(rho)(ildsf("quote"), v) = ret(v) $
 Quote works similarly to other LISP-like languages.
 
 ==== Macro expansion <macroexpand>
-$ interop("apply-sf")_(rho)(ildsf("macroexpand"), m, accent(a, arrow)) = { mu <- sem(m)_(rho) ; nu <- interop("apply")(mu, accent(a, arrow)) ; #sem[$ nu $]_rho } $
+$ interop("apply-sf")_(rho)(ildsf("macroexpand"), m, accent(a, arrow)) = mdo(bind(mu, sem(m)_(rho)), bind(nu, interop("apply")(mu, accent(a, arrow))), sem(nu)_rho) $
 
 The $ildsf("macroexpand")$ special form allows metaprogramming by treating a certain function
 as a _macro_. A regular function evaluation $(f a_1 a_2 ... a_n)$ evaluates f and all
@@ -305,7 +327,7 @@ $ (ildsym("poly-fix") Gamma_1 Gamma_2 ... Gamma_n) := (f_1, f_2, ..., f_n) $
 
 where $f_1, ..., f_n$ are such that:
 
-$ interop("apply")(f_i, a_1, ..., a_n) = { phi <- interop("apply")(Gamma_i, f_1, f_2, ..., f_n); interop("apply")(phi, a_1, ..., a_n) } $
+$ interop("apply")(f_i, a_1, ..., a_n) = mdo(bind(phi, interop("apply")(Gamma_i, f_1, f_2, ..., f_n)), interop("apply")(phi, a_1, ..., a_n)) $
 
 #comment[A stronger definition of $f_1, ..., f_n$ would be $f_i = Gamma_i (f_1, f_2, ..., f_n)$,
 but this leads to divergence problems when the language has strict (non-lazy) semantics.#citneeded
@@ -317,18 +339,15 @@ in Nix has the stroger version of this semantic.#citneeded]
 === Gensym
 #note[describe gensym here]
 
-=== First-class continuations
+=== First-class continuations <first-class-continuations>
 To allow ILD programs to implement complex #paraphrase[flow control], we define a host
 function $ildsym("call/cc")$ that passes the current continuation as a first-class
-value to a given callable:
-$ interop("apply")(ildsym("call/cc"), f) = interop("apply")(f, c(retbare)) $
-$c(retbare) in V$ for $retbare : V -> contmonad(V)$ is a value that encapsulates
-a continuation, such that
-$ interop("apply")(c(retbare'), accent(v, arrow)) = retbare' (accent(v, arrow)) $
-Note that the original continuation $retbare$ is discarded in favour of $retbare'$,
-so execution continues from $retbare'$ and never returns to $retbare$.
+value to a given callable. To do this, we first extend $"Ext"$ with the set of
+#paraphrase[first class (reified)] continuations $"Cont"$, such that
+$ "Cont" = { ildcont(k) | k : (W -> A) -> A } = { ildcont(k) | k in contmonad(W, A) } $
 
-#note[Need a more rigorous monadic definition]
+We can then define the function $ildsym("call/cc")$ such that:
+$ interop("apply")(ildsym("call/cc"), f) = lambda k (interop("apply")(f, ildcont(k)) k) $
 
 = Bootstrapping <bootstrapping>
 Now that we have defined our minimal language with its minimal host environment,
@@ -487,6 +506,10 @@ This technique can also be used to implement mechanisms like scoped try/catch,
 iterative loops and other constructs that are separate features in other
 languages.
 
+== Side effects <side-effects>
+
+#note[this section is unfinished]
+
 = Appendix
 
 == Polyvariate Y-combinator <poly-fix-Y>
@@ -499,3 +522,5 @@ quite elegantly define it as such:
     (!lambda (p)
       (map (!lambda (li) (!lambda args (apply (apply li (p p)) args))) l)))))))
 ```
+
+#bibliography("refs.bib")

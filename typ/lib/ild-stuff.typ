@@ -1,15 +1,38 @@
+#let mono-font = "IBM Plex Mono"
+#let mono-weight = "medium"
+
 #let ild-template(body) = {
+  show raw: set text(font: mono-font)
   show raw.where(lang: "ild"): set raw(syntaxes: "/lib/ild.sublime-syntax")
+  show heading: it => {
+    counter("definition").update(0)
+    it
+  }
   body
 }
 
-// TODO: make these different colours
-#let interop(body) = $mono(body)$
-#let ildsym(body) = $mono(body)$
-#let ildsf(body) = $mono(body)$
-#let ildfail(body) = $mono("Fail") (body)$
+#let c-interop = rgb("#1a7f37")
+#let c-sym = rgb("#0b6e99")
+#let c-sf = rgb("#8250df")
+#let c-fail = rgb("#cf222e")
 
-#let sem(body) = $⟦ body ⟧$
-#let contmonad(body) = $C (body)$
-#let retbare = $mono("ret")$
-#let ret(body) = $retbare (body)$
+#let ildmono(body, color: black) = text(font: mono-font, weight: mono-weight, fill: color)[#body]
+
+#let interop(body) = ildmono(body, color: c-interop)
+#let ildsym(body) = ildmono(body, color: c-sym)
+#let ildsf(body) = ildmono(body, color: c-sf)
+#let ildfail(body) = $#ildmono("Fail", color: c-fail) lr((#body))$
+#let ildcont(body) = $#ildmono("cont")_(#body)$
+
+#let sem(body) = $lr(⟦ #body ⟧)$
+#let contmonad(..args) = {
+  let p = args.pos()
+  if p.len() == 1 { $K lr((#p.at(0)))$ } else { $K_(#p.at(0)) lr((#p.at(1)))$ }
+}
+#let retbare = ildmono("ret")
+#let ret(body) = $retbare lr((#body))$
+
+#let bind(v, m) = $#v <- #m$
+#let mdo(..steps) = $#ildmono("do")lr({ #steps.pos().join($ ; $) })$
+
+#let bindop = box(baseline: 0.1em, image("/lib/bind.svg", height: 0.72em))

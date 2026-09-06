@@ -51,3 +51,27 @@
   stroke: (top: 2pt + rgb("#e0b022")),
   body,
 )
+
+#let definition-counter = counter("definition")
+#let definition(body) = {
+  definition-counter.step()
+  block(above: 1em, below: 1em, width: 100%)[
+    *Definition #context {
+      (counter(heading).get() + definition-counter.get()).map(str).join(".")
+    }.* #body
+  ]
+}
+
+#let cases-gap = 0.7em
+#let cases(gap: cases-gap, ..args) = {
+  let add-gap(row) = {
+    if type(row) != content { return row }
+    let elems = if row.has("children") { row.children } else { (row,) }
+    elems.map(e => if type(e) == content and repr(e.func()) == "align-point" {
+      (e, h(gap))
+    } else {
+      (e,)
+    }).flatten().join()
+  }
+  math.cases(..args.named(), ..args.pos().map(add-gap))
+}
