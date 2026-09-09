@@ -2,6 +2,11 @@
 
 #let clink(dest, body) = link(dest, text(fill: blue, body))
 
+// Renders " (Section N)" only if the target label exists in the document.
+// Lets shared sections forward-reference material that is present in some
+// documents (e.g. module-sys) but absent in others (e.g. minimal-lang).
+#let optref(target) = context if query(target).len() > 0 [ (#ref(target))]
+
 #let squiggly_underline(body, color) = box(context {
   let w = measure(body).width
   let amp = 1pt
