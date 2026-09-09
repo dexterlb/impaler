@@ -56,7 +56,7 @@ $ interop("lookup")_(rho)(s) = cases(
 
 We define the semantics of ILD in terms of a _continuation monad_
 #cite(<wadler>, supplement: [Section 3]), in order to be able to reason about
-first-class continuations (@first-class-continuations) and side effects#optref(<side-effects>).
+first-class continuations (@first-class-continuations) and side effects (@side-effects).
 
 #definition[
 $contmonad(A, W)$ is the set of computations of type $(W -> A) -> A$, where A
@@ -246,8 +246,18 @@ of the recursion operator: `letrec` in Scheme does not allow non-functional righ
 sides#citneeded. Lazy languages do not have this problem -- for example, the `rec` operator
 in Nix has the stroger version of this semantic.#citneeded]
 
+== Effectful computations <side-effects>
+By choosing the answer set for the continuation monad to be $M(A)$ for another monad $M$,
+we can incorporate any effects modelled by $M$ into the CPS semantics of ILD
+#cite(<wadler>, supplement: [Section 3.3]). This includes side effects like IO.
+
 === Gensym
-#note[describe gensym here]
+Our host environment shall provide a function $ildsym("gensym")$ such that:
+
+$ (ildsym("gensym") s) := <text("a fresh symbol whose prefix is ")s> $
+
+Freshness can be guaranteed by e.g. storing the last generated symbol id in a
+State monad wrapper.
 
 === First-class continuations <first-class-continuations>
 To allow ILD programs to implement complex #paraphrase[flow control], we define

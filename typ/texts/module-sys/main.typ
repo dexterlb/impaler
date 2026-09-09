@@ -62,10 +62,6 @@ This technique can also be used to implement mechanisms like scoped try/catch,
 iterative loops and other constructs that are separate features in other
 languages.
 
-== Side effects <side-effects>
-
-#note[this section is unfinished]
-
 = Appendix
 
 #include "/common/poly-fix-y.typ"
