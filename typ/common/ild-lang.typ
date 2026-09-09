@@ -140,7 +140,9 @@ $(ildsf("macroexpand") f a_1 a_2 ... a_n)$ evaluates just $f$ and then passes th
 *unevaluated* arguments to it. The result is then in turn evaluated. This allows $f$
 to treat the program passed to it as data and to transform it arbitrarily before it
 gets evaluated. This is similar to unhygienic macro systems like the one in LISP.
-#note[ILD macros are evaluated from outside-in. Is this true for LISP macros?]
+As in traditional LISP macro systems #cite(<kohlbecker1986syntactic>), ILD macros
+expand from the outside in: the outermost macro call is expanded first, and its
+expansion may itself contain further macro calls.
 
 Unlike LISP, ILD denotes macro expansion at the callsite rather than differentiating
 between _functions_ and _macros_. This is mainly a stylistic choice that greatly
