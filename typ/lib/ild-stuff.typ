@@ -11,6 +11,8 @@
   body
 }
 
+#let ild(body) = raw(body, lang: "ild", block: false)
+
 #let c-interop = rgb("#1a7f37")
 #let c-sym = rgb("#0b6e99")
 #let c-sf = rgb("#8250df")

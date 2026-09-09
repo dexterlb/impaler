@@ -1,3 +1,4 @@
+#import "/lib/ild-stuff.typ": ild
 #import "/lib/misc.typ": paraphrase, note, comment
 
 = Bootstrapping basic constructs <bootstrapping-basic>
@@ -6,11 +7,11 @@ we can build upon them using metaprogramming and macros to incrementally define
 more complex ergonomic syntax.
 
 == Letrec
-To define `letrec`, which would allow us to ergonomically write recursive functions,
+To define #ild("letrec"), which would allow us to ergonomically write recursive functions,
 we must first bootstrap some lower-level primitives.
 
 === Lambda <lambda-macro>
-First, we define a macro called `lambda` that will let us build abstractions (@abstraction)
+First, we define a macro called #ild("lambda") that will let us build abstractions (@abstraction)
 easily:
 ```ild
 (mk-lambda
@@ -23,23 +24,23 @@ easily:
           '())))))
 ```
 
-#comment[The `(free-vars)` closure given to the host `mk-lambda` can be replaced
-by a closure that contains only `cons`, `mk-lambda`, `quote` and `free-vars`.]
+#comment[The #ild("(free-vars)") closure given to the host #ild("mk-lambda") can be replaced
+by a closure that contains only #ild("cons"), #ild("mk-lambda"), #ild("quote") and #ild("free-vars").]
 
-Expansions of the `lambda` macro such as
+Expansions of the #ild("lambda") macro such as
 ```ild
 (!lambda (x y) (+ x y))
 ```
-will replace themselves by calls to `mk-lambda` such as
+will replace themselves by calls to #ild("mk-lambda") such as
 ```ild
 (mk-lambda (free-vars) (quote (x y)) (quote (+ x y)))
 ```
 
-We can then wrap this definition in another call of `mk-lambda` in order to expose
-it as a `lambda` name usable from the body of the host abstraction. For brevity,
+We can then wrap this definition in another call of #ild("mk-lambda") in order to expose
+it as a #ild("lambda") name usable from the body of the host abstraction. For brevity,
 we write the definition as an ILD program called `core/bootstrap/lambda-macro.ild`
-and then recall it twice (once to define `lambda`, and once to pass itself as the
-value of `lambda`):
+and then recall it twice (once to define #ild("lambda"), and once to pass itself as the
+value of #ild("lambda")):
 ```
 ((!(eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")) (lambda)
 
@@ -52,16 +53,16 @@ value of `lambda`):
 === Basic utilities
 
 #comment[We do not yet have a mechanism to "define" values other than
-using the trick with `lambda` given above, so everything we define from here to
-after the definition of `let` would have to be exposed to code that uses it
-with nested `lambda` abstractions.]
+using the trick with #ild("lambda") given above, so everything we define from here to
+after the definition of #ild("let") would have to be exposed to code that uses it
+with nested #ild("lambda") abstractions.]
 
-- `expand-lambda`
+- #ild("expand-lambda")
 ```ild
   (!lambda (args body) (cons macroexpand (cons lambda (cons args (cons body '())))))
 ```
-- `list`
-- `cadr`
+- #ild("list")
+- #ild("cadr")
 
 #note[this section is unfinished]
 
@@ -89,7 +90,7 @@ closure:
 ; produces 43
 ```
 
-To be able to do this more ergonomically, we define a _macro_ called `let`:
+To be able to do this more ergonomically, we define a _macro_ called #ild("let"):
 ```ild
 ; definition of "let"
 (!lambda (letlist body)

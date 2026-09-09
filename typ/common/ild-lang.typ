@@ -1,4 +1,4 @@
-#import "/lib/ild-stuff.typ": ildfail, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont
+#import "/lib/ild-stuff.typ": ildfail, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
 = The language ILD
@@ -23,7 +23,7 @@ ILD is designed to be embedded#citneeded into a host environment that provides
 a set of host data structures. #paraphrase[Inhabitants] of these data
 structures are treated as host values (@values), and so are the functions that
 operate on them. To facillitate this, host values may be callable, which means
-that `apply` is defined for host values that are treated as functions (@apply).
+that #ild("apply") is defined for host values that are treated as functions (@apply).
 
 #comment[Note on lists: since ILD is a LISP, we will use $(v_1, v_2, ..., v_n)$
 to denote the value $(v_1 . (v_2 . (... (v_n . ())...)))$, which we will call a
@@ -33,14 +33,11 @@ _list_.]
 A subset of ILD values, which we call _programs_, can be represented as text:
 the syntax is based on standard S-expressions#citneeded with two extra syntax
 sugars:
-- Quote: `'<expr>` $arrow.r.double.bar$ `(quote <expr>)` -- see @quote
-- Macroexpand: `(!<expr1> ... <exprN>)` $arrow.r.double.bar$
-  `(macroexpand <expr1> ... <exprN>)` -- used in @macroexpand
+- Quote: #ild("'<expr>") $arrow.r.double.bar$ #ild("(quote <expr>)") -- see @quote
+- Macroexpand: #ild("(!<expr1> ... <exprN>)") $arrow.r.double.bar$
+  #ild("(macroexpand <expr1> ... <exprN>)") -- used in @macroexpand
 Additionally, although formally unnecessary, the parser is assumed to allow syntax
 for numeric, string and boolean host value types.
-
-#note[instead of using `foo`, we should define an ILD-specific inline block that
-is pretty]
 
 == Semantics of ILD <semantics>
 

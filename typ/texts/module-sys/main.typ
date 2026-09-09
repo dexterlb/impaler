@@ -5,7 +5,7 @@
 #import "/lib/paper.typ": paper-template
 #show: paper-template
 
-#import "/lib/ild-stuff.typ": ild-template
+#import "/lib/ild-stuff.typ": ild-template, ild
 #show: ild-template
 
 #import "/lib/misc.typ": note
@@ -45,7 +45,7 @@
 #note[this section is unfinished]
 
 The following example illustrates early return from the recursive computation
-enacted by `map`:
+enacted by #ild("map"):
 ```ild
 (!fn try-map (f l)
   (call/cc (!lambda (return)
@@ -55,7 +55,7 @@ enacted by `map`:
           (return (make-fail (list 'fail-in-element x (f x))))
           (f x))) l)))))
 ```
-If `f` returns failure for an item in the list, the subsequent items will not
+If #ild("f") returns failure for an item in the list, the subsequent items will not
 be processed.
 
 This technique can also be used to implement mechanisms like scoped try/catch,
