@@ -77,10 +77,10 @@ ergonomic to read and write files called _modules_. Functions defined in these
 modules can be mutually recursive (@bootstrapping).
 
 == PE for performance <pe-later>
-In further research, we aim to also meet the #clink(<c-performance>)[performance]
-constraint by showing that the severe performance overhead incurred by
-implementing such complex metaprogramming constructs using a very limited set
-of base special forms can be significantly reduced by employing partial
+
+Partial evaluation is known#cite(<anydsl>) to give good results for reducing
+the overhead incurred by metaprogramming. In further research, we aim to also
+meet the #clink(<c-performance>)[performance] constraint by employing partial
 evaluation as an optimisation step.
 
 = The language ILD
