@@ -20,9 +20,9 @@ a value being one of:
     describes the failure
 
 ILD is designed to be embedded#citneeded into a host environment that provides
-a set of host data structures. #paraphrase[Inhabitants] of these data
+a set of host data structures. #paraphrase[Inhabitants][Members] of these data
 structures are treated as host values (@values), and so are the functions that
-operate on them. To facillitate this, host values may be callable, which means
+operate on them. To #paraphrase[facillitate][facilitate] this, host values may be callable, which means
 that #ild("apply") is defined for host values that are treated as functions (@apply).
 
 #comment[Note on lists: since ILD is a LISP, we will use $(v_1, v_2, ..., v_n)$
@@ -89,7 +89,7 @@ We say that certain host values $v in "Host"$ are _callable_ if $interop("apply"
 is defined for some natural $n$ and $v, a_1, a_2, ..., a_n in V$.
 
 We can extend $interop("apply")$ to a total function over $V$ by making it return
-a $ildfail("_")$ in cases where it is not defined. We will not cause further
+a $ildfailbare$ in cases where it is not defined. We will not cause further
 boredom for the reader by formally defining this extension.
 
 
@@ -153,7 +153,7 @@ phase: instead, macros are evaluated as encountered. We will call this _runtime 
 of macro expansion_. The astute reader will notice that this defeats one of the
 reasons macros are used in the first place, which is to move some code execution
 ahead-of-time. We argue that this is not a problem #paraphrase[because in future
-research] we extend ILD with another, more powerful, method of AOT code execution,
+research][since, in future work,] we extend ILD with another, more powerful, method of AOT code execution,
 namely _partial evaluation_.
 
 ==== Capturing the binding environment <free-vars>
@@ -179,7 +179,7 @@ to denote that $interop("apply")_(rho)(ildsym("foo"), v_1, v_2, ..., v_n) = ret(
 $ildsym("foo") in "Sym"$. Similarly to $interop("apply-sf")$, we assume that the result
 of $interop("apply")$ is a $ildfail("...")$ for all improper cases.
 
-=== #paraphrase[Boring] values
+=== #paraphrase[Boring][Primitive] values
 - Access to the special forms
   - $rho(ildsym("quote")) = ildsf("quote")$
   - $rho(ildsym("free-vars")) = ildsf("free-vars")$
@@ -193,11 +193,11 @@ of $interop("apply")$ is a $ildfail("...")$ for all improper cases.
 - Predicates
   - #paraphrase[is-sym?, is-pair?, sym-eq?, etc]
 - Read source
-  - $(ildsym("read-source") x)$ is a facillity function that returns an ILD program whose
+  - $(ildsym("read-source") x)$ is a #paraphrase[facillity][facility] function that returns an ILD program whose
     name is $x$ (typically implemented by parsing an ILD source file).
 
 === Abstractions <abstraction>
-For ILD to become turing-complete, and, equivalently, a superset of the $lambda$-calculus,
+For ILD to become #paraphrase[turing-complete][Turing-complete], and, equivalently, a superset of the $lambda$-calculus,
 we give it a mechanism for building $lambda$-abstractions.
 
 Let
@@ -207,7 +207,7 @@ $ { lambda(eta, P = (alpha_1, alpha_2, ..., alpha_n), B) | eta in "Env", alpha_1
 be the set of abstractions. Each abstraction carries a binding environment ($eta$),
 a list of formal parameters ($P$) and a body ($B$).
 
-An abstraction is applied by substituting the formal parameters by the #paraphrase[concrete]
+An abstraction is applied by substituting the formal parameters by the #paraphrase[concrete][supplied]
 operands in the binding environment, and then evaluating the body in the resulting environment:
 
 $ interop("apply")(lambda(eta, P = (alpha_1, alpha_2, ..., alpha_n), B), a_1, a_2, ..., a_n) = sem(B)_rho $
@@ -244,7 +244,7 @@ but this leads to divergence problems when the language has strict (non-lazy) se
 Indeed, other strictly-evaluated languages, like Scheme, only support the weaker version
 of the recursion operator: `letrec` in Scheme does not allow non-functional right-hand
 sides#citneeded. Lazy languages do not have this problem -- for example, the `rec` operator
-in Nix has the stroger version of this semantic.#citneeded]
+in Nix has the #paraphrase[stroger][stronger] version of this semantic.#citneeded]
 
 == Effectful computations <side-effects>
 By choosing the answer set for the continuation monad to be $M(A)$ for another monad $M$,
@@ -260,11 +260,11 @@ Freshness can be guaranteed by e.g. storing the last generated symbol id in a
 State monad wrapper.
 
 === First-class continuations <first-class-continuations>
-To allow ILD programs to implement complex #paraphrase[flow control], we define
+To allow ILD programs to implement complex #paraphrase[flow control][control flow], we define
 a host function $ildsym("call/cc")$ that passes the current continuation as a
 first-class value to a given callable #cite(<wadler>, supplement: [Section 3.2]).
 To do this, we first extend $"Host"$ with the set of #paraphrase[first class
-(reified)] continuations $"Cont"$, such that $ "Cont" = { ildcont(k) | k : (W
+(reified)][reified, first-class] continuations $"Cont"$, such that $ "Cont" = { ildcont(k) | k : (W
 -> A) -> A } = { ildcont(k) | k in contmonad(W, A) } $
 
 We can then define the function $ildsym("call/cc")$ such that:

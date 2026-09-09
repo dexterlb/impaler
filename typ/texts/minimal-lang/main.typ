@@ -8,7 +8,7 @@
 #import "/lib/ild-stuff.typ": ild-template
 #show: ild-template
 
-#import "/lib/misc.typ": abstract, review
+#import "/lib/misc.typ": abstract, review, paraphrase
 
 #title()
 
@@ -21,7 +21,7 @@
 
   We demonstrate that the immutability and minimality constraint do not
   compromise expressiveness by showing that ILD's metaprogramming
-  (facillitated by macro expansion) is powerful enough to implement
+  (#paraphrase[facillitated][facilitated] by macro expansion) is powerful enough to implement
   standard LISP language features in ILD itself, without reliance on mutation.
 ]
 

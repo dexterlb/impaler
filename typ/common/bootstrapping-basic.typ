@@ -76,17 +76,17 @@ with nested #ild("lambda") abstractions.]
 #note[this section is unfinished]
 
 === Let
-A programmer would often like to be able to define some #paraphrase[items] and
+A programmer would often like to be able to define some #paraphrase[items][bindings] and
 use them in other code. As the reader is probably used to from
 #{sym.lambda}-calculus, the most "low-level" way to do that is by using a
 closure:
 
 ```ild
-((!lambda (add1 fourtytwo)
-    (add1 fourtytwo))
+((!lambda (add1 fourty-two)
+    (add1 fourty-two))
 
     (!lambda (x) (add x 1)) ; definition of add1
-    42)                     ; definition of fourtytwo
+    42)                     ; definition of fourty-two
 ; produces 43
 ```
 
@@ -103,9 +103,9 @@ We can now rewrite the above example into:
 ```ild
 (!let (
   (add1       (!lambda (x) (add x 1)))
-  (fourtytwo  42))
+  (fourty-two  42))
 
-  (add1 fourtytwo))
+  (add1 fourty-two))
 ```
 
 === Letrec <letrec>

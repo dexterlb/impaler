@@ -1,6 +1,6 @@
 #import "/lib/ild-stuff.typ": ildsym
 
-== Polyvariate Y-combinator <poly-fix-Y>
+== Polyvariadic Y-combinator <poly-fix-Y>
 Instead of relying on a host implementation of $ildsym("poly-fix")$, we can
 quite elegantly define it as such:
 

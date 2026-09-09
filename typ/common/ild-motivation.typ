@@ -2,8 +2,8 @@
 
 = Motivation <motivation>
 
-#paraphrase[We wish to build] a programming language that is as minimal as possible
-while being expressive enough for general-purpose use. #paraphrase[This] is characterised
+#paraphrase[We wish to build][We design] a programming language that is as minimal as possible
+while being expressive enough for general-purpose use. #paraphrase[This][Such a language] is characterised
 by the following properties:
 + Minimality <c-minimality>
   + Homoiconicity, provided by LISP-like syntax
@@ -11,14 +11,14 @@ by the following properties:
   + Few (and simple) special forms
 + Expressiveness
   + Mutual recursion
-  + Metaprogramming (allow implementing #paraphrase[convenience structures] as
+  + Metaprogramming (allow implementing #paraphrase[convenience structures][syntactic conveniences] as
     libraries written in the language rather than compiler/interpreter
     features)
 + Performance <c-performance>
 
 Some of these properties are at odds at each other: in particular, it is
 difficult#citneeded to provide mutual recursion and immutability while at the
-same time #paraphrase[having few and simple special forms]. For example,
+same time #paraphrase[having few and simple special forms][keeping special forms few and simple]. For example,
 Scheme, LISP and other similar languages forgo the "immutability" constraint,
 which makes it easy#citneeded to implement cyclic data structures like
 mutually-recursive function definitions. The toplevel expressions in such
@@ -47,11 +47,11 @@ data, but handle a lot of the complexity in the interpreter itself: the
 language features are written in the host language that implements the
 interpreter, and not in the language itself. For example, functions defined in
 the global namespace are distinct from locally defined lambda objects, and the
-interpreter takes special care to #paraphrase[allow] recursion and mutual
+interpreter takes special care to #paraphrase[allow][support] recursion and mutual
 recursion without allowing programs to mutate data. In fact, in LFE it is not
 even possible to create a cyclic data structure altogether! The price that is
 paid to achieve this is that the global namespace of defined functions is not
-#paraphrase[manipulatable] by the program (which violates homoiconicity to some
+#paraphrase[manipulatable][manipulable] by the program (which violates homoiconicity to some
 extent) and that `define` and similar constructs are special forms.
 
 It is therefore interesting to see if we can design a language that meets all

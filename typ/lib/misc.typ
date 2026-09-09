@@ -24,7 +24,16 @@
   body
 })
 
-#let paraphrase(body) = squiggly_underline(body, orange)
+#let paraphrase(..args) = {
+  let a = args.pos()
+  let underlined = squiggly_underline(a.at(0), orange)
+  let replacement = a.at(1, default: none)
+  if replacement == none {
+    underlined
+  } else {
+    [#underlined#h(0.15em)#text(fill: orange, size: 0.85em)[(→ #replacement)]]
+  }
+}
 #let todo(body) = squiggly_underline(body, green)
 
 #let review(body) = block(
