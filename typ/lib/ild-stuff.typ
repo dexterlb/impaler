@@ -16,7 +16,7 @@
 #let c-sf = rgb("#8250df")
 #let c-fail = rgb("#cf222e")
 
-#let ildmono(body, color: black) = text(font: mono-font, weight: mono-weight, fill: color)[#body]
+#let ildmono(body, color: black) = text(font: mono-font, weight: mono-weight, size: 0.9em, fill: color)[#body]
 
 #let interop(body) = ildmono(body, color: c-interop)
 #let ildsym(body) = ildmono(body, color: c-sym)
