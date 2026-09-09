@@ -23,7 +23,8 @@
 #let interop(body) = ildmono(body, color: c-interop)
 #let ildsym(body) = ildmono(body, color: c-sym)
 #let ildsf(body) = ildmono(body, color: c-sf)
-#let ildfail(body) = $#ildmono("Fail", color: c-fail) lr((#body))$
+#let ildfailbare = $#ildmono("Fail", color: c-fail)$
+#let ildfail(body) = $#ildfailbare lr((#body))$
 #let ildcont(body) = $#ildmono("cont")_(#body)$
 
 #let sem(body) = $lr(⟦ #body ⟧)$

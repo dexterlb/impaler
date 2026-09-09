@@ -1,4 +1,4 @@
-#import "/lib/ild-stuff.typ": ildfail, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
 = The language ILD
@@ -167,12 +167,12 @@ by the lambda macro (@lambda-macro) to capture the binding
 environment.
 
 ==== All else
-$interop("apply-sf")_(rho)$ shall return an appropriate $ildfail(...)$ if given
+$interop("apply-sf")_(rho)$ shall return an appropriate $ildfailbare$ if given
 arguments unlike those listed in the previous sections.
 
 == A minimal host environment
-ILD, as defined in @semantics, is useless by itself.
-#note[why? show that nothing useful can be computed with just the base language]
+ILD, as defined in @semantics, is useless by itself (all programs are either
+basic values that evaluate to themselves or evaluate to a $ildfailbare$).
 
 We define a host environment $rho$. We will write $(ildsym("foo") v_1 v_2 ... v_n) := v$
 to denote that $interop("apply")_(rho)(ildsym("foo"), v_1, v_2, ..., v_n) = ret(v)$ for a
