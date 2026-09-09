@@ -6,7 +6,7 @@ use crate::value_list::ValueList;
 
 pub type Cont = Rc<dyn Fn(Value)>;
 
-pub trait External: fmt::Debug + 'static {
+pub trait Host: fmt::Debug + 'static {
     fn apply(&self, cont: Cont, args: ValueList);
     fn show(&self) -> String;
 }
@@ -39,7 +39,7 @@ pub enum ValueItem {
 
     SpecialForm(SpecialForm),
 
-    ExternalVal(Box<dyn External>),
+    HostVal(Box<dyn Host>),
 }
 
 #[derive(Debug, Clone)]
@@ -97,8 +97,8 @@ impl Value {
         Value::bare(ValueItem::SpecialForm(form))
     }
 
-    pub fn external(external: impl External) -> Value {
-        Value::bare(ValueItem::ExternalVal(Box::new(external)))
+    pub fn host(host: impl Host) -> Value {
+        Value::bare(ValueItem::HostVal(Box::new(host)))
     }
 
     pub fn err(message: impl Into<String>, value: Value) -> Value {
@@ -123,7 +123,7 @@ impl Value {
             ValueItem::String(s) => format!("{:?}", s),
             ValueItem::Bool(value) => if *value { "#t" } else { "#f" }.to_string(),
             ValueItem::SpecialForm(form) => form.show(),
-            ValueItem::ExternalVal(external) => external.show(),
+            ValueItem::HostVal(host) => host.show(),
             ValueItem::Fail(value) => format!("#<fail {}>", value.show()),
             ValueItem::Null => "()".to_string(),
             ValueItem::Pair(..) => {
@@ -168,7 +168,7 @@ impl PartialEq for Value {
             }
             (ValueItem::Null, ValueItem::Null) => true,
             (ValueItem::Fail(a), ValueItem::Fail(b)) => a == b,
-            (ValueItem::ExternalVal(a), ValueItem::ExternalVal(b)) => {
+            (ValueItem::HostVal(a), ValueItem::HostVal(b)) => {
                 std::ptr::eq(a.as_ref(), b.as_ref())
             }
             _ => false,
@@ -183,7 +183,7 @@ mod tests {
     #[derive(Debug)]
     struct Prim(&'static str);
 
-    impl External for Prim {
+    impl Host for Prim {
         fn apply(&self, _cont: Cont, _args: ValueList) {}
 
         fn show(&self) -> String {
@@ -222,8 +222,8 @@ mod tests {
     }
 
     #[test]
-    fn displays_external() {
-        let value = Value::list([Value::symbol("call"), Value::external(Prim("add"))]);
+    fn displays_host() {
+        let value = Value::list([Value::symbol("call"), Value::host(Prim("add"))]);
         assert_eq!(value.show(), "(call #<primitive add>)");
     }
 }

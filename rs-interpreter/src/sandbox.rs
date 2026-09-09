@@ -83,7 +83,7 @@ pub fn sandbox_env(sources: HashMap<String, String>) -> Env {
     env.insert(
         "func?".to_string(),
         func_unary("func?", |v| {
-            Value::boolean(matches!(v.get(), ValueItem::ExternalVal(_)))
+            Value::boolean(matches!(v.get(), ValueItem::HostVal(_)))
         }),
     );
 

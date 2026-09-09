@@ -3,7 +3,7 @@ use std::rc::Rc;
 
 use crate::evaluator::apply;
 use crate::value_list::ValueList;
-use crate::values::{Cont, External, Value};
+use crate::values::{Cont, Host, Value};
 
 type ListOfCallables = ValueList;
 type Slot = Rc<RefCell<Option<Value>>>;
@@ -19,7 +19,7 @@ pub fn poly_fix_list(operators: &ListOfCallables) -> ListOfCallables {
 
     let mut funcs = ValueList::empty();
     for slot in slots.iter().rev() {
-        funcs = funcs.push(Value::external(Rec { slot: slot.clone() }));
+        funcs = funcs.push(Value::host(Rec { slot: slot.clone() }));
     }
 
     for (operator, slot) in operators.iter().zip(&slots) {
@@ -39,7 +39,7 @@ struct Rec {
     slot: Slot,
 }
 
-impl External for Rec {
+impl Host for Rec {
     fn apply(&self, ret: Cont, arg: ValueList) {
         match self.slot.borrow().clone() {
             Some(f) => apply(ret, f, arg),

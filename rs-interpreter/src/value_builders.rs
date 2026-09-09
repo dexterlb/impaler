@@ -1,13 +1,13 @@
 use std::fmt;
 
 use crate::value_list::ValueList;
-use crate::values::{Cont, External, Value};
+use crate::values::{Cont, Host, Value};
 
 pub fn func_cps_nary(
     name: impl Into<String>,
     f: impl Fn(&dyn Fn(Value), ValueList) + 'static,
 ) -> Value {
-    Value::external(Func {
+    Value::host(Func {
         name: name.into(),
         f: Box::new(move |cont: Cont, args: ValueList| f(&*cont, args)),
     })
@@ -15,7 +15,7 @@ pub fn func_cps_nary(
 
 // like func_cps_nary, but converts the Value to a Cont before passing
 pub fn func_cont_nary(name: impl Into<String>, f: impl Fn(Cont, ValueList) + 'static) -> Value {
-    Value::external(Func {
+    Value::host(Func {
         name: name.into(),
         f: Box::new(f),
     })
@@ -91,7 +91,7 @@ impl fmt::Debug for Func {
     }
 }
 
-impl External for Func {
+impl Host for Func {
     fn apply(&self, cont: Cont, args: ValueList) {
         (self.f)(cont, args)
     }

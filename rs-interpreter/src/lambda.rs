@@ -3,7 +3,7 @@ use std::rc::Rc;
 use crate::env::{Env, EnvExt};
 use crate::evaluator::eval;
 use crate::value_list::ValueList;
-use crate::values::{Cont, External, Value, ValueItem};
+use crate::values::{Cont, Host, Value, ValueItem};
 
 #[derive(Debug)]
 struct Lambda {
@@ -82,7 +82,7 @@ impl ArgSpec {
     }
 }
 
-impl External for Lambda {
+impl Host for Lambda {
     fn apply(&self, ret: Cont, args: ValueList) {
         let env = bind_args(&self.closure, &self.arg_names, args);
         eval(env, ret, self.body.clone());
@@ -122,7 +122,7 @@ pub fn mk_lambda(closure_v: Value, arg_names_v: Value, body: Value) -> Value {
         Some(spec) => spec,
         None => return Value::err("mk-lambda: invalid argument list", arg_names_v),
     };
-    Value::external(Lambda {
+    Value::host(Lambda {
         closure,
         arg_names,
         body,

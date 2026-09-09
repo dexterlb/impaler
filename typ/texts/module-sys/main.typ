@@ -88,7 +88,7 @@ evaluation as an optimisation step.
 == Programs and values <values>
 
 Due to ILD being homoiconic, programs and values share the same domain $V$:
-$ V = "Sym" union { () } union { (v_1 . v_2) | v_1, v_2 in V } union "SF" union "Ext" union { ildfail(v) | v in V } $
+$ V = "Sym" union { () } union { (v_1 . v_2) | v_1, v_2 in V } union "SF" union "Host" union { ildfail(v) | v in V } $
 
 a value being one of:
 - Base syntax
@@ -96,20 +96,16 @@ a value being one of:
   - a _Pair_ -- $(v_1 . v_2) | v_1, v_2 in V$
   - _Null_ (the empty list) -- $()$
 - Non-syntax values
-  - an _external value_ -- $phi in "Ext"$ -- opaque to ILD
+  - a _host value_ -- $phi in "Host"$ -- opaque to ILD
   - one of the three special forms -- $xi in "SF" = { ildsf("free-vars"), ildsf("quote"), ildsf("macroexpand") }$
   - a _Fail_ -- $ildfail(v) | v in V$ -- signifies failure, carries a value that
     describes the failure
 
 ILD is designed to be embedded#citneeded into a host environment that provides
-a set of external data structures. #note[I don't like to call these "external
-values", a better term is needed - for example, "host". TODO: rename "external
-value to "host value" everywhere, and also rename "builtin" to "host" in the
-module loader code] #paraphrase[Inhabitants] of these data structures are
-treated as external values (@values), and so are the functions that
-operate on them. To facillitate this, external values may be callable, which
-means that `apply` is defined for external values that are treated as functions
-(@apply).
+a set of host data structures. #paraphrase[Inhabitants] of these data
+structures are treated as host values (@values), and so are the functions that
+operate on them. To facillitate this, host values may be callable, which means
+that `apply` is defined for host values that are treated as functions (@apply).
 
 #comment[Note on lists: since ILD is a LISP, we will use $(v_1, v_2, ..., v_n)$
 to denote the value $(v_1 . (v_2 . (... (v_n . ())...)))$, which we will call a
@@ -123,7 +119,7 @@ sugars:
 - Macroexpand: `(!<expr1> ... <exprN>)` $arrow.r.double.bar$
   `(macroexpand <expr1> ... <exprN>)` -- used in @macroexpand
 Additionally, although formally unnecessary, the parser is assumed to allow syntax
-for numeric, string and boolean external value types.
+for numeric, string and boolean host value types.
 
 #note[instead of using `foo`, we should define an ILD-specific inline block that
 is pretty]
@@ -174,7 +170,7 @@ yields the resulting value as answer. For modeling side-effects, see @side-effec
 ]
 
 === Apply <apply>
-We say that certain external values $v in "Ext"$ are _callable_ if $interop("apply")(v, a_1, a_2, ..., a_n) in contmonad(V)$
+We say that certain host values $v in "Host"$ are _callable_ if $interop("apply")(v, a_1, a_2, ..., a_n) in contmonad(V)$
 is defined for some natural $n$ and $v, a_1, a_2, ..., a_n in V$.
 
 We can extend $interop("apply")$ to a total function over $V$ by making it return
@@ -189,7 +185,7 @@ $ sem(v)_rho = cases(
   ret(interop("lookup")(rho, v)) & v in "Sym",
   interop("eval-combination")_(rho)(f, a_1, a_2, ..., a_n) & v = (f, a_1, a_2, ... a_n),
   ret(ildfail("<err: cannot eval ()>")) & v = (),
-  ret(v) & v in "SF" union "Ext" union { ildfail(w) | w in V },
+  ret(v) & v in "SF" union "Host" union { ildfail(w) | w in V },
 ) $
 
 Symbols are looked up in the environment. Proper lists are evaluated as *combinations*.
@@ -274,7 +270,7 @@ of $interop("apply")$ is a $ildfail("...")$ for all improper cases.
   - $rho(ildsym("free-vars")) = ildsf("free-vars")$
   - $rho(ildsym("macroexpand")) = ildsf("macroexpand")$
 - Numbers, and associated functions for manipulating them
-  - $Q subset "Ext"$
+  - $Q subset "Host"$
   - $(ildsym("add") x_1 x_2 ... x_n) := x_1 + x_2 + ... + x_n$ for $x_1 ... x_n in Q$
   - #paraphrase[...]
 - Functions for working with lists
@@ -291,7 +287,7 @@ we give it a mechanism for building $lambda$-abstractions.
 
 Let
 
-$ { lambda(eta, P = (alpha_1, alpha_2, ..., alpha_n), B) | eta in "Env", alpha_1 ... alpha_n in "Sym", B in v} subset "Ext" $
+$ { lambda(eta, P = (alpha_1, alpha_2, ..., alpha_n), B) | eta in "Env", alpha_1 ... alpha_n in "Sym", B in v} subset "Host" $
 
 be the set of abstractions. Each abstraction carries a binding environment ($eta$),
 a list of formal parameters ($P$) and a body ($B$).
@@ -307,7 +303,7 @@ The function $ildsym("mk-lambda")$ shall be provided in order to allow construct
 $ (ildsym("mk-lambda") e P B) := lambda(eta, P, B) $
 where $eta$ is an environment constructed from the key-value list $e$
 (the opposite operation of the one done in @free-vars)#footnote[Instead of encoding/decoding
-environments into key/value lists, we may encode them directly as an external value. High-performance
+environments into key/value lists, we may encode them directly as a host value. High-performance
 implementations will do that, but for us it is a stylistic choice.]
 
 #comment[Note that $ildsym("mk-lambda")$ accepts a single body expression instead
@@ -319,7 +315,7 @@ of a $ildsym("do")$ procedure.]
 A meta-operator $ildsym("poly-fix")$ shall be provided to allow constructing
 mutually-recursive functions.
 
-#comment[If we don't care about performance and have infinite memory, the external implementation
+#comment[If we don't care about performance and have infinite memory, the host implementation
 of $ildsym("poly-fix")$ is optional, since we can just implement the Y-combinator in ILD itself.
 For this exercise, see @poly-fix-Y.]
 
@@ -342,7 +338,7 @@ in Nix has the stroger version of this semantic.#citneeded]
 === First-class continuations <first-class-continuations>
 To allow ILD programs to implement complex #paraphrase[flow control], we define a host
 function $ildsym("call/cc")$ that passes the current continuation as a first-class
-value to a given callable. To do this, we first extend $"Ext"$ with the set of
+value to a given callable. To do this, we first extend $"Host"$ with the set of
 #paraphrase[first class (reified)] continuations $"Cont"$, such that
 $ "Cont" = { ildcont(k) | k : (W -> A) -> A } = { ildcont(k) | k in contmonad(W, A) } $
 
@@ -372,7 +368,7 @@ easily:
           '())))))
 ```
 
-#comment[The `(free-vars)` closure given to the external `mk-lambda` can be replaced
+#comment[The `(free-vars)` closure given to the host `mk-lambda` can be replaced
 by a closure that contains only `cons`, `mk-lambda`, `quote` and `free-vars`.]
 
 Expansions of the `lambda` macro such as
@@ -385,7 +381,7 @@ will replace themselves by calls to `mk-lambda` such as
 ```
 
 We can then wrap this definition in another call of `mk-lambda` in order to expose
-it as a `lambda` name usable from the body of the external abstraction. For brevity,
+it as a `lambda` name usable from the body of the host abstraction. For brevity,
 we write the definition as an ILD program called `core/bootstrap/lambda-macro.ild`
 and then recall it twice (once to define `lambda`, and once to pass itself as the
 value of `lambda`):
@@ -513,7 +509,7 @@ languages.
 = Appendix
 
 == Polyvariate Y-combinator <poly-fix-Y>
-Instead of relying on an external implementation of $ildsym("poly-fix")$, we can
+Instead of relying on a host implementation of $ildsym("poly-fix")$, we can
 quite elegantly define it as such:
 
 ```ild

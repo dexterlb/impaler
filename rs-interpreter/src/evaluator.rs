@@ -49,7 +49,7 @@ pub(crate) fn eval_args_and_apply(
 
 pub(crate) fn apply(ret: Cont, callable: Value, args: ValueList) {
     match callable.get() {
-        ValueItem::ExternalVal(ext) => ext.apply(ret, args),
+        ValueItem::HostVal(ext) => ext.apply(ret, args),
         _ => resume(ret, Value::err("cannot apply", callable)),
     }
 }

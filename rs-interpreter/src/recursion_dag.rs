@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use crate::evaluator::apply;
 use crate::value_list::ValueList;
-use crate::values::{Cont, External, Value};
+use crate::values::{Cont, Host, Value};
 
 type ListOfCallables = ValueList; // duckily assume that the user has provided values that are callable
 
@@ -32,11 +32,11 @@ impl Rec {
     }
 
     fn val(self) -> Value {
-        Value::external(self)
+        Value::host(self)
     }
 }
 
-impl External for Rec {
+impl Host for Rec {
     fn apply(&self, ret: Cont, arg: ValueList) {
         let funcs = poly_fix_list_rc(&self.all_operators);
         let operator = self.operator.clone();
