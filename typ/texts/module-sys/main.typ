@@ -208,8 +208,6 @@ values to the function $phi$ via $interop("apply")$:
 
 $ interop("apply-func")_(rho)(phi, a_1, ..., a_n) = mdo(bind(alpha_1, sem(a_1)_rho), ..., bind(alpha_n, sem(a_n)_rho), interop("apply")(phi, alpha_1, ..., alpha_n)) $
 
-#note[why is spacing so tight??]
-
 === Evaluating special forms <eval-special-form>
 
 ==== Quote <quote>
@@ -264,7 +262,7 @@ to denote that $interop("apply")_(rho)(ildsym("foo"), v_1, v_2, ..., v_n) = ret(
 $ildsym("foo") in "Sym"$. Similarly to $interop("apply-sf")$, we assume that the result
 of $interop("apply")$ is a $ildfail("...")$ for all improper cases.
 
-=== Boring values
+=== #paraphrase[Boring] values
 - Access to the special forms
   - $rho(ildsym("quote")) = ildsf("quote")$
   - $rho(ildsym("free-vars")) = ildsf("free-vars")$
@@ -336,11 +334,12 @@ in Nix has the stroger version of this semantic.#citneeded]
 #note[describe gensym here]
 
 === First-class continuations <first-class-continuations>
-To allow ILD programs to implement complex #paraphrase[flow control], we define a host
-function $ildsym("call/cc")$ that passes the current continuation as a first-class
-value to a given callable. To do this, we first extend $"Host"$ with the set of
-#paraphrase[first class (reified)] continuations $"Cont"$, such that
-$ "Cont" = { ildcont(k) | k : (W -> A) -> A } = { ildcont(k) | k in contmonad(W, A) } $
+To allow ILD programs to implement complex #paraphrase[flow control], we define
+a host function $ildsym("call/cc")$ that passes the current continuation as a
+first-class value to a given callable #cite(<wadler>, supplement: [Section 3.2]).
+To do this, we first extend $"Host"$ with the set of #paraphrase[first class
+(reified)] continuations $"Cont"$, such that $ "Cont" = { ildcont(k) | k : (W
+-> A) -> A } = { ildcont(k) | k in contmonad(W, A) } $
 
 We can then define the function $ildsym("call/cc")$ such that:
 $ interop("apply")(ildsym("call/cc"), f) = lambda k (interop("apply")(f, ildcont(k)) k) $
