@@ -57,6 +57,12 @@
   body,
 )
 
+#let abstract(body) = align(center, block(width: 85%)[
+  #set par(justify: true)
+  #set align(left)
+  *Abstract.* #body
+])
+
 #let definition-counter = counter("definition")
 #let definition(body) = {
   definition-counter.step()
