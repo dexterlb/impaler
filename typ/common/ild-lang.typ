@@ -81,7 +81,7 @@ $ sem(dot)_rho : V -> contmonad(V) $
 In these definitions, we do not care what the set of answers is, so we will
 denote the continuation monad as simply $contmonad(V)$. For a simple, _pure_ version
 of the language, passing the identity function to a continuation returned by $sem(dot)$
-yields the resulting value as answer.#context if query(<side-effects>).len() > 0 [ For modeling side-effects, see @side-effects.]
+yields the resulting value as answer. For modeling side-effects, see @side-effects.
 ]
 
 === Apply <apply>
