@@ -15,8 +15,8 @@
 #abstract[
   We define a minimal, homoiconic LISP-like language called ILD, designed for
   deep embedding in a host environment. In contrast to other LISPs, it is
-  fully-immutable. Minimality is characterised by simple syntax (bare
-  S-expressions) and a just three special forms. Data structure
+  fully-immutable. Minimality is characterised by simple syntax based on
+  S-expressions and just three special forms. Data structure
   operations are provided through the host (foreign function) interface.
 
   We demonstrate that the immutability and minimality constraint do not
