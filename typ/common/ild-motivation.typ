@@ -1,28 +1,35 @@
-#import "/lib/misc.typ": citneeded, clink, paraphrase
+#import "/lib/misc.typ": citneeded, clink, paraphrase, note
+#import "/lib/ild-stuff.typ": ildmono
 
 = Motivation <motivation>
 
-#paraphrase[We wish to build][We design] a programming language that is as minimal as possible
-while being expressive enough for general-purpose use. #paraphrase[This][Such a language] is characterised
-by the following properties:
+#note[
+We should focus on the fact that a similar thing has been done before
+(#cite(<fexpr-shutt>)#cite(<fexpr-pe>)), and that the novel thing we're
+trying here is *callsite-annotated macro expansion*.
+]
+
+We design a programming language that is as minimal as possible
+while being expressive enough for general-purpose use. #paraphrase[We are aiming towards] the
+following properties:
 + Minimality <c-minimality>
   + Homoiconicity, provided by LISP-like syntax
   + Immutability
   + Few (and simple) special forms
 + Expressiveness
   + Mutual recursion
-  + Metaprogramming (allow implementing #paraphrase[convenience structures][syntactic conveniences] as
+  + Metaprogramming (allow implementing #paraphrase[syntactic conveniences] as
     libraries written in the language rather than compiler/interpreter
     features)
 + Performance <c-performance>
 
 Some of these properties are at odds at each other: in particular, it is
-difficult#citneeded to provide mutual recursion and immutability while at the
-same time #paraphrase[having few and simple special forms][keeping special forms few and simple]. For example,
-Scheme, LISP and other similar languages forgo the "immutability" constraint,
-which makes it easy#citneeded to implement cyclic data structures like
-mutually-recursive function definitions. The toplevel expressions in such
-languages are usually _statements_ like `define` that _mutate_ a global
+difficult to provide mutual recursion and immutability while at the same time
+keeping special forms few and simple. For example, Scheme, LISP and other
+similar languages forgo the "immutability" constraint, which makes it easy to
+implement cyclic data structures like mutually-recursive function definitions
+#cite(<sicp>, supplement: "Chapter 4.1.5"). The toplevel expressions in such
+languages are usually _statements_ like #ildmono("define") that _mutate_ a global
 _environment_.
 
 ```scheme
@@ -42,17 +49,17 @@ _environment_.
 (display (even? 42))
 ```
 
-Other LISP-like languages, such as LFE#citneeded, guarantee immutability of all
+Other LISP-like languages, such as LFE, guarantee immutability of all
 data, but handle a lot of the complexity in the interpreter itself: the
 language features are written in the host language that implements the
-interpreter, and not in the language itself. For example, functions defined in
+interpreter, and not in the language itself#citneeded. For example, functions defined in
 the global namespace are distinct from locally defined lambda objects, and the
-interpreter takes special care to #paraphrase[allow][support] recursion and mutual
+interpreter takes special care to support recursion and mutual
 recursion without allowing programs to mutate data. In fact, in LFE it is not
 even possible to create a cyclic data structure altogether! The price that is
 paid to achieve this is that the global namespace of defined functions is not
-#paraphrase[manipulatable][manipulable] by the program (which violates homoiconicity to some
-extent) and that `define` and similar constructs are special forms.
+manipulable by the program (which violates homoiconicity to some
+extent) and that #ildmono("define") and similar constructs are special forms.
 
 It is therefore interesting to see if we can design a language that meets all
 these goals at the same time. We define a language (which we will call ILD)
@@ -62,5 +69,5 @@ ILD, including a way to define mutually-recursive functions (@letrec).
 
 In further research, we aim to also meet the
 #clink(<c-performance>)[performance] constraint by employing partial evaluation
-as an optimisation step, which is a technique known#cite(<anydsl>) to give good
+as an optimisation step, which is a technique known#cite(<hudak>)#cite(<anydsl>) to give good
 results for reducing the overhead incurred by metaprogramming.

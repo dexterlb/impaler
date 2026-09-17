@@ -19,11 +19,11 @@ a value being one of:
   - a _Fail_ -- $ildfail(v) | v in V$ -- signifies failure, carries a value that
     describes the failure
 
-ILD is designed to be embedded#citneeded into a host environment that provides
-a set of host data structures. #paraphrase[Inhabitants][Members] of these data
-structures are treated as host values (@values), and so are the functions that
-operate on them. To #paraphrase[facillitate][facilitate] this, host values may be callable, which means
-that #ild("apply") is defined for host values that are treated as functions (@apply).
+ILD is designed to be embedded into a host environment that provides a set of
+host data structures. Inhabitants of these data structures are treated as host
+values (@values), and so are the functions that operate on them. To facilitate
+this, host values may be callable, which means that #ild("apply") is defined
+for host values that are treated as functions (@apply).
 
 #comment[Note on lists: since ILD is a LISP, we will use $(v_1, v_2, ..., v_n)$
 to denote the value $(v_1 . (v_2 . (... (v_n . ())...)))$, which we will call a
@@ -31,7 +31,7 @@ _list_.]
 
 == Syntax
 A subset of ILD values, which we call _programs_, can be represented as text:
-the syntax is based on standard S-expressions#citneeded with two extra syntax
+the syntax is based on standard S-expressions#cite(<sexp>) with two extra syntax
 sugars:
 - Quote: #ild("'<expr>") $arrow.r.double.bar$ #ild("(quote <expr>)") -- see @quote
 - Macroexpand: #ild("(!<expr1> ... <exprN>)") $arrow.r.double.bar$
@@ -148,13 +148,13 @@ Unlike LISP, ILD denotes macro expansion at the callsite rather than differentia
 between _functions_ and _macros_. This is mainly a stylistic choice that greatly
 simplifies the semantics and implementation.
 
-Another difference from LISP macros is that ILD does not have a separate macro expansion
-phase: instead, macros are evaluated as encountered. We will call this _runtime semantics
-of macro expansion_. The astute reader will notice that this defeats one of the
-reasons macros are used in the first place, which is to move some code execution
-ahead-of-time. We argue that this is not a problem #paraphrase[because in future
-research][since, in future work,] we extend ILD with another, more powerful, method of AOT code execution,
-namely _partial evaluation_.
+Another difference from LISP macros is that ILD does not have a separate macro
+expansion phase: instead, macros are evaluated as encountered. We will call
+this _runtime semantics of macro expansion_. The astute reader will notice that
+this defeats one of the reasons macros are used in the first place, which is to
+move some code execution ahead-of-time. We argue that this is not a problem
+since, in future work, #paraphrase[aim to] extend ILD with another, more
+powerful, method of AOT code execution, namely _partial evaluation_.
 
 ==== Capturing the binding environment <free-vars>
 $interop("apply-sf")_(rho)(ildsf("free-vars"))$ shall return a
@@ -193,11 +193,11 @@ of $interop("apply")$ is a $ildfail("...")$ for all improper cases.
 - Predicates
   - #paraphrase[is-sym?, is-pair?, sym-eq?, etc]
 - Read source
-  - $(ildsym("read-source") x)$ is a #paraphrase[facillity][facility] function that returns an ILD program whose
+  - $(ildsym("read-source") x)$ is a facility function that returns an ILD program whose
     name is $x$ (typically implemented by parsing an ILD source file).
 
 === Abstractions <abstraction>
-For ILD to become #paraphrase[turing-complete][Turing-complete], and, equivalently, a superset of the $lambda$-calculus,
+For ILD to become Turing-complete, and, equivalently, a superset of the $lambda$-calculus,
 we give it a mechanism for building $lambda$-abstractions.
 
 Let
@@ -244,7 +244,7 @@ but this leads to divergence problems when the language has strict (non-lazy) se
 Indeed, other strictly-evaluated languages, like Scheme, only support the weaker version
 of the recursion operator: `letrec` in Scheme does not allow non-functional right-hand
 sides#citneeded. Lazy languages do not have this problem -- for example, the `rec` operator
-in Nix has the #paraphrase[stroger][stronger] version of this semantic.#citneeded]
+in Nix has the stronger version of this semantic.#citneeded]
 
 == Effectful computations <side-effects>
 By choosing the answer set for the continuation monad to be $M(A)$ for another monad $M$,
