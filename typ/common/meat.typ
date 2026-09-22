@@ -2,7 +2,7 @@
 
 = Metaprogramming in ILD
 
-==== Macro expansion <macroexpand-mechanism>
+== Macro expansion <macroexpand-mechanism>
 The $ildsf("macroexpand")$ special form allows metaprogramming by treating a certain function
 as a _macro_. A regular function evaluation $(f a_1 a_2 ... a_n)$ evaluates f and all
 arguments and then passes the evaluated arguments to the evaluated f. In contrast,

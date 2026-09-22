@@ -18,9 +18,10 @@ Possible values are:
 A subset of ILD values, which we call _programs_, can be represented as text:
 the syntax is based on standard S-expressions#cite(<sexp>) with two extra syntax
 sugars:
-- Quote: #ild("'<expr>") $arrow.r.double.bar$ #ild("(quote <expr>)") -- see @stepped-semantics
+- Quote: #ild("'<expr>") $arrow.r.double.bar$ #ild("(quote <expr>)")
 - Macroexpand: #ild("(!<expr1> ... <exprN>)") $arrow.r.double.bar$
-  #ild("(macroexpand <expr1> ... <exprN>)") -- used in @macroexpand-mechanism
+  #ild("(macroexpand <expr1> ... <exprN>)")
+
 In addition, although formally unnecessary, the parser is assumed to allow syntax
 for numeric, string and boolean host value types.
 
@@ -47,7 +48,7 @@ stands for the nested binds:
 $ m_1 bindop (lambda x_1 (m_2 bindop (lambda x_2 (dots.h m_n bindop (lambda x_n (e)) dots.h)))). $
 
 #comment[
-When the answer set is not relevant, we omit it from notation and write $contmonad(V)$ instead of $contmonad(A, V)$.]
+When the answer set is not relevant, we write $contmonad(V)$ instead of $contmonad(A, V)$.]
 
 === Environments
 An _environment_ is a finite partial map $rho : "Sym" harpoon.rt V$ that gives semantics
