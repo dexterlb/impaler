@@ -39,3 +39,5 @@
 #let mdo(..steps) = $#ildmono("do")lr({ #steps.pos().join($ ; $) })$
 
 #let bindop = box(baseline: 0.1em, image("/lib/bind.svg", height: 0.72em))
+
+#let step(prereqs, from, to) = $ #prereqs / (#from -> #to) $
