@@ -96,6 +96,10 @@ Special forms:
 )
 #step($$, $interop("apply-sf")_(rho)(ildsf("macroexpand"), m, accent(a, arrow))$, $mdo(bind(mu, interop("eval")_(rho)(m)), bind(nu, interop("apply")(mu, accent(a, arrow))), interop("eval")_(rho)(nu))$)
 
+#note[
+The do-notation cases handwave a big-step in each bind, this should probably be made explicit
+]
+
 === Notes on selected cases <semantics-notes>
 - $interop("apply-sf")_(rho)(ildsf("free-vars"))$ returns a
   list-of-pairs#footnote[For the sake of performance, implementations may use a
