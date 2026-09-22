@@ -46,7 +46,7 @@ a list of formal parameters ($P$) and a body ($B$).
 An abstraction is applied by substituting the formal parameters by the #paraphrase[concrete][supplied]
 operands in the binding environment, and then evaluating the body in the resulting environment:
 
-$ interop("apply")(lambda(eta, P = (alpha_1, alpha_2, ..., alpha_n), B), a_1, a_2, ..., a_n) = sem(B)_rho $
+$ #evalsto($interop("apply")(lambda(eta, P = (alpha_1, alpha_2, ..., alpha_n), B), a_1, a_2, ..., a_n)$, $interop("eval")_(rho)(B)$) $
 where
 $ rho = eta [ alpha_1 / a_1 ] [ alpha_2 / a_2 ] ... [ alpha_n / a_n ] $
 
@@ -73,7 +73,7 @@ $ (ildsym("poly-fix") Gamma_1 Gamma_2 ... Gamma_n) := (f_1, f_2, ..., f_n) $
 
 where $f_1, ..., f_n$ are such that:
 
-$ interop("apply")(f_i, a_1, ..., a_n) = mdo(bind(phi, interop("apply")(Gamma_i, f_1, f_2, ..., f_n)), interop("apply")(phi, a_1, ..., a_n)) $
+$ #evalsto($interop("apply")(f_i, a_1, ..., a_n)$, $mdo(bind(phi, interop("apply")(Gamma_i, f_1, f_2, ..., f_n)), interop("apply")(phi, a_1, ..., a_n))$) $
 
 #comment[A stronger definition of $f_1, ..., f_n$ would be $f_i = Gamma_i (f_1, f_2, ..., f_n)$,
 but this leads to divergence problems when the language has strict (non-lazy) semantics.#citneeded
@@ -104,4 +104,4 @@ To do this, we first extend $"Host"$ with the set of #paraphrase[first class
 -> A) -> A } = { ildcont(k) | k in contmonad(W, A) } $
 
 We can then define the function $ildsym("call/cc")$ such that:
-$ interop("apply")(ildsym("call/cc"), f) = lambda k (interop("apply")(f, ildcont(k)) k) $
+$ #evalsto($interop("apply")(ildsym("call/cc"), f)$, $lambda k (interop("apply")(f, ildcont(k)) k)$) $
