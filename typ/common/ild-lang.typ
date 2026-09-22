@@ -5,60 +5,32 @@
 
 == Programs and values <values>
 
-Due to ILD being homoiconic, programs and values share the same domain $V$:
+We define ILD as a homoiconic language where programs and values share the same domain $V$:
 $ V = "Sym" union { () } union { (v_1 . v_2) | v_1, v_2 in V } union "SF" union "Host" union { ildfail(v) | v in V } $
-
-a value being one of:
-- Base syntax
-  - a _Symbol_ -- $s in "Sym"$
-  - a _Pair_ -- $(v_1 . v_2) | v_1, v_2 in V$
-  - _Null_ (the empty list) -- $()$
-- Non-syntax values
-  - a _host value_ -- $phi in "Host"$ -- opaque to ILD
-  - one of the three special forms -- $xi in "SF" = { ildsf("free-vars"), ildsf("quote"), ildsf("macroexpand") }$
-  - a _Fail_ -- $ildfail(v) | v in V$ -- signifies failure, carries a value that
-    describes the failure
-
-ILD is designed to be embedded into a host environment that provides a set of
-host data structures. Inhabitants of these data structures are treated as host
-values (@values), and so are the functions that operate on them. To facilitate
-this, host values may be callable, which means that #ild("apply") is defined
-for host values that are treated as functions (@apply).
-
-#comment[Note on lists: since ILD is a LISP, we will use $(v_1, v_2, ..., v_n)$
-to denote the value $(v_1 . (v_2 . (... (v_n . ())...)))$, which we will call a
-_list_.]
+Possible values are:
+- Base S-Expression syntax -- symbols ($"Sym"$), pairs and the null list $()$. We will use $(v_1, v_2, ..., v_n)$
+to denote the list $(v_1 . (v_2 . (... (v_n . ())...)))$, and use $L_V$ for the set of proper lists.
+- Special forms -- $"SF" = { ildsf("free-vars"), ildsf("quote"), ildsf("macroexpand") }$
+- Fail objects -- $ildfail(v) | v in V$ -- signify failure, carry a context value
+- Host values -- $"Host"$ -- opaque to ILD (@embedding)
 
 == Syntax
 A subset of ILD values, which we call _programs_, can be represented as text:
 the syntax is based on standard S-expressions#cite(<sexp>) with two extra syntax
 sugars:
-- Quote: #ild("'<expr>") $arrow.r.double.bar$ #ild("(quote <expr>)") -- see @quote
+- Quote: #ild("'<expr>") $arrow.r.double.bar$ #ild("(quote <expr>)") -- see @stepped-semantics
 - Macroexpand: #ild("(!<expr1> ... <exprN>)") $arrow.r.double.bar$
-  #ild("(macroexpand <expr1> ... <exprN>)") -- used in @macroexpand
-Additionally, although formally unnecessary, the parser is assumed to allow syntax
+  #ild("(macroexpand <expr1> ... <exprN>)") -- used in @macroexpand-mechanism
+In addition, although formally unnecessary, the parser is assumed to allow syntax
 for numeric, string and boolean host value types.
 
-== Semantics of ILD <semantics>
-
-=== Environments
-An _environment_ is a finite partial map $rho : "Sym" harpoon.rt V$ that gives semantics
-to symbols. Let $"Env"$ be the set of all such environments.
-
-Looking up a symbol in an environment shall be defined as:
-
-$ interop("lookup")_(rho)(s) = cases(
-  v & s in "Sym" and rho(s) = v,
-  ildfail("<err: unbound symbol>") & s in ("Sym" \\ "dom"rho),
-) $
+== Semantics <semantics>
 
 === Continuations
-
 We define the semantics of ILD in terms of a _continuation monad_
 #cite(<wadler>, supplement: [Section 3]), in order to be able to reason about
-first-class continuations (@first-class-continuations) and side effects (@side-effects).
+first-class continuations (@first-class-continuations) and side effects (@side-effects):
 
-#definition[
 $contmonad(A, W)$ is the set of computations of type $(W -> A) -> A$, where A
 is a set of "answers".
 
@@ -73,117 +45,23 @@ sugar for $bindop$:
 $ mdo(bind(x_1, m_1), bind(x_2, m_2), ..., bind(x_n, m_n), e) $
 stands for the nested binds:
 $ m_1 bindop (lambda x_1 (m_2 bindop (lambda x_2 (dots.h m_n bindop (lambda x_n (e)) dots.h)))). $
-]
 
-The interpretation of ILD values is defined as:
-$ sem(dot)_rho : V -> contmonad(V) $
 #comment[
-In these definitions, we do not care what the set of answers is, so we will
-denote the continuation monad as simply $contmonad(V)$. For a simple, _pure_ version
-of the language, passing the identity function to a continuation returned by $sem(dot)$
-yields the resulting value as answer. For modeling side-effects, see @side-effects.
-]
+When the answer set is not relevant, we omit it from notation and write $contmonad(V)$ instead of $contmonad(A, V)$.]
 
-=== Apply <apply>
-We say that certain host values $v in "Host"$ are _callable_ if $interop("apply")(v, a_1, a_2, ..., a_n) in contmonad(V)$
-is defined for some natural $n$ and $v, a_1, a_2, ..., a_n in V$.
+=== Environments
+An _environment_ is a finite partial map $rho : "Sym" harpoon.rt V$ that gives semantics
+to symbols. Let $"Env"$ be the set of all such environments.
 
-We can extend $interop("apply")$ to a total function over $V$ by making it return
-a $ildfailbare$ in cases where it is not defined. We will not cause further
-boredom for the reader by formally defining this extension.
+=== Embedding <embedding>
+ILD is designed to be embedded into a host environment, which supplies the set
+$"Host"$ of _host values_: values of the host's data structures, together with
+the functions over them. Host values are opaque to ILD: We define the FFI function
+$ C: "Host" times L_V -> contmonad(V) $
+to give semantics to *calling* a host value with a list of arguments. $C$ can be
+assumed to be total (applying a non-callable value yields a $ildfailbare$).
 
-
-=== Eval
-Now we can define the evaluation function as so:
-
-$ sem(v)_rho = cases(
-  ret(interop("lookup")(rho, v)) & v in "Sym",
-  interop("eval-combination")_(rho)(f, a_1, a_2, ..., a_n) & v = (f, a_1, a_2, ... a_n),
-  ret(ildfail("<err: cannot eval ()>")) & v = (),
-  ret(v) & v in "SF" union "Host" union { ildfail(w) | w in V },
-) $
-
-Symbols are looked up in the environment. Proper lists are evaluated as *combinations*.
-Attempts to evaluate improper lists result in a failure. All other values evaluate to
-themselves.
-
-To evaluate a combination, we first evaluate its head, and then decide how to proceed
-depending on the result:
-
-$ interop("eval-combination")_(rho)(f, accent(a, arrow)) = mdo(bind(phi, sem(f)_(rho)), interop("apply-cases")_(rho)(phi, accent(a, arrow))) $
-
-$ interop("apply-cases")_(rho)(phi, accent(a, arrow)) = cases(
-  interop("apply-sf")_(rho)(phi, accent(a, arrow)) & phi in "SF",
-  interop("apply-func")_(rho)(phi, accent(a, arrow)) & phi in.not "SF",
-) $
-
-If the head evaluated to a special form, use special-form rules (@eval-special-form).
-Otherwise, evaluate the list of arguments in order, and pass the resulting list of
-values to the function $phi$ via $interop("apply")$:
-
-$ interop("apply-func")_(rho)(phi, a_1, ..., a_n) = mdo(bind(alpha_1, sem(a_1)_rho), ..., bind(alpha_n, sem(a_n)_rho), interop("apply")(phi, alpha_1, ..., alpha_n)) $
-
-=== Evaluating special forms <eval-special-form>
-
-==== Quote <quote>
-$ interop("apply-sf")_(rho)(ildsf("quote"), v) = ret(v) $
-
-Quote works similarly to other LISP-like languages.
-
-==== Macro expansion <macroexpand>
-$ interop("apply-sf")_(rho)(ildsf("macroexpand"), m, accent(a, arrow)) = mdo(bind(mu, sem(m)_(rho)), bind(nu, interop("apply")(mu, accent(a, arrow))), sem(nu)_rho) $
-
-The $ildsf("macroexpand")$ special form allows metaprogramming by treating a certain function
-as a _macro_. A regular function evaluation $(f a_1 a_2 ... a_n)$ evaluates f and all
-arguments and then passes the evaluated arguments to the evaluated f. In contrast,
-$(ildsf("macroexpand") f a_1 a_2 ... a_n)$ evaluates just $f$ and then passes the
-*unevaluated* arguments to it. The result is then in turn evaluated. This allows $f$
-to treat the program passed to it as data and to transform it arbitrarily before it
-gets evaluated. This is similar to unhygienic macro systems like the one in LISP.
-As in traditional LISP macro systems #cite(<kohlbecker1986syntactic>), ILD macros
-expand from the outside in: the outermost macro call is expanded first, and its
-expansion may itself contain further macro calls.
-
-Unlike LISP, ILD denotes macro expansion at the callsite rather than
-differentiating between _functions_ and _macros_. This greatly simplifies the
-semantics and implementation.
-
-Another difference from LISP macros is that ILD does not have a separate macro
-expansion phase: instead, macros are evaluated as encountered. We will call
-this _runtime semantics of macro expansion_. This lack of separate macro expansion
-phase is similar to the way metaprogramming works in FExpr-based languages#cite(<fexpr-shutt>),
-and has advantages (for example, generated code can depend on runtime input).
-Nevertheless, performance can be greatly improved by evaluating macros ahead of time.
-We argue that placing the boundary between code evaluated ahead of time and code
-evaluated at runtime should not be at the distinction between "macro expansion" and
-"code execution", but rather between "code dependant on data known ahead of time"
-(which includes most, but not all, macros) and "code dependant on runtime data".
-We aim to explore this topic in further research by applying partial evaluation
-as an optimisation pass in ILD, similar to how this has been done in languages
-like Kraken #cite(<fexpr-pe>).
-#note[
-This paragraph should probably be moved elsewhere
-]
-
-
-==== Capturing the binding environment <free-vars>
-$interop("apply-sf")_(rho)(ildsf("free-vars"))$ shall return a
-list-of-pairs#footnote[For the sake of performance, implementations may use a
-more efficient data structure. However, this is not relevant at the moment.]
-representation of $rho$.
-
-Since ILD has no function definition special form, $ildsf("free-vars")$ is used
-by the lambda macro (@lambda-macro) to capture the binding
-environment.
-
-==== All else
-$interop("apply-sf")_(rho)$ shall return an appropriate $ildfailbare$ if given
-arguments unlike those listed in the previous sections.
-
-== Semantics (stepped)
-
-#[
-#show math.equation.where(block: true): set block(spacing: 0.55em)
+=== Small-step semantics <stepped-semantics>
 
 Environment lookup:
 #step($s in "Sym" and rho(s) = v$, $interop("lookup")_(rho)(s)$, $v$)
@@ -204,105 +82,19 @@ Combinations:
 Special forms:
 #step($$, $interop("apply-sf")_(rho)(ildsf("quote"), v)$, $ret(v)$)
 #step($$, $interop("apply-sf")_(rho)(ildsf("macroexpand"), m, accent(a, arrow))$, $mdo(bind(mu, interop("eval")_(rho)(m)), bind(nu, interop("apply")(mu, accent(a, arrow))), interop("eval")_(rho)(nu))$)
-#step($$, $interop("apply-sf")_(rho)(ildsf("free-vars"))$, $dots.h$)
-]
+#step($$, $interop("apply-sf")_(rho)(ildsf("free-vars"))$, $rho "as list of pairs"$)
 
-== A minimal host environment
-ILD, as defined in @semantics, is useless by itself (all programs are either
-basic values that evaluate to themselves or evaluate to a $ildfailbare$).
-
-We define a host environment $rho$. We will write $(ildsym("foo") v_1 v_2 ... v_n) := v$
-to denote that $interop("apply")_(rho)(ildsym("foo"), v_1, v_2, ..., v_n) = ret(v)$ for a
-$ildsym("foo") in "Sym"$. Similarly to $interop("apply-sf")$, we assume that the result
-of $interop("apply")$ is a $ildfail("...")$ for all improper cases.
-
-=== #paraphrase[Boring][Primitive] values
-- Access to the special forms
-  - $rho(ildsym("quote")) = ildsf("quote")$
-  - $rho(ildsym("free-vars")) = ildsf("free-vars")$
-  - $rho(ildsym("macroexpand")) = ildsf("macroexpand")$
-- Numbers, and associated functions for manipulating them
-  - $Q subset "Host"$
-  - $(ildsym("add") x_1 x_2 ... x_n) := x_1 + x_2 + ... + x_n$ for $x_1 ... x_n in Q$
-  - #paraphrase[...]
-- Functions for working with lists
-  - #paraphrase[cons, car, cdr, null?, etc]
-- Predicates
-  - #paraphrase[is-sym?, is-pair?, sym-eq?, etc]
-- Read source
-  - $(ildsym("read-source") x)$ is a facility function that returns an ILD program whose
-    name is $x$ (typically implemented by parsing an ILD source file).
-
-=== Abstractions <abstraction>
-For ILD to become Turing-complete, and, equivalently, a superset of the $lambda$-calculus,
-we give it a mechanism for building $lambda$-abstractions.
-
-Let
-
-$ { lambda(eta, P = (alpha_1, alpha_2, ..., alpha_n), B) | eta in "Env", alpha_1 ... alpha_n in "Sym", B in v} subset "Host" $
-
-be the set of abstractions. Each abstraction carries a binding environment ($eta$),
-a list of formal parameters ($P$) and a body ($B$).
-
-An abstraction is applied by substituting the formal parameters by the #paraphrase[concrete][supplied]
-operands in the binding environment, and then evaluating the body in the resulting environment:
-
-$ interop("apply")(lambda(eta, P = (alpha_1, alpha_2, ..., alpha_n), B), a_1, a_2, ..., a_n) = sem(B)_rho $
-where
-$ rho = eta [ alpha_1 / a_1 ] [ alpha_2 / a_2 ] ... [ alpha_n / a_n ] $
-
-The function $ildsym("mk-lambda")$ shall be provided in order to allow constructing such abstractions:
-$ (ildsym("mk-lambda") e P B) := lambda(eta, P, B) $
-where $eta$ is an environment constructed from the key-value list $e$
-(the opposite operation of the one done in @free-vars)#footnote[Instead of encoding/decoding
-environments into key/value lists, we may encode them directly as a host value. High-performance
-implementations will do that, but for us it is a stylistic choice.]
-
-#comment[Note that $ildsym("mk-lambda")$ accepts a single body expression instead
-of a list of body expressions to be evaluated in order. This is just for the sake
-of simplicity/minimality: sequential execution can easily be implemented in the form
-of a $ildsym("do")$ procedure.]
-
-=== A recursion operator
-A meta-operator $ildsym("poly-fix")$ shall be provided to allow constructing
-mutually-recursive functions.
-
-#comment[If we don't care about performance and have infinite memory, the host implementation
-of $ildsym("poly-fix")$ is optional, since we can just implement the Y-combinator in ILD itself.#context if query(<poly-fix-Y>).len() > 0 [ For this exercise, see @poly-fix-Y.]]
-
-$ (ildsym("poly-fix") Gamma_1 Gamma_2 ... Gamma_n) := (f_1, f_2, ..., f_n) $
-
-where $f_1, ..., f_n$ are such that:
-
-$ interop("apply")(f_i, a_1, ..., a_n) = mdo(bind(phi, interop("apply")(Gamma_i, f_1, f_2, ..., f_n)), interop("apply")(phi, a_1, ..., a_n)) $
-
-#comment[A stronger definition of $f_1, ..., f_n$ would be $f_i = Gamma_i (f_1, f_2, ..., f_n)$,
-but this leads to divergence problems when the language has strict (non-lazy) semantics.#citneeded
-Indeed, other strictly-evaluated languages, like Scheme, only support the weaker version
-of the recursion operator: `letrec` in Scheme does not allow non-functional right-hand
-sides#citneeded. Lazy languages do not have this problem -- for example, the `rec` operator
-in Nix has the stronger version of this semantic.#citneeded]
-
-== Effectful computations <side-effects>
-By choosing the answer set for the continuation monad to be $M(A)$ for another monad $M$,
-we can incorporate any effects modelled by $M$ into the CPS semantics of ILD
-#cite(<wadler>, supplement: [Section 3.3]). This includes side effects like IO.
-
-=== Gensym
-Our host environment shall provide a function $ildsym("gensym")$ such that:
-
-$ (ildsym("gensym") s) := <text("a fresh symbol whose prefix is ")s> $
-
-Freshness can be guaranteed by e.g. storing the last generated symbol id in a
-State monad wrapper.
-
-=== First-class continuations <first-class-continuations>
-To allow ILD programs to implement complex #paraphrase[flow control][control flow], we define
-a host function $ildsym("call/cc")$ that passes the current continuation as a
-first-class value to a given callable #cite(<wadler>, supplement: [Section 3.2]).
-To do this, we first extend $"Host"$ with the set of #paraphrase[first class
-(reified)][reified, first-class] continuations $"Cont"$, such that $ "Cont" = { ildcont(k) | k : (W
--> A) -> A } = { ildcont(k) | k in contmonad(W, A) } $
-
-We can then define the function $ildsym("call/cc")$ such that:
-$ interop("apply")(ildsym("call/cc"), f) = lambda k (interop("apply")(f, ildcont(k)) k) $
+=== Notes on selected cases <semantics-notes>
+- $interop("apply-sf")_(rho)(ildsf("free-vars"))$ returns a
+  list-of-pairs#footnote[For the sake of performance, implementations may use a
+  more efficient data structure.] representation of $rho$. This special form
+  is used to capture the binding environment by higher-level constructs like
+  the lambda macro (@lambda-macro).
+- The head of a combination is always evaluated. If the result of that is a special
+  form, the special form is applied on the unevaluated tail of the combination.
+  Otherwise, the (non-special) head is applied on the arguments after they have been
+  evaluated.
+- $(ildsf("macroexpand") f a_1 a_2 ... a_n)$ evaluates just $f$ and then passes the
+  *unevaluated* arguments to it. The result is then in turn evaluated. This mechanism
+  is discussed in @macroexpand-mechanism.
+- All unlisted cases result in a $ildfailbare$.

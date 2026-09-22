@@ -1,0 +1,33 @@
+#import "/lib/ild-stuff.typ": ildsf
+
+= Metaprogramming in ILD
+
+==== Macro expansion <macroexpand-mechanism>
+The $ildsf("macroexpand")$ special form allows metaprogramming by treating a certain function
+as a _macro_. A regular function evaluation $(f a_1 a_2 ... a_n)$ evaluates f and all
+arguments and then passes the evaluated arguments to the evaluated f. In contrast,
+$(ildsf("macroexpand") f a_1 a_2 ... a_n)$ evaluates just $f$ and then passes the
+*unevaluated* arguments to it. The result is then in turn evaluated. This allows $f$
+to treat the program passed to it as data and to transform it arbitrarily before it
+gets evaluated. This is similar to unhygienic macro systems like the one in LISP.
+As in traditional LISP macro systems #cite(<kohlbecker1986syntactic>), ILD macros
+expand from the outside in: the outermost macro call is expanded first, and its
+expansion may itself contain further macro calls.
+
+Unlike LISP, ILD denotes macro expansion at the callsite rather than
+differentiating between _functions_ and _macros_. This greatly simplifies the
+semantics and implementation.
+
+Another difference from LISP macros is that ILD does not have a separate macro
+expansion phase: instead, macros are evaluated as encountered. We will call
+this _runtime semantics of macro expansion_. This lack of separate macro expansion
+phase is similar to the way metaprogramming works in FExpr-based languages#cite(<fexpr-shutt>),
+and has advantages (for example, generated code can depend on runtime input).
+Nevertheless, performance can be greatly improved by evaluating macros ahead of time.
+We argue that placing the boundary between code evaluated ahead of time and code
+evaluated at runtime should not be at the distinction between "macro expansion" and
+"code execution", but rather between "code dependant on data known ahead of time"
+(which includes most, but not all, macros) and "code dependant on runtime data".
+We aim to explore this topic in further research by applying partial evaluation
+as an optimisation pass in ILD, similar to how this has been done in languages
+like Kraken #cite(<fexpr-pe>).
