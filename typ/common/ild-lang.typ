@@ -9,7 +9,7 @@ We define ILD as a homoiconic language where programs and values share the same 
 $ V = "Sym" union { () } union { (v_1 . v_2) | v_1, v_2 in V } union "SF" union "Host" union { ildfail(v) | v in V } $
 Possible values are:
 - Base S-Expression syntax -- symbols ($"Sym"$), pairs and the null list $()$. We will use $(v_1, v_2, ..., v_n)$
-to denote the list $(v_1 . (v_2 . (... (v_n . ())...)))$, and use $L_V$ for the set of proper lists.
+  to denote the list $(v_1 . (v_2 . (... (v_n . ())...)))$, and use $L_V$ for the set of proper lists.
 - Special forms -- $"SF" = { ildsf("free-vars"), ildsf("quote"), ildsf("macroexpand") }$
 - Fail objects -- $ildfail(v) | v in V$ -- signify failure, carry a context value
 - Host values -- $"Host"$ -- opaque to ILD (@embedding)
