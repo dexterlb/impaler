@@ -2,29 +2,35 @@
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
 == A minimal host environment
-ILD, as defined in @semantics, is useless by itself (all programs are either
-basic values that evaluate to themselves or evaluate to a $ildfailbare$).
+ILD, as defined in @semantics, is useless by itself. We define a host (root)
+environment $rho$. We will write $(ildsym("foo") v_1 v_2 ... v_n) := v$ to
+denote that $C(rho(ildsym("foo")), v_1, v_2, ..., v_n) = ret(v)$ for a
+$ildsym("foo") in "Sym"$.
 
-We define a host environment $rho$. We will write $(ildsym("foo") v_1 v_2 ...
-v_n) := v$ to denote that $C(rho(ildsym("foo")), v_1, v_2, ..., v_n) = ret(v)$
-for a $ildsym("foo") in "Sym"$.
+=== #paraphrase[Boring] values
+Let $"Num"$, $"Bool"$, $"Str" subset "Host"$ for the host numbers, booleans
+and strings.
 
-=== #paraphrase[Boring][Primitive] values
-- Access to the special forms
-  - $rho(ildsym("quote")) = ildsf("quote")$
-  - $rho(ildsym("free-vars")) = ildsf("free-vars")$
-  - $rho(ildsym("macroexpand")) = ildsf("macroexpand")$
-- Numbers, and associated functions for manipulating them
-  - $Q subset "Host"$
-  - $(ildsym("add") x_1 x_2 ... x_n) := x_1 + x_2 + ... + x_n$ for $x_1 ... x_n in Q$
-  - #paraphrase[...]
-- Functions for working with lists
-  - #paraphrase[cons, car, cdr, null?, etc]
-- Predicates
-  - #paraphrase[is-sym?, is-pair?, sym-eq?, etc]
-- Read source
-  - $(ildsym("read-source") x)$ is a facility function that returns an ILD program whose
-    name is $x$ (typically implemented by parsing an ILD source file).
+- Special forms -- $rho(ildsym("quote")) = ildsf("quote")$, and likewise for
+  $ildsf("macroexpand")$ and $ildsf("free-vars")$.
+- Arithmetic on $"Num"$ -- $(ildsym("+") x_1 ... x_n)$, $(ildsym("*") x_1 ... x_n)$,
+  $(ildsym("-") x y)$, $(ildsym("/") x y)$.
+- Comparison, $"Num" times "Num" -> "Bool"$ -- $ildsym("=")$, $ildsym("<")$,
+  $ildsym(">")$, $ildsym("<=")$, $ildsym(">=")$.
+- Pairs -- $(ildsym("cons") a d) := (a . d)$, $(ildsym("car") (a . d)) := a$,
+  $(ildsym("cdr") (a . d)) := d$.
+- Predicates, $V -> "Bool"$ -- $ildsym("null?")$, $ildsym("pair?")$,
+  $ildsym("symbol?")$, $ildsym("string?")$, $ildsym("func?")$,
+  $ildsym("fail?")$
+- Equality -- $(ildsym("sym-eq?") s_1 s_2)$, $(ildsym("num-eq?") n_1 n_2)$, $dots$
+- Failure -- $(ildsym("make-fail") v) := ildfail(v)$.
+- Branching -- $(ildsym("bool-to-k") b)$ returns a function on two arguments that
+  returns its first argument if $b$ is true and the second otherwise.
+- Reflection -- $(ildsym("apply") f (a_1 ... a_n))$ and $(ildsym("eval") e v)$
+  expose $interop("apply")$ and $interop("eval")$ to programs, with $e$ an
+  environment encoded as in @semantics-notes.
+- Source -- $(ildsym("read-source") p)$ parses and returns the ILD program named
+  with the string $p$.
 
 === Abstractions <abstraction>
 For ILD to become Turing-complete, and, equivalently, a superset of the $lambda$-calculus,
