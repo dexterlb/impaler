@@ -40,4 +40,8 @@
 
 #let bindop = box(baseline: 0.1em, image("/lib/bind.svg", height: 0.72em))
 
-#let step(prereqs, from, to) = $ #prereqs / (#from -> #to) $
+#let stepfol(from, to) = $#from -> #to$
+#let step(prereqs, from, to) = $ #prereqs / #stepfol(from, to) $
+#let steprow(..items) = align(center, grid(
+  columns: items.pos().len(), column-gutter: 1em, align: horizon, ..items.pos(),
+))

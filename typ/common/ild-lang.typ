@@ -1,4 +1,4 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, steprow
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
 = The language ILD
@@ -65,25 +65,35 @@ assumed to be total (applying a non-callable value yields a $ildfailbare$).
 === Small-step semantics <stepped-semantics>
 
 Environment lookup:
-#step($s in "Sym" and rho(s) = v$, $interop("lookup")_(rho)(s)$, $v$)
-#step($s in ("Sym" \\ "dom"rho)$, $interop("lookup")_(rho)(s)$, $ildfail("<err: unbound symbol>")$)
+#steprow(
+  step($s in "Sym" and rho(s) = v$, $interop("lookup")_(rho)(s)$, $v$),
+  step($s in ("Sym" \\ "dom"rho)$, $interop("lookup")_(rho)(s)$, $ildfail("<err: unbound symbol>")$),
+)
 
 Eval:
-#step($v in "Sym"$, $interop("eval")_(rho)(v)$, $ret(interop("lookup")(rho, v))$)
-#step($v = (f, a_1, a_2, ..., a_n)$, $interop("eval")_(rho)(v)$, $interop("eval-combination")_(rho)(f, a_1, a_2, ..., a_n)$)
-#step($v = () or v "is an improper list"$, $interop("eval")_(rho)(v)$, $ret(ildfail("<err: cannot eval improper list>"))$)
-#step($v in "SF" union "Host" union { ildfail(w) | w in V }$, $interop("eval")_(rho)(v)$, $ret(v)$)
+#steprow(
+  step($v in "Sym"$, $interop("eval")_(rho)(v)$, $ret(interop("lookup")(rho, v))$),
+  step($v = (f, a_1, a_2, ..., a_n)$, $interop("eval")_(rho)(v)$, $interop("eval-combination")_(rho)(f, a_1, a_2, ..., a_n)$),
+)
+#steprow(
+  step($v = () or v "is an improper list"$, $interop("eval")_(rho)(v)$, $ret(ildfail("<err: cannot eval improper list>"))$),
+  step($v in "SF" union "Host" union { ildfail(w) | w in V }$, $interop("eval")_(rho)(v)$, $ret(v)$),
+)
 
 Combinations:
 #step($$, $interop("eval-combination")_(rho)(f, accent(a, arrow))$, $mdo(bind(phi, interop("eval")_(rho)(f)), interop("apply-cases")_(rho)(phi, accent(a, arrow)))$)
-#step($phi in "SF"$, $interop("apply-cases")_(rho)(phi, accent(a, arrow))$, $interop("apply-sf")_(rho)(phi, accent(a, arrow))$)
-#step($phi in.not "SF"$, $interop("apply-cases")_(rho)(phi, accent(a, arrow))$, $interop("apply-func")_(rho)(phi, accent(a, arrow))$)
+#steprow(
+  step($phi in "SF"$, $interop("apply-cases")_(rho)(phi, accent(a, arrow))$, $interop("apply-sf")_(rho)(phi, accent(a, arrow))$),
+  step($phi in.not "SF"$, $interop("apply-cases")_(rho)(phi, accent(a, arrow))$, $interop("apply-func")_(rho)(phi, accent(a, arrow))$),
+)
 #step($$, $interop("apply-func")_(rho)(phi, a_1, ..., a_n)$, $mdo(bind(alpha_1, interop("eval")_(rho)(a_1)), ..., bind(alpha_n, interop("eval")_(rho)(a_n)), interop("apply")(phi, alpha_1, ..., alpha_n))$)
 
 Special forms:
-#step($$, $interop("apply-sf")_(rho)(ildsf("quote"), v)$, $ret(v)$)
+#steprow(
+  step($$, $interop("apply-sf")_(rho)(ildsf("quote"), v)$, $ret(v)$),
+  step($$, $interop("apply-sf")_(rho)(ildsf("free-vars"))$, $rho "as list of pairs"$),
+)
 #step($$, $interop("apply-sf")_(rho)(ildsf("macroexpand"), m, accent(a, arrow))$, $mdo(bind(mu, interop("eval")_(rho)(m)), bind(nu, interop("apply")(mu, accent(a, arrow))), interop("eval")_(rho)(nu))$)
-#step($$, $interop("apply-sf")_(rho)(ildsf("free-vars"))$, $rho "as list of pairs"$)
 
 === Notes on selected cases <semantics-notes>
 - $interop("apply-sf")_(rho)(ildsf("free-vars"))$ returns a

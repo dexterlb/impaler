@@ -1,14 +1,13 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, stepfol
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
 == A minimal host environment
 ILD, as defined in @semantics, is useless by itself (all programs are either
 basic values that evaluate to themselves or evaluate to a $ildfailbare$).
 
-We define a host environment $rho$. We will write $(ildsym("foo") v_1 v_2 ... v_n) := v$
-to denote that $interop("apply")_(rho)(ildsym("foo"), v_1, v_2, ..., v_n) = ret(v)$ for a
-$ildsym("foo") in "Sym"$. Similarly to $interop("apply-sf")$, we assume that the result
-of $interop("apply")$ is a $ildfail("...")$ for all improper cases.
+We define a host environment $rho$. We will write $(ildsym("foo") v_1 v_2 ...
+v_n) := v$ to denote that $C(rho(ildsym("foo")), v_1, v_2, ..., v_n) = ret(v)$
+for a $ildsym("foo") in "Sym"$.
 
 === #paraphrase[Boring][Primitive] values
 - Access to the special forms
