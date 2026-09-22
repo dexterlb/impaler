@@ -1,10 +1,10 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, stepfol
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, evalsto
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
 == A minimal host environment
 ILD, as defined in @semantics, is useless by itself. We define a host (root)
 environment $rho$. We will write $(ildsym("foo") v_1 v_2 ... v_n) := v$ to
-denote that $C(rho(ildsym("foo")), v_1, v_2, ..., v_n) = ret(v)$ for a
+denote that $#evalsto($interop("apply")(rho(ildsym("foo")), v_1, v_2, ..., v_n)$, $ret(v)$)$ for a
 $ildsym("foo") in "Sym"$.
 
 === #paraphrase[Boring] values

@@ -1,4 +1,4 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, steprow
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, steprow, evalsto
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
 = The language ILD
@@ -57,10 +57,11 @@ to symbols. Let $"Env"$ be the set of all such environments.
 === Embedding <embedding>
 ILD is designed to be embedded into a host environment, which supplies the set
 $"Host"$ of _host values_: values of the host's data structures, together with
-the functions over them. Host values are opaque to ILD: We define the FFI function
-$ C: "Host" times L_V -> contmonad(V) $
-to give semantics to *calling* a host value with a list of arguments. $C$ can be
-assumed to be total (applying a non-callable value yields a $ildfailbare$).
+the functions over them. Host values are opaque to ILD: We define FFI semantics
+for some host values like
+$ #evalsto($interop("apply")(v, a_1, a_2, ..., a_n)$, $omega$) $
+to denote that *calling* the host value $v$ with arguments $a_1 ... a_n$ results
+in the computation $omega$.
 
 === Small-step semantics <stepped-semantics>
 
