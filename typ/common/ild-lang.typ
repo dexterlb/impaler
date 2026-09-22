@@ -144,17 +144,27 @@ As in traditional LISP macro systems #cite(<kohlbecker1986syntactic>), ILD macro
 expand from the outside in: the outermost macro call is expanded first, and its
 expansion may itself contain further macro calls.
 
-Unlike LISP, ILD denotes macro expansion at the callsite rather than differentiating
-between _functions_ and _macros_. This is mainly a stylistic choice that greatly
-simplifies the semantics and implementation.
+Unlike LISP, ILD denotes macro expansion at the callsite rather than
+differentiating between _functions_ and _macros_. This greatly simplifies the
+semantics and implementation.
 
 Another difference from LISP macros is that ILD does not have a separate macro
 expansion phase: instead, macros are evaluated as encountered. We will call
-this _runtime semantics of macro expansion_. The astute reader will notice that
-this defeats one of the reasons macros are used in the first place, which is to
-move some code execution ahead-of-time. We argue that this is not a problem
-since, in future work, #paraphrase[aim to] extend ILD with another, more
-powerful, method of AOT code execution, namely _partial evaluation_.
+this _runtime semantics of macro expansion_. This lack of separate macro expansion
+phase is similar to the way metaprogramming works in FExpr-based languages#cite(<fexpr-shutt>),
+and has advantages (for example, generated code can depend on runtime input).
+Nevertheless, performance can be greatly improved by evaluating macros ahead of time.
+We argue that placing the boundary between code evaluated ahead of time and code
+evaluated at runtime should not be at the distinction between "macro expansion" and
+"code execution", but rather between "code dependant on data known ahead of time"
+(which includes most, but not all, macros) and "code dependant on runtime data".
+We aim to explore this topic in further research by applying partial evaluation
+as an optimisation pass in ILD, similar to how this has been done in languages
+like Kraken #cite(<fexpr-pe>).
+#note[
+This paragraph should probably be moved elsewhere
+]
+
 
 ==== Capturing the binding environment <free-vars>
 $interop("apply-sf")_(rho)(ildsf("free-vars"))$ shall return a

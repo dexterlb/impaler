@@ -21,7 +21,7 @@
 
   We demonstrate that the immutability and minimality constraint do not
   compromise expressiveness by showing that ILD's metaprogramming
-  (#paraphrase[facillitated][facilitated] by macro expansion) is powerful enough to implement
+  (facilitated by macro expansion) is powerful enough to implement
   standard LISP language features in ILD itself, without reliance on mutation.
 ]
 

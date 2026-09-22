@@ -76,7 +76,7 @@ with nested #ild("lambda") abstractions.]
 #note[this section is unfinished]
 
 === Let
-A programmer would often like to be able to define some #paraphrase[items][bindings] and
+A programmer would often like to be able to define some bindings and
 use them in other code. As the reader is probably used to from
 #{sym.lambda}-calculus, the most "low-level" way to do that is by using a
 closure:
