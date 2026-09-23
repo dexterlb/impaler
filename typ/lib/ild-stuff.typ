@@ -42,6 +42,12 @@
 
 #let evalsto(from, to) = $#from -> #to$
 #let defas(lhs, rhs) = $#lhs := #rhs$
+
+// An ILD combination `(foo bar baz)`, with its constituents spaced apart so
+// that e.g. `(- x y)` does not read as `(- xy)`.
+#let ildlist-gap = 0.25em
+#let ildlist(..items) = $lr((#items.pos().join(h(ildlist-gap))))$
+#let ildpair(a, d) = $lr((#a #h(ildlist-gap) . #h(ildlist-gap) #d))$
 #let step(prereqs, from, to) = $ #prereqs / #evalsto(from, to) $
 #let steprow(..items) = align(center, grid(
   columns: items.pos().len(), column-gutter: 1em, align: horizon, ..items.pos(),

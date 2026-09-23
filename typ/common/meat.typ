@@ -1,12 +1,12 @@
-#import "/lib/ild-stuff.typ": ildsf
+#import "/lib/ild-stuff.typ": ildsf, ildlist
 
 = Metaprogramming in ILD
 
 == Macro expansion <macroexpand-mechanism>
 The $ildsf("macroexpand")$ special form allows metaprogramming by treating a certain function
-as a _macro_. A regular function evaluation $(f a_1 a_2 ... a_n)$ evaluates f and all
+as a _macro_. A regular function evaluation $ildlist(f, a_1, a_2, ..., a_n)$ evaluates f and all
 arguments and then passes the evaluated arguments to the evaluated f. In contrast,
-$(ildsf("macroexpand") f a_1 a_2 ... a_n)$ evaluates just $f$ and then passes the
+$ildlist(ildsf("macroexpand"), f, a_1, a_2, ..., a_n)$ evaluates just $f$ and then passes the
 *unevaluated* arguments to it. The result is then in turn evaluated. This allows $f$
 to treat the program passed to it as data and to transform it arbitrarily before it
 gets evaluated. This is similar to unhygienic macro systems like the one in LISP.

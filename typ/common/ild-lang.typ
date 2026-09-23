@@ -1,4 +1,4 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, steprow, evalsto
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, steprow, evalsto, ildlist, ildpair
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
 = The language ILD
@@ -6,10 +6,10 @@
 == Programs and values <values>
 
 We define ILD as a homoiconic language where programs and values share the same domain $V$:
-$ V = "Sym" union { () } union { (v_1 . v_2) | v_1, v_2 in V } union "SF" union "Host" union { ildfail(v) | v in V } $
+$ V = "Sym" union { () } union { ildpair(v_1, v_2) | v_1, v_2 in V } union "SF" union "Host" union { ildfail(v) | v in V } $
 Possible values are:
-- Base S-Expression syntax -- symbols ($"Sym"$), pairs and the null list $()$. We will use $(v_1, v_2, ..., v_n)$
-  to denote the list $(v_1 . (v_2 . (... (v_n . ())...)))$, and use $L_V$ for the set of proper lists.
+- Base S-Expression syntax -- symbols ($"Sym"$), pairs and the null list $()$. We will use $ildlist(v_1, v_2, ..., v_n)$
+  to denote the list $ildpair(v_1, ildpair(v_2, (dots.h ildpair(v_n, ()) dots.h)))$, and use $L_V$ for the set of proper lists.
 - Special forms -- $"SF" = { ildsf("free-vars"), ildsf("quote"), ildsf("macroexpand") }$
 - Fail objects -- $ildfail(v) | v in V$ -- signify failure, carry a context value
 - Host values -- $"Host"$ -- opaque to ILD (@embedding)
@@ -110,7 +110,7 @@ The do-notation cases handwave a big-step in each bind, this should probably be 
   form, the special form is applied on the unevaluated tail of the combination.
   Otherwise, the (non-special) head is applied on the arguments after they have been
   evaluated.
-- $(ildsf("macroexpand") f a_1 a_2 ... a_n)$ evaluates just $f$ and then passes the
+- $ildlist(ildsf("macroexpand"), f, a_1, a_2, ..., a_n)$ evaluates just $f$ and then passes the
   *unevaluated* arguments to it. The result is then in turn evaluated. This mechanism
   is discussed in @macroexpand-mechanism.
 - All unlisted cases result in a $ildfailbare$.
