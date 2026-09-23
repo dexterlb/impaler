@@ -22,15 +22,17 @@ and strings.
 - Predicates, $V -> "Bool"$ -- $ildsym("null?")$, $ildsym("pair?")$,
   $ildsym("symbol?")$, $ildsym("string?")$, $ildsym("func?")$,
   $ildsym("fail?")$
-- Equality -- $(ildsym("sym-eq?") s_1 s_2)$, $(ildsym("num-eq?") n_1 n_2)$, $dots$
+- Equality -- $(ildsym("sym-eq?") s_1 s_2)$, $(ildsym("str-eq?") s_1 s_2)$
 - Failure -- #defas($(ildsym("make-fail") v)$, $ildfail(v)$).
 - Branching -- $(ildsym("bool-to-k") b)$ returns a function on two arguments that
   returns its first argument if $b$ is true and the second otherwise.
-- Reflection -- $(ildsym("apply") f (a_1 ... a_n))$ and $(ildsym("eval") e v)$
+
+=== Interpreter #paraphrase[access]
+- $(ildsym("apply") f (a_1 ... a_n))$ and $(ildsym("eval") e v)$
   expose $interop("apply")$ and $interop("eval")$ to programs, with $e$ an
-  environment encoded as in @semantics-notes.
-- Source -- $(ildsym("read-source") p)$ parses and returns the ILD program named
-  with the string $p$.
+  environment encoded as returned by $ildsf("free-vars")$ (@semantics-notes).
+- $(ildsym("read-source") p)$ parses and returns the ILD program named
+  with the string $p$ (in actual implementations $p$ is a file path).
 
 === Abstractions <abstraction>
 For ILD to become Turing-complete, and, equivalently, a superset of the $lambda$-calculus,
