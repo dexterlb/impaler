@@ -15,9 +15,9 @@
 #include "/common/ild-motivation.typ"
 #include "/common/ild-lang.typ"
 #include "/common/host-env.typ"
-#include "/common/meat.typ"
 #include "/common/bootstrapping-basic.typ"
 #include "/texts/module-sys/bootstrapping-module-loader.typ"
+#include "/common/meat.typ"
 
 = Appendix
 

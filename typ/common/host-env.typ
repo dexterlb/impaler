@@ -1,4 +1,4 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, evalsto, defas, ildlist, ildpair
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, evalsto, defas, ildlist, ildpair, ildabstr
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
 == A minimal host environment
@@ -40,20 +40,20 @@ we give it a mechanism for building $lambda$-abstractions.
 
 Let
 
-$ { lambda(eta, P = (alpha_1, alpha_2, ..., alpha_n), B) | eta in "Env", alpha_1 ... alpha_n in "Sym", B in v} subset "Host" $
+$ { ildabstr(eta, P = (alpha_1, alpha_2, ..., alpha_n), B) | eta in "Env", alpha_1 ... alpha_n in "Sym", B in v} subset "Host" $
 
 be the set of abstractions. Each abstraction carries a binding environment ($eta$),
 a list of formal parameters ($P$) and a body ($B$).
 
-An abstraction is applied by substituting the formal parameters by the #paraphrase[concrete][supplied]
+An abstraction is applied by substituting the formal parameters by the #paraphrase[concrete]
 operands in the binding environment, and then evaluating the body in the resulting environment:
 
-$ #evalsto($interop("apply")(lambda(eta, P = (alpha_1, alpha_2, ..., alpha_n), B), a_1, a_2, ..., a_n)$, $interop("eval")_(rho)(B)$) $
+$ #evalsto($interop("apply")(ildabstr(eta, P = (alpha_1, alpha_2, ..., alpha_n), B), a_1, a_2, ..., a_n)$, $interop("eval")_(rho)(B)$) $
 where
 $ rho = eta [ alpha_1 / a_1 ] [ alpha_2 / a_2 ] ... [ alpha_n / a_n ] $
 
 The function $ildsym("mk-lambda")$ shall be provided in order to allow constructing such abstractions:
-$ #defas($ildlist(ildsym("mk-lambda"), e, P, B)$, $lambda(eta, P, B)$) $
+$ #defas($ildlist(ildsym("mk-lambda"), e, P, B)$, $ildabstr(eta, P, B)$) $
 where $eta$ is an environment constructed from the key-value list $e$
 (the opposite operation of the one done in @semantics-notes)#footnote[Instead of encoding/decoding
 environments into key/value lists, we may encode them directly as a host value. High-performance
@@ -97,11 +97,11 @@ Freshness can be guaranteed by e.g. storing the last generated symbol id in a
 State monad wrapper.
 
 === First-class continuations <first-class-continuations>
-To allow ILD programs to implement complex #paraphrase[flow control][control flow], we define
+To allow ILD programs to implement complex control flow, we define
 a host function $ildsym("call/cc")$ that passes the current continuation as a
 first-class value to a given callable #cite(<wadler>, supplement: [Section 3.2]).
 To do this, we first extend $"Host"$ with the set of #paraphrase[first class
-(reified)][reified, first-class] continuations $"Cont"$, such that $ "Cont" = { ildcont(k) | k : (W
+(reified)] continuations $"Cont"$, such that $ "Cont" = { ildcont(k) | k : (W
 -> A) -> A } = { ildcont(k) | k in contmonad(W, A) } $
 
 We can then define the function $ildsym("call/cc")$ such that:
