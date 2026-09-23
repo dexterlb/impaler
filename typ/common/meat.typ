@@ -1,6 +1,6 @@
 #import "/lib/ild-stuff.typ": ildsf, ildlist
 
-= Discussion on metaprogramming
+= Discussion on metaprogramming <discussion>
 
 == Macro expansion <macroexpand-mechanism>
 The $ildsf("macroexpand")$ special form allows metaprogramming by treating a certain function

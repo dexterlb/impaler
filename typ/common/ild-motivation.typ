@@ -7,6 +7,7 @@
 We should focus on the fact that a similar thing has been done before
 (#cite(<fexpr-shutt>)#cite(<fexpr-pe>)), and that the novel thing we're
 trying here is *callsite-annotated macro expansion*.
+Parts of this section should be moved to @discussion.
 ]
 
 We design a programming language that is as minimal as possible
