@@ -6,11 +6,7 @@ Now that we have defined our minimal language with its minimal host environment,
 we can build upon them using metaprogramming and macros to incrementally define
 more complex ergonomic syntax.
 
-== Letrec
-To define #ild("letrec"), which would allow us to ergonomically write recursive functions,
-we must first bootstrap some lower-level primitives.
-
-=== Lambda <lambda-macro>
+== Lambda <lambda-macro>
 First, we define a macro called #ild("lambda") that will let us build abstractions (@abstraction)
 easily:
 ```ild
@@ -50,64 +46,88 @@ value of #ild("lambda")):
   (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")))
 ```
 
-=== Basic utilities
+== Basic utilities
 
 #comment[We do not yet have a mechanism to "define" values other than
 using the trick with #ild("lambda") given above, so everything we define from here to
 after the definition of #ild("let") would have to be exposed to code that uses it
 with nested #ild("lambda") abstractions.]
 
-- #ild("expand-lambda")
-```ild
+- #ild("expand-lambda"):
+  ```ild
   (!lambda (args body) (cons macroexpand (cons lambda (cons args (cons body '())))))
-```
-- #ild("list")
-- #ild("cadr")
-
-#note[this section is unfinished]
-
-=== Y combinator
-
-#note[this section is unfinished]
-
-=== Recursive utilities
-- map
-
-#note[this section is unfinished]
+  ```
+- #ild("list") -- #ild("(!lambda args args)")
+- #ild("cadr") -- #ild("(!lambda (p) (car (cdr p)))")
+- #ild("Y") -- The single-argument Y combinator is a special case of #ild("poly-fix"):
+  ```ild
+  (!lambda (f) (car (poly-fix f)))
+  ```
+- #ild("map"):
+  ```ild
+  (Y (!lambda (map)
+    (!lambda (f l)
+      (!if (null? l)
+        l
+        (!if (pair? l)
+          (cons (f (car l)) (map f (cdr l)))
+          (make-fail (list 'not-a-list l)))))))))
+  ```
 
 === Let
-A programmer would often like to be able to define some bindings and
-use them in other code. As the reader is probably used to from
-#{sym.lambda}-calculus, the most "low-level" way to do that is by using a
-closure:
-
+With the building blocks above, we define #ild("let") as:
+```ild
+(!lambda (letlist body)
+  (cons
+    (expand-lambda (map car letlist) body)
+    (map cadr letlist)))))
+```
+Now we can bind locally-scoped values ergonomically:
+#[
+#align(center, grid(columns: (auto, auto, auto), column-gutter: 0.6em, align: horizon,
 ```ild
 ((!lambda (add1 fourty-two)
     (add1 fourty-two))
 
-    (!lambda (x) (add x 1)) ; definition of add1
-    42)                     ; definition of fourty-two
+    (!lambda (x)
+      (add x 1)) ; definition of add1
+    42)          ; definition of fourty-two
 ; produces 43
-```
-
-To be able to do this more ergonomically, we define a _macro_ called #ild("let"):
-```ild
-; definition of "let"
-(!lambda (letlist body)
-    (cons
-        (expand-lambda (map car letlist) body)
-        (map cadr letlist)))))
-```
-
-We can now rewrite the above example into:
+```,
+$=>$,
 ```ild
 (!let (
-  (add1       (!lambda (x) (add x 1)))
-  (fourty-two  42))
+    (add1 (!lambda (x)
+            (add x 1)))
+    (fourty-two  42))
 
   (add1 fourty-two))
+```,
+))
+]
+
+== Letrec <letrec>
+We define letrec as a macro that builds each binding as a recursive operator
+that in turn takes all bindings as arguments, and passes the list of
+those bindings to #ild("poly-fix"):
+```ild
+(!lambda (defs body)
+  (!let
+    ((args (map car defs))
+      (item-bodies (map cadr defs)))
+    (!let (
+      (arg-bodies (map
+        (!lambda (def-body) (expand-lambda args def-body))
+        item-bodies))
+      (flist (gensym "flist")))
+
+      (!let (
+        (result-body (cons
+          (expand-lambda args body)
+          (generate-element-getters flist args))))
+
+        (list
+          (expand-lambda (list flist) result-body)
+          (cons poly-fix arg-bodies))))))
 ```
-
-=== Letrec <letrec>
-
-#note[this section is unfinished]
+We omit the definition of the #ild("generate-element-getters") helper, which is merely technical.
