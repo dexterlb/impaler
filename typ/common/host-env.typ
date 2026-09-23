@@ -1,9 +1,9 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, evalsto
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, evalsto, defas
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
 == A minimal host environment
 ILD, as defined in @semantics, is useless by itself. We define a host (root)
-environment $rho$. We will write $(ildsym("foo") v_1 v_2 ... v_n) := v$ to
+environment $rho$. We will write #defas($(ildsym("foo") v_1 v_2 ... v_n)$, $v$) to
 denote that $#evalsto($interop("apply")(rho(ildsym("foo")), v_1, v_2, ..., v_n)$, $ret(v)$)$ for a
 $ildsym("foo") in "Sym"$.
 
@@ -17,13 +17,13 @@ and strings.
   $(ildsym("-") x y)$, $(ildsym("/") x y)$.
 - Comparison, $"Num" times "Num" -> "Bool"$ -- $ildsym("=")$, $ildsym("<")$,
   $ildsym(">")$, $ildsym("<=")$, $ildsym(">=")$.
-- Pairs -- $(ildsym("cons") a d) := (a . d)$, $(ildsym("car") (a . d)) := a$,
-  $(ildsym("cdr") (a . d)) := d$.
+- Pairs -- #defas($(ildsym("cons") a d)$, $(a . d)$), #defas($(ildsym("car") (a . d))$, $a$),
+  #defas($(ildsym("cdr") (a . d))$, $d$).
 - Predicates, $V -> "Bool"$ -- $ildsym("null?")$, $ildsym("pair?")$,
   $ildsym("symbol?")$, $ildsym("string?")$, $ildsym("func?")$,
   $ildsym("fail?")$
 - Equality -- $(ildsym("sym-eq?") s_1 s_2)$, $(ildsym("num-eq?") n_1 n_2)$, $dots$
-- Failure -- $(ildsym("make-fail") v) := ildfail(v)$.
+- Failure -- #defas($(ildsym("make-fail") v)$, $ildfail(v)$).
 - Branching -- $(ildsym("bool-to-k") b)$ returns a function on two arguments that
   returns its first argument if $b$ is true and the second otherwise.
 - Reflection -- $(ildsym("apply") f (a_1 ... a_n))$ and $(ildsym("eval") e v)$
@@ -51,7 +51,7 @@ where
 $ rho = eta [ alpha_1 / a_1 ] [ alpha_2 / a_2 ] ... [ alpha_n / a_n ] $
 
 The function $ildsym("mk-lambda")$ shall be provided in order to allow constructing such abstractions:
-$ (ildsym("mk-lambda") e P B) := lambda(eta, P, B) $
+$ #defas($(ildsym("mk-lambda") e P B)$, $lambda(eta, P, B)$) $
 where $eta$ is an environment constructed from the key-value list $e$
 (the opposite operation of the one done in @semantics-notes)#footnote[Instead of encoding/decoding
 environments into key/value lists, we may encode them directly as a host value. High-performance
@@ -69,7 +69,7 @@ mutually-recursive functions.
 #comment[If we don't care about performance and have infinite memory, the host implementation
 of $ildsym("poly-fix")$ is optional, since we can just implement the Y-combinator in ILD itself.#context if query(<poly-fix-Y>).len() > 0 [ For this exercise, see @poly-fix-Y.]]
 
-$ (ildsym("poly-fix") Gamma_1 Gamma_2 ... Gamma_n) := (f_1, f_2, ..., f_n) $
+$ #defas($(ildsym("poly-fix") Gamma_1 Gamma_2 ... Gamma_n)$, $(f_1, f_2, ..., f_n)$) $
 
 where $f_1, ..., f_n$ are such that:
 
@@ -90,7 +90,7 @@ we can incorporate any effects modelled by $M$ into the CPS semantics of ILD
 === Gensym
 Our host environment shall provide a function $ildsym("gensym")$ such that:
 
-$ (ildsym("gensym") s) := <text("a fresh symbol whose prefix is ")s> $
+$ #defas($(ildsym("gensym") s)$, $<text("a fresh symbol whose prefix is ")s>$) $
 
 Freshness can be guaranteed by e.g. storing the last generated symbol id in a
 State monad wrapper.
