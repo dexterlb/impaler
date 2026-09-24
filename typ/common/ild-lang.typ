@@ -6,13 +6,13 @@
 == Programs and values <values>
 
 We define ILD as a homoiconic language where programs and values share the same domain $V$:
-$ V = "Sym" union { () } union { ildpair(v_1, v_2) | v_1, v_2 in V } union "SF" union "Host" union { ildfail(v) | v in V } $
-Possible values are:
-- Base S-Expression syntax -- symbols ($"Sym"$), pairs and the null list $()$. We will use $ildlist(v_1, v_2, ..., v_n)$
-  to denote the list $ildpair(v_1, ildpair(v_2, (dots.h ildpair(v_n, ()) dots.h)))$, and use $L_V$ for the set of proper lists.
-- Special forms -- $"SF" = { ildsf("free-vars"), ildsf("quote"), ildsf("macroexpand") }$
-- Fail objects -- $ildfail(v) | v in V$ -- signify failure, carry a context value
-- Host values -- $"Host"$ -- opaque to ILD (@embedding)
+$ V = "Sym" union "List" union "SF" union "Fail" union "Host" $
+Where:
+- $"Sym"$ is the set of _symbols_ (as in standard S-expressions)
+- $"List" = { () } union { ildpair(v_1, v_2) | v_1, v_2 in V }$ is the set of S-expression _lists_
+- $"SF" = { ildsf("free-vars"), ildsf("quote"), ildsf("macroexpand") }$ is the set of _special forms_
+- $"Fail" = { ildfail(v) | v in V }$ is the set of _failure objects_ (each carries a context value)
+- $"Host"$ is the set of _host values_, which are opaque to ILD (@embedding)
 
 == Syntax
 A subset of ILD values, which we call _programs_, can be represented as text:
