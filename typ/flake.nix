@@ -72,7 +72,7 @@
         in
         let
           pdfs = lib.mapAttrs' (
-            name: main-file: lib.nameValuePair "${name}.pdf" (build-pdf pkgs name main-file)
+            name: main-file: lib.nameValuePair name (build-pdf pkgs name main-file)
           ) texts;
         in
         pdfs
