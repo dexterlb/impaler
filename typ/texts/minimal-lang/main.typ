@@ -25,10 +25,6 @@
   standard LISP language features in ILD itself, without reliance on mutation.
 ]
 
-#include "/common/ild-motivation.typ"
-#include "/common/ild-lang.typ"
-#include "/common/bootstrapping-basic.typ"
-
 = Appendix
 
 #include "/common/poly-fix-y.typ"
