@@ -1,10 +1,10 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, evalsto, defas, ildlist, ildpair, ildabstr, ildsetsym, ildsethost, ildsetnum, ildsetbool, ildsetstr, ildsetenv, ildsetcont
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, evalsto, defas, ildlist, ildpair, ildabstr, ildsetsym, ildsethost, ildsetnum, ildsetbool, ildsetstr, ildsetenv, ildsetcont, interpeval, interpcomb, interpapply
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
 == A minimal host environment
 ILD, as defined in @semantics, is useless by itself. We define a host (root)
 environment $rho$. We will write #defas($ildlist(ildsym("foo"), v_1, v_2, ..., v_n)$, $v$) to
-denote that $#evalsto($interop("apply")(rho(ildsym("foo")), v_1, v_2, ..., v_n)$, $ret(v)$)$ for a
+denote that $#evalsto($interpapply(rho(ildsym("foo")), v_1, v_2, ..., v_n)$, $ret(v)$)$ for a
 $ildsym("foo") in ildsetsym$.
 
 === #paraphrase[Boring] values
@@ -48,7 +48,7 @@ a list of formal parameters ($P$) and a body ($B$).
 An abstraction is applied by substituting the formal parameters by the #paraphrase[concrete]
 operands in the binding environment, and then evaluating the body in the resulting environment:
 
-$ #evalsto($interop("apply")(ildabstr(eta, P = (alpha_1, alpha_2, ..., alpha_n), B), a_1, a_2, ..., a_n)$, $interop("eval")_(rho)(B)$) $
+$ #evalsto($interpapply(ildabstr(eta, P = (alpha_1, alpha_2, ..., alpha_n), B), a_1, a_2, ..., a_n)$, $interpeval(rho, B)$) $
 where
 $ rho = eta [ alpha_1 / a_1 ] [ alpha_2 / a_2 ] ... [ alpha_n / a_n ] $
 
@@ -75,7 +75,7 @@ $ #defas($ildlist(ildsym("poly-fix"), Gamma_1, Gamma_2, ..., Gamma_n)$, $ildlist
 
 where $f_1, ..., f_n$ are such that:
 
-$ #evalsto($interop("apply")(f_i, a_1, ..., a_n)$, $mdo(bind(phi, interop("apply")(Gamma_i, f_1, f_2, ..., f_n)), interop("apply")(phi, a_1, ..., a_n))$) $
+$ #evalsto($interpapply(f_i, a_1, ..., a_n)$, $mdo(bind(phi, interpapply(Gamma_i, f_1, f_2, ..., f_n)), interpapply(phi, a_1, ..., a_n))$) $
 
 #comment[A stronger definition of $f_1, ..., f_n$ would be $f_i = Gamma_i (f_1, f_2, ..., f_n)$,
 but this leads to divergence problems when the language has strict (non-lazy) semantics.
@@ -105,4 +105,4 @@ To do this, we first extend $ildsethost$ with the set of #paraphrase[first class
 -> A) -> A } = { ildcont(k) | k in contmonad(W, A) } $
 
 We can then define the function $ildsym("call/cc")$ such that:
-$ #evalsto($interop("apply")(ildsym("call/cc"), f)$, $lambda k (interop("apply")(f, ildcont(k)) k)$) $
+$ #evalsto($interpapply(ildsym("call/cc"), f)$, $lambda k (interpapply(f, ildcont(k)) k)$) $

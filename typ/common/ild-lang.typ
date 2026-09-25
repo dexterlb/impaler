@@ -1,4 +1,4 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, steprow, evalsto, ildlist, ildpair, ildsetsym, ildsetlist, ildsetsf, ildsetfail, ildsethost, ildsetenv
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, steprow, evalsto, ildlist, ildpair, ildsetsym, ildsetlist, ildsetsf, ildsetfail, ildsethost, ildsetenv, interpeval, interpcomb, interpapply
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref, cong
 
 = The language ILD
@@ -63,7 +63,7 @@ ILD is designed to be embedded into a host environment, which supplies the set
 $ildsethost$ of _host values_: values of the host's data structures, together with
 the functions over them. Host values are opaque to ILD: We define FFI semantics
 for some host values like
-$ #evalsto($interop("apply")(v, a_1, a_2, ..., a_n)$, $omega$) $
+$ #evalsto($interpapply(v, a_1, a_2, ..., a_n)$, $omega$) $
 to denote that _calling_ the host value $v$ with arguments $a_1 ... a_n$ results
 in the computation $omega$.
 
@@ -71,29 +71,29 @@ in the computation $omega$.
 
 Simple cases:
 #steprow(
-  step($s in ildsetsym and rho = ildlist(dots, ildpair(s, v), dots)$, $interop("eval")_(rho)(s)$, $ret(v)$),
-  step($v in ildsetsf union ildsethost union ildsetfail$, $interop("eval")_(rho)(v)$, $ret(v)$),
+  step($s in ildsetsym and rho = ildlist(dots, ildpair(s, v), dots)$, $interpeval(rho, s)$, $ret(v)$),
+  step($v in ildsetsf union ildsethost union ildsetfail$, $interpeval(rho, v)$, $ret(v)$),
 )
 
 
 Evaluating a combination (list): eval the head, decide what to do depending on result:
-#step($$, $interop("eval")_(rho)(ildlist(f, a_1, dots, a_n))$, $mdo(bind(phi, interop("eval")_(rho)(f)), interop("comb")_(rho)(phi, a_1, dots, a_n))$)
+#step($$, $interpeval(rho, ildlist(f, a_1, dots, a_n))$, $mdo(bind(phi, interpeval(rho, f)), interpcomb(rho, phi, a_1, dots, a_n))$)
 
-#step($phi in ildsethost$, $interop("comb")_(rho)(phi, a_1, ..., a_n)$, $mdo(bind(alpha_1, interop("eval")_(rho)(a_1)), ..., bind(alpha_n, interop("eval")_(rho)(a_n)), interop("apply")(phi, alpha_1, ..., alpha_n))$)
+#step($phi in ildsethost$, $interpcomb(rho, phi, a_1, ..., a_n)$, $mdo(bind(alpha_1, interpeval(rho, a_1)), ..., bind(alpha_n, interpeval(rho, a_n)), interpapply(phi, alpha_1, ..., alpha_n))$)
 
 Special forms:
 #steprow(
-  step($phi = ildsf("quote")$, $interop("comb")_(rho)(phi, v)$, $ret(v)$),
-  step($phi = ildsf("free-vars")$, $interop("comb")_(rho)(phi)$, $ret(rho)$),
+  step($phi = ildsf("quote")$, $interpcomb(rho, phi, v)$, $ret(v)$),
+  step($phi = ildsf("free-vars")$, $interpcomb(rho, phi)$, $ret(rho)$),
 )
-#step($phi = ildsf("macroexpand")$, $interop("comb")_(rho)(phi, m, accent(a, arrow))$, $mdo(bind(mu, interop("eval")_(rho)(m)), bind(nu, interop("apply")(mu, accent(a, arrow))), interop("eval")_(rho)(nu))$)
+#step($phi = ildsf("macroexpand")$, $interpcomb(rho, phi, m, accent(a, arrow))$, $mdo(bind(mu, interpeval(rho, m)), bind(nu, interpapply(mu, accent(a, arrow))), interpeval(rho, nu))$)
 
 #note[
 The do-notation cases handwave a big-step in each bind, this should probably be made explicit
 ]
 
 === Notes on selected cases <semantics-notes>
-- $interop("comb")_(rho)(ildsf("free-vars"))$ returns a
+- $interpcomb(rho, ildsf("free-vars"))$ returns a
   list-of-pairs#footnote[For the sake of performance, implementations may use a
   more efficient data structure.] representation of $rho$. This special form
   is used to capture the binding environment by higher-level constructs like

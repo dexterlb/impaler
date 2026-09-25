@@ -40,6 +40,10 @@
 #let ildsetenv = ildset("Env")
 #let ildsetcont = ildset("Cont")
 
+#let interpeval(rho, ..args) = $#interop("eval")_(#rho)lr((#args.pos().join($, $)))$
+#let interpcomb(rho, ..args) = $#interop("comb")_(#rho)lr((#args.pos().join($, $)))$
+#let interpapply(..args) = $#interop("apply")lr((#args.pos().join($, $)))$
+
 #let sem(body) = $lr(⟦ #body ⟧)$
 #let contmonad(..args) = {
   let p = args.pos()
