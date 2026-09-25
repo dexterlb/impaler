@@ -15,8 +15,8 @@ Where:
 - $ildsethost$ is the set of _host values_, which are opaque to ILD (@embedding)
 
 == Syntax
-A subset of ILD values, which we call _programs_, can be represented as text:
-the syntax is based on standard S-expressions#cite(<sexp>) with two extra syntax
+A subset of ILD values can be represented as text. We call such values _programs_.
+The syntax is based on standard S-expressions#cite(<sexp>) with two extra syntax
 sugars:
 - Quote: #ild("'<expr>") $arrow.r.double.bar$ #ild("(quote <expr>)")
 - Macroexpand: #ild("(!<expr1> ... <exprN>)") $arrow.r.double.bar$
@@ -50,9 +50,13 @@ $ m_1 bindop (lambda x_1 (m_2 bindop (lambda x_2 (dots.h m_n bindop (lambda x_n 
 #comment[
 When the answer set is not relevant, we write $contmonad(V)$ instead of $contmonad(A, V)$.]
 
-=== Environments
-An _environment_ is a finite partial map $rho : ildsetsym harpoon.rt V$ that gives semantics
-to symbols. Let $ildsetenv$ be the set of all such environments.
+=== Binding environments
+A _binding environment_ is a key-value list $ildlist(ildpair(a_1, alpha_1), dots, ildpair(a_n, alpha_n)) in ildsetlist$
+where $a_i eq.not a_j "for" i eq.not j$ and ${a_1, dots, a_n} subset ildsetsym$.
+#footnote[
+  Performant implementations will use other representations of environments
+]
+Throughout this paper, we will use $rho$ to denote a binding environment.
 
 === Embedding <embedding>
 ILD is designed to be embedded into a host environment, which supplies the set
@@ -60,48 +64,36 @@ $ildsethost$ of _host values_: values of the host's data structures, together wi
 the functions over them. Host values are opaque to ILD: We define FFI semantics
 for some host values like
 $ #evalsto($interop("apply")(v, a_1, a_2, ..., a_n)$, $omega$) $
-to denote that *calling* the host value $v$ with arguments $a_1 ... a_n$ results
+to denote that _calling_ the host value $v$ with arguments $a_1 ... a_n$ results
 in the computation $omega$.
 
 === Small-step semantics <stepped-semantics>
 
-Environment lookup:
+Simple cases:
 #steprow(
-  step($s in ildsetsym and rho(s) = v$, $interop("lookup")_(rho)(s)$, $v$),
-  step($s in (ildsetsym \\ "dom"rho)$, $interop("lookup")_(rho)(s)$, $ildfail("<err: unbound symbol>")$),
-)
-
-Eval:
-#steprow(
-  step($v in ildsetsym$, $interop("eval")_(rho)(v)$, $ret(interop("lookup")(rho, v))$),
-  step($v = (f, a_1, a_2, ..., a_n)$, $interop("eval")_(rho)(v)$, $interop("eval-combination")_(rho)(f, a_1, a_2, ..., a_n)$),
-)
-#steprow(
-  step($v = () or v "is an improper list"$, $interop("eval")_(rho)(v)$, $ret(ildfail("<err: cannot eval improper list>"))$),
+  step($s in ildsetsym and rho(s) = v$, $interop("eval")_(rho)(s)$, $ret(v)$),
   step($v in ildsetsf union ildsethost union { ildfail(w) | w in V }$, $interop("eval")_(rho)(v)$, $ret(v)$),
 )
 
-Combinations:
-#step($$, $interop("eval-combination")_(rho)(f, accent(a, arrow))$, $mdo(bind(phi, interop("eval")_(rho)(f)), interop("apply-cases")_(rho)(phi, accent(a, arrow)))$)
-#steprow(
-  step($phi in ildsetsf$, $interop("apply-cases")_(rho)(phi, accent(a, arrow))$, $interop("apply-sf")_(rho)(phi, accent(a, arrow))$),
-  step($phi in.not ildsetsf$, $interop("apply-cases")_(rho)(phi, accent(a, arrow))$, $interop("apply-func")_(rho)(phi, accent(a, arrow))$),
-)
-#step($$, $interop("apply-func")_(rho)(phi, a_1, ..., a_n)$, $mdo(bind(alpha_1, interop("eval")_(rho)(a_1)), ..., bind(alpha_n, interop("eval")_(rho)(a_n)), interop("apply")(phi, alpha_1, ..., alpha_n))$)
+
+Evaluating a combination (list): eval the head, decide what to do depending on result:
+#step($$, $interop("eval")_(rho)(ildlist(f, a_1, dots, a_n))$, $mdo(bind(phi, interop("eval")_(rho)(f)), interop("comb")_(rho)(phi, a, a_1, dots, a_n))$)
+
+#step($phi in ildsethost$, $interop("comb")_(rho)(phi, a_1, ..., a_n)$, $mdo(bind(alpha_1, interop("eval")_(rho)(a_1)), ..., bind(alpha_n, interop("eval")_(rho)(a_n)), interop("apply")(phi, alpha_1, ..., alpha_n))$)
 
 Special forms:
 #steprow(
-  step($$, $interop("apply-sf")_(rho)(ildsf("quote"), v)$, $ret(v)$),
-  step($$, $interop("apply-sf")_(rho)(ildsf("free-vars"))$, $rho "as list of pairs"$),
+  step($phi = ildsf("quote")$, $interop("comb")_(rho)(phi, v)$, $ret(v)$),
+  step($phi = ildsf("free-vars")$, $interop("comb")_(rho)(phi)$, $ret(rho)$),
 )
-#step($$, $interop("apply-sf")_(rho)(ildsf("macroexpand"), m, accent(a, arrow))$, $mdo(bind(mu, interop("eval")_(rho)(m)), bind(nu, interop("apply")(mu, accent(a, arrow))), interop("eval")_(rho)(nu))$)
+#step($phi = ildsf("macroexpand")$, $interop("comb")_(rho)(phi, m, accent(a, arrow))$, $mdo(bind(mu, interop("eval")_(rho)(m)), bind(nu, interop("apply")(mu, accent(a, arrow))), interop("eval")_(rho)(nu))$)
 
 #note[
 The do-notation cases handwave a big-step in each bind, this should probably be made explicit
 ]
 
 === Notes on selected cases <semantics-notes>
-- $interop("apply-sf")_(rho)(ildsf("free-vars"))$ returns a
+- $interop("comb")_(rho)(ildsf("free-vars"))$ returns a
   list-of-pairs#footnote[For the sake of performance, implementations may use a
   more efficient data structure.] representation of $rho$. This special form
   is used to capture the binding environment by higher-level constructs like
