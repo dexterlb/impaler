@@ -71,13 +71,13 @@ in the computation $omega$.
 
 Simple cases:
 #steprow(
-  step($s in ildsetsym and rho(s) = v$, $interop("eval")_(rho)(s)$, $ret(v)$),
-  step($v in ildsetsf union ildsethost union { ildfail(w) | w in V }$, $interop("eval")_(rho)(v)$, $ret(v)$),
+  step($s in ildsetsym and rho = ildlist(dots, ildpair(s, v), dots)$, $interop("eval")_(rho)(s)$, $ret(v)$),
+  step($v in ildsetsf union ildsethost union ildsetfail$, $interop("eval")_(rho)(v)$, $ret(v)$),
 )
 
 
 Evaluating a combination (list): eval the head, decide what to do depending on result:
-#step($$, $interop("eval")_(rho)(ildlist(f, a_1, dots, a_n))$, $mdo(bind(phi, interop("eval")_(rho)(f)), interop("comb")_(rho)(phi, a, a_1, dots, a_n))$)
+#step($$, $interop("eval")_(rho)(ildlist(f, a_1, dots, a_n))$, $mdo(bind(phi, interop("eval")_(rho)(f)), interop("comb")_(rho)(phi, a_1, dots, a_n))$)
 
 #step($phi in ildsethost$, $interop("comb")_(rho)(phi, a_1, ..., a_n)$, $mdo(bind(alpha_1, interop("eval")_(rho)(a_1)), ..., bind(alpha_n, interop("eval")_(rho)(a_n)), interop("apply")(phi, alpha_1, ..., alpha_n))$)
 
@@ -100,8 +100,8 @@ The do-notation cases handwave a big-step in each bind, this should probably be 
   the lambda macro (@lambda-macro).
 - The head of a combination is always evaluated. If the result of that is a special
   form, the special form is applied on the unevaluated tail of the combination.
-  Otherwise, the (non-special) head is applied on the arguments after they have been
-  evaluated.
+  If the head is a host value, the operands are evaluated and then the head is applied
+  to the resulting arguments.
 - $ildlist(ildsf("macroexpand"), f, a_1, a_2, ..., a_n)$ evaluates just $f$ and then passes the
   *unevaluated* arguments to it. The result is then in turn evaluated. This mechanism
   is discussed in @macroexpand-mechanism.
