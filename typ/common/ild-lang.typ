@@ -1,15 +1,15 @@
 #import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, steprow, evalsto, ildlist, ildpair, ildsetsym, ildsetlist, ildsetsf, ildsetfail, ildsethost, ildsetenv
-#import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
+#import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref, cong
 
 = The language ILD
 
 == Programs and values <values>
 
 We define ILD as a homoiconic language where programs and values share the same domain $V$:
-$ V = ildsetsym union ildsetlist union ildsetsf union ildsetfail union ildsethost $
+$ V cong ildsetsym union ildsetlist union ildsetsf union ildsetfail union ildsethost $
 Where:
 - $ildsetsym$ is the set of _symbols_ (as in standard S-expressions)
-- $ildsetlist = { () } union { ildpair(v_1, v_2) | v_1, v_2 in V }$ is the set of S-expression _lists_
+- $ildsetlist cong { () } union { ildpair(v_1, v_2) | v_1, v_2 in V }$ is the set of S-expression _lists_
 - $ildsetsf = { ildsf("free-vars"), ildsf("quote"), ildsf("macroexpand") }$ is the set of _special forms_
 - $ildsetfail = { ildfail(v) | v in V }$ is the set of _failure objects_ (each carries a context value)
 - $ildsethost$ is the set of _host values_, which are opaque to ILD (@embedding)
