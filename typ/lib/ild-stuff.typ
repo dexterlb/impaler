@@ -27,6 +27,18 @@
 #let ildfail(body) = $#ildfailbare lr((#body))$
 #let ildcont(body) = $#ildmono("cont")_(#body)$
 
+// The sets that make up the value domain (see @values).
+#let ildsetsym = $"Sym"$
+#let ildsetlist = $"List"$
+#let ildsetsf = $"SF"$
+#let ildsetfail = $"Fail"$
+#let ildsethost = $"Host"$
+#let ildsetnum = $"Num"$
+#let ildsetbool = $"Bool"$
+#let ildsetstr = $"Str"$
+#let ildsetenv = $"Env"$
+#let ildsetcont = $"Cont"$
+
 #let sem(body) = $lr(⟦ #body ⟧)$
 #let contmonad(..args) = {
   let p = args.pos()

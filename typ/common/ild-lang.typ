@@ -1,4 +1,4 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, steprow, evalsto, ildlist, ildpair
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, steprow, evalsto, ildlist, ildpair, ildsetsym, ildsetlist, ildsetsf, ildsetfail, ildsethost, ildsetenv
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
 = The language ILD
@@ -6,13 +6,13 @@
 == Programs and values <values>
 
 We define ILD as a homoiconic language where programs and values share the same domain $V$:
-$ V = "Sym" union "List" union "SF" union "Fail" union "Host" $
+$ V = ildsetsym union ildsetlist union ildsetsf union ildsetfail union ildsethost $
 Where:
-- $"Sym"$ is the set of _symbols_ (as in standard S-expressions)
-- $"List" = { () } union { ildpair(v_1, v_2) | v_1, v_2 in V }$ is the set of S-expression _lists_
-- $"SF" = { ildsf("free-vars"), ildsf("quote"), ildsf("macroexpand") }$ is the set of _special forms_
-- $"Fail" = { ildfail(v) | v in V }$ is the set of _failure objects_ (each carries a context value)
-- $"Host"$ is the set of _host values_, which are opaque to ILD (@embedding)
+- $ildsetsym$ is the set of _symbols_ (as in standard S-expressions)
+- $ildsetlist = { () } union { ildpair(v_1, v_2) | v_1, v_2 in V }$ is the set of S-expression _lists_
+- $ildsetsf = { ildsf("free-vars"), ildsf("quote"), ildsf("macroexpand") }$ is the set of _special forms_
+- $ildsetfail = { ildfail(v) | v in V }$ is the set of _failure objects_ (each carries a context value)
+- $ildsethost$ is the set of _host values_, which are opaque to ILD (@embedding)
 
 == Syntax
 A subset of ILD values, which we call _programs_, can be represented as text:
@@ -51,12 +51,12 @@ $ m_1 bindop (lambda x_1 (m_2 bindop (lambda x_2 (dots.h m_n bindop (lambda x_n 
 When the answer set is not relevant, we write $contmonad(V)$ instead of $contmonad(A, V)$.]
 
 === Environments
-An _environment_ is a finite partial map $rho : "Sym" harpoon.rt V$ that gives semantics
-to symbols. Let $"Env"$ be the set of all such environments.
+An _environment_ is a finite partial map $rho : ildsetsym harpoon.rt V$ that gives semantics
+to symbols. Let $ildsetenv$ be the set of all such environments.
 
 === Embedding <embedding>
 ILD is designed to be embedded into a host environment, which supplies the set
-$"Host"$ of _host values_: values of the host's data structures, together with
+$ildsethost$ of _host values_: values of the host's data structures, together with
 the functions over them. Host values are opaque to ILD: We define FFI semantics
 for some host values like
 $ #evalsto($interop("apply")(v, a_1, a_2, ..., a_n)$, $omega$) $
@@ -67,25 +67,25 @@ in the computation $omega$.
 
 Environment lookup:
 #steprow(
-  step($s in "Sym" and rho(s) = v$, $interop("lookup")_(rho)(s)$, $v$),
-  step($s in ("Sym" \\ "dom"rho)$, $interop("lookup")_(rho)(s)$, $ildfail("<err: unbound symbol>")$),
+  step($s in ildsetsym and rho(s) = v$, $interop("lookup")_(rho)(s)$, $v$),
+  step($s in (ildsetsym \\ "dom"rho)$, $interop("lookup")_(rho)(s)$, $ildfail("<err: unbound symbol>")$),
 )
 
 Eval:
 #steprow(
-  step($v in "Sym"$, $interop("eval")_(rho)(v)$, $ret(interop("lookup")(rho, v))$),
+  step($v in ildsetsym$, $interop("eval")_(rho)(v)$, $ret(interop("lookup")(rho, v))$),
   step($v = (f, a_1, a_2, ..., a_n)$, $interop("eval")_(rho)(v)$, $interop("eval-combination")_(rho)(f, a_1, a_2, ..., a_n)$),
 )
 #steprow(
   step($v = () or v "is an improper list"$, $interop("eval")_(rho)(v)$, $ret(ildfail("<err: cannot eval improper list>"))$),
-  step($v in "SF" union "Host" union { ildfail(w) | w in V }$, $interop("eval")_(rho)(v)$, $ret(v)$),
+  step($v in ildsetsf union ildsethost union { ildfail(w) | w in V }$, $interop("eval")_(rho)(v)$, $ret(v)$),
 )
 
 Combinations:
 #step($$, $interop("eval-combination")_(rho)(f, accent(a, arrow))$, $mdo(bind(phi, interop("eval")_(rho)(f)), interop("apply-cases")_(rho)(phi, accent(a, arrow)))$)
 #steprow(
-  step($phi in "SF"$, $interop("apply-cases")_(rho)(phi, accent(a, arrow))$, $interop("apply-sf")_(rho)(phi, accent(a, arrow))$),
-  step($phi in.not "SF"$, $interop("apply-cases")_(rho)(phi, accent(a, arrow))$, $interop("apply-func")_(rho)(phi, accent(a, arrow))$),
+  step($phi in ildsetsf$, $interop("apply-cases")_(rho)(phi, accent(a, arrow))$, $interop("apply-sf")_(rho)(phi, accent(a, arrow))$),
+  step($phi in.not ildsetsf$, $interop("apply-cases")_(rho)(phi, accent(a, arrow))$, $interop("apply-func")_(rho)(phi, accent(a, arrow))$),
 )
 #step($$, $interop("apply-func")_(rho)(phi, a_1, ..., a_n)$, $mdo(bind(alpha_1, interop("eval")_(rho)(a_1)), ..., bind(alpha_n, interop("eval")_(rho)(a_n)), interop("apply")(phi, alpha_1, ..., alpha_n))$)
 

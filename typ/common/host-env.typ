@@ -1,25 +1,25 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, evalsto, defas, ildlist, ildpair, ildabstr
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, evalsto, defas, ildlist, ildpair, ildabstr, ildsetsym, ildsethost, ildsetnum, ildsetbool, ildsetstr, ildsetenv, ildsetcont
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
 == A minimal host environment
 ILD, as defined in @semantics, is useless by itself. We define a host (root)
 environment $rho$. We will write #defas($ildlist(ildsym("foo"), v_1, v_2, ..., v_n)$, $v$) to
 denote that $#evalsto($interop("apply")(rho(ildsym("foo")), v_1, v_2, ..., v_n)$, $ret(v)$)$ for a
-$ildsym("foo") in "Sym"$.
+$ildsym("foo") in ildsetsym$.
 
 === #paraphrase[Boring] values
-Let $"Num"$, $"Bool"$, $"Str" subset "Host"$ for the host numbers, booleans
+Let $ildsetnum$, $ildsetbool$, $ildsetstr subset ildsethost$ for the host numbers, booleans
 and strings.
 
 - Special forms -- $rho(ildsym("quote")) = ildsf("quote")$, and likewise for
   $ildsf("macroexpand")$ and $ildsf("free-vars")$.
-- Arithmetic on $"Num"$ -- $ildlist(ildsym("+"), x_1, ..., x_n)$, $ildlist(ildsym("*"), x_1, ..., x_n)$,
+- Arithmetic on $ildsetnum$ -- $ildlist(ildsym("+"), x_1, ..., x_n)$, $ildlist(ildsym("*"), x_1, ..., x_n)$,
   $ildlist(ildsym("-"), x, y)$, $ildlist(ildsym("/"), x, y)$.
-- Comparison, $"Num" times "Num" -> "Bool"$ -- $ildsym("=")$, $ildsym("<")$,
+- Comparison, $ildsetnum times ildsetnum -> ildsetbool$ -- $ildsym("=")$, $ildsym("<")$,
   $ildsym(">")$, $ildsym("<=")$, $ildsym(">=")$.
 - Pairs -- #defas($ildlist(ildsym("cons"), a, d)$, $ildpair(a, d)$), #defas($ildlist(ildsym("car"), ildpair(a, d))$, $a$),
   #defas($ildlist(ildsym("cdr"), ildpair(a, d))$, $d$).
-- Predicates, $V -> "Bool"$ -- $ildsym("null?")$, $ildsym("pair?")$,
+- Predicates, $V -> ildsetbool$ -- $ildsym("null?")$, $ildsym("pair?")$,
   $ildsym("symbol?")$, $ildsym("string?")$, $ildsym("func?")$,
   $ildsym("fail?")$
 - Equality -- $ildlist(ildsym("sym-eq?"), s_1, s_2)$, $ildlist(ildsym("str-eq?"), s_1, s_2)$
@@ -40,7 +40,7 @@ we give it a mechanism for building $lambda$-abstractions.
 
 Let
 
-$ { ildabstr(eta, P = (alpha_1, alpha_2, ..., alpha_n), B) | eta in "Env", alpha_1 ... alpha_n in "Sym", B in v} subset "Host" $
+$ { ildabstr(eta, P = (alpha_1, alpha_2, ..., alpha_n), B) | eta in ildsetenv, alpha_1 ... alpha_n in ildsetsym, B in V} subset ildsethost $
 
 be the set of abstractions. Each abstraction carries a binding environment ($eta$),
 a list of formal parameters ($P$) and a body ($B$).
@@ -100,8 +100,8 @@ State monad wrapper.
 To allow ILD programs to implement complex control flow, we define
 a host function $ildsym("call/cc")$ that passes the current continuation as a
 first-class value to a given callable #cite(<wadler>, supplement: [Section 3.2]).
-To do this, we first extend $"Host"$ with the set of #paraphrase[first class
-(reified)] continuations $"Cont"$, such that $ "Cont" = { ildcont(k) | k : (W
+To do this, we first extend $ildsethost$ with the set of #paraphrase[first class
+(reified)] continuations $ildsetcont$, such that $ ildsetcont = { ildcont(k) | k : (W
 -> A) -> A } = { ildcont(k) | k in contmonad(W, A) } $
 
 We can then define the function $ildsym("call/cc")$ such that:
