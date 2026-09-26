@@ -80,9 +80,16 @@
   ]
 }
 
+#let listing-fill = rgb("#fff3dd")
 #let lst(body, label: none, caption: none) = {
+  let boxed = [
+    #show raw.where(block: true): it => block(
+      fill: listing-fill, inset: (x: 10pt, y: 8pt), radius: 4pt, it,
+    )
+    #body
+  ]
   let fig = figure(
-    body,
+    boxed,
     kind: "listing",
     supplement: [Listing],
     numbering: n => context (counter(heading).get() + (n,)).map(str).join("."),
