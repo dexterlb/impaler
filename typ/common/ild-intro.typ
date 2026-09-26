@@ -1,7 +1,7 @@
 #import "/lib/misc.typ": citneeded, clink, paraphrase, note, lst
 #import "/lib/ild-stuff.typ": ildmono
 
-= Motivation <motivation>
+= Introduction <introduction>
 
 #note[
 We should focus on the fact that a similar thing has been done before
@@ -75,6 +75,7 @@ In further research, we aim to also meet the
 as an optimisation step, which is a technique known#cite(<hudak>)#cite(<anydsl>) to give good
 results for reducing the overhead incurred by metaprogramming.
 
+#[
 #set text(size: 0.8em)
 #table(
   columns: 7,
@@ -83,8 +84,33 @@ results for reducing the overhead incurred by metaprogramming.
     [Language], [Immutable], [Continuations], [Special forms], [Macros], [Expansion semantics], [Trigger],
   ),
   [LISP], [no], [yes], [many], [unhygienic], [separate pass], [bind time],
-  [Scheme], [no], [yes], [less], [hygienic], [separate pass], [bind time],
+  [Scheme], [no], [yes], [few], [hygienic], [separate pass], [bind time],
   [LFE], [yes], [no], [many], [limited], [separate pass], [bind time],
-  [Kraken #cite(<fexpr-pe>)], [yes], [no], [few], [fexprs], [runtime], [bind time],
-  [ILD], [yes], [yes], [few], [unhygienic], [runtime], [callsite],
+  [Kraken #cite(<fexpr-pe>)], [yes], [no], [one], [fexprs], [runtime], [bind time],
+  [ILD], [yes], [yes], [three], [unhygienic], [runtime], [callsite],
 )
+]
+
+We #paraphrase[present] a program called a _module loader_ (@module-loader),
+written in ILD and making use of callsite-triggered macros, that is in turn
+able to execute programs that are decomposed into _modules_ such as the
+following example:
+
+#lst(caption: "Example module")[
+```ild
+(module
+  (doc "this module calculates the factorial of 5")
+  (exports main)
+  (imports
+    (builtin (macroexpand <= * + lambda))
+    ("core/prelude.ild" (if))
+    ("core/module-utils.ild" (fn)))
+  (defs
+    (!fn main () (fact 5))
+
+    (!fn fact (x)
+      (!if (<= x 0)
+        1
+        (* x (fact (+ x -1)))))))
+```
+]

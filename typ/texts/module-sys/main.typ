@@ -12,7 +12,7 @@
 
 #title()
 
-#include "/common/ild-motivation.typ"
+#include "/common/ild-intro.typ"
 #include "/common/ild-lang.typ"
 #include "/common/host-env.typ"
 #include "/common/bootstrapping-basic.typ"

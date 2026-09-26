@@ -1,31 +1,9 @@
 #import "/lib/ild-stuff.typ": ild
 #import "/lib/misc.typ": note, lst
 
-= Bootstrapping the module loader
+= Bootstrapping the module loader <module-loader>
 
 #note[this section is unfinished]
-
-== An example program
-#note[this section is unfinished]
-
-#lst(caption: "Example module")[
-```ild
-(module
-  (doc "this module calculates the factorial of 5")
-  (exports main)
-  (imports
-    (builtin (macroexpand <= * + lambda))
-    ("core/prelude.ild" (if))
-    ("core/module-utils.ild" (fn)))
-  (defs
-    (!fn main () (fact 5))
-
-    (!fn fact (x)
-      (!if (<= x 0)
-        1
-        (* x (fact (+ x -1)))))))
-```
-]
 
 == Complex control flow on top of CPS
 
