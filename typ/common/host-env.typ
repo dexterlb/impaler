@@ -1,11 +1,16 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, evalsto, defas, ildlist, ildpair, ildabstr, ildsetsym, ildsethost, ildsetnum, ildsetbool, ildsetstr, ildsetenv, ildsetcont, interpeval, interpcomb, interpapply
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, evalsto, defas, ildlist, ildpair, ildabstr, ildsetsym, ildsethost, ildsetnum, ildsetbool, ildsetstr, ildsetenv, ildsetcont, interpeval, interpcomb, interpapply, ildhost
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
 == A minimal host environment
-ILD, as defined in @semantics, is useless by itself. We define a host (root)
-environment $rho$. We will write #defas($ildlist(ildsym("foo"), v_1, v_2, ..., v_n)$, $v$) to
-denote that $#evalsto($interpapply(rho(ildsym("foo")), v_1, v_2, ..., v_n)$, $ret(v)$)$ for a
-$ildsym("foo") in ildsetsym$.
+The base language, as defined in @semantics, is useless by itself. In this section we constrain
+$ildsethost$ to contain data structures, functions and constants that allow implementing non-trivial
+programs. To make them available to programs, we also define a root binding environment $Rho$
+that is used for the outermost eval.
+
+We will write #defas($ildlist(ildsym("foo"), v_1, v_2, ..., v_n)$, $omega$) to mean that:
+- $ildhost("foo") in ildsethost$
+- $#evalsto($interpapply(ildhost("foo"), v_1, v_2, dots, v_n)$, $omega$)$
+- $Rho = ildlist(dots, ildpair(ildsym("foo"), ildhost("foo")), dots)$
 
 === #paraphrase[Boring] values
 Let $ildsetnum$, $ildsetbool$, $ildsetstr subset ildsethost$ for the host numbers, booleans
@@ -45,8 +50,8 @@ $ { ildabstr(eta, P = (alpha_1, alpha_2, ..., alpha_n), B) | eta in ildsetenv, a
 be the set of abstractions. Each abstraction carries a binding environment ($eta$),
 a list of formal parameters ($P$) and a body ($B$).
 
-An abstraction is applied by substituting the formal parameters by the #paraphrase[concrete]
-operands in the binding environment, and then evaluating the body in the resulting environment:
+An abstraction is applied by substituting the formal parameters by the actual parameters
+in the local binding environment, and then evaluating the body in the resulting environment:
 
 $ #evalsto($interpapply(ildabstr(eta, P = (alpha_1, alpha_2, ..., alpha_n), B), a_1, a_2, ..., a_n)$, $interpeval(rho, B)$) $
 where
@@ -97,12 +102,13 @@ Freshness can be guaranteed by e.g. storing the last generated symbol id in a
 State monad wrapper.
 
 === First-class continuations <first-class-continuations>
+Let
+
+$ { ildcont(k) | k : (W -> A) -> A } = { ildcont(k) | k in contmonad(W, A) } subset ildsethost $
+
+Be the set of first-class (reified) continuations.
 To allow ILD programs to implement complex control flow, we define
 a host function $ildsym("call/cc")$ that passes the current continuation as a
-first-class value to a given callable #cite(<wadler>, supplement: [Section 3.2]).
-To do this, we first extend $ildsethost$ with the set of #paraphrase[first class
-(reified)] continuations $ildsetcont$, such that $ ildsetcont = { ildcont(k) | k : (W
--> A) -> A } = { ildcont(k) | k in contmonad(W, A) } $
+first-class value to a given callable #cite(<wadler>, supplement: [Section 3.2]):
 
-We can then define the function $ildsym("call/cc")$ such that:
-$ #evalsto($interpapply(ildsym("call/cc"), f)$, $lambda k (interpapply(f, ildcont(k)) k)$) $
+$ #evalsto($interpapply(rho(ildsym("call/cc")), f)$, $lambda k (interpapply(f, ildcont(k)) k)$) $

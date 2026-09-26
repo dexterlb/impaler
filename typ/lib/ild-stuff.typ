@@ -25,8 +25,10 @@
 #let ildsym(body) = ildmono(body, color: c-sym)
 #let ildsf(body) = ildmono(body, color: c-sf)
 #let ildfailbare = $#ildmono("Fail", color: c-fail)$
-#let ildfail(body) = $#ildfailbare lr((#body))$
-#let ildcont(body) = $#ildmono("cont")_(#body)$
+#let ildfail(..args) = $#(ildfailbare)lr((#args.pos().join($, $)))$
+#let ildhost(body) = $#ildmono(body, color: c-fail)$
+#let ildcontbare = $#ildmono("Cont", color: c-fail)$
+#let ildcont(..args) = $#(ildcontbare)lr((#args.pos().join($, $)))$
 #let ildset(name) = $#text(name, fill: c-ildset, weight: "bold")$
 
 #let ildsetsym = ildset("Sym")
@@ -63,7 +65,8 @@
 #let ildlist-gap = 0.25em
 #let ildlist(..items) = $lr((#items.pos().join(h(ildlist-gap))))$
 #let ildpair(a, d) = $lr((#a #h(ildlist-gap) . #h(ildlist-gap) #d))$
-#let ildabstr(env, params, body) = $Lambda(#env, #params, #body)$
+#let ildabstrbare = $#ildmono("Λ", color: c-fail)$
+#let ildabstr(..args) = $#(ildabstrbare)lr((#args.pos().join($, $)))$
 #let step(prereqs, from, to) = $ #prereqs / #evalsto(from, to) $
 #let steprow(..items) = align(center, grid(
   columns: items.pos().len(), column-gutter: 1em, align: horizon, ..items.pos(),
