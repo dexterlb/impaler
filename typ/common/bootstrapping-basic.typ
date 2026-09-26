@@ -55,28 +55,30 @@ using the trick with #ild("lambda") given above, so everything we define from he
 after the definition of #ild("let") would have to be exposed to code that uses it
 with nested #ild("lambda") abstractions.
 
-- #ild("expand-lambda"):
-  ```ild
-  (!lambda (args body) (cons macroexpand (cons lambda (cons args (cons body '())))))
-  ```
-- #ild("list") -- #ild("(!lambda args args)")
-- #ild("cadr") -- #ild("(!lambda (p) (car (cdr p)))")
-- #ild("Y") -- The single-argument Y combinator is a special case of #ild("poly-fix"):
-  ```ild
-  (!lambda (f) (car (poly-fix f)))
-  ```
-- #ild("map"):
-  #lst(caption: "Explicitly-recursive definition of map")[
-  ```ild
-  (Y (!lambda (map)
-    (!lambda (f l)
-      (!if (null? l)
-        l
-        (!if (pair? l)
-          (cons (f (car l)) (map f (cdr l)))
-          (make-fail (list 'not-a-list l)))))))))
-  ```
-  ]
+#lst(caption: "Definitions of basic helper primitives")[
+```ild
+; definition of 'list'
+(!lambda args args)
+
+; definition of 'cadr'
+(!lambda (p) (car (cdr p)))
+
+; definition of 'Y' (special case of poly-fix)
+(!lambda (f) (car (poly-fix f)))
+
+; definition of 'map'
+(Y (!lambda (map)
+  (!lambda (f l)
+    (!if (null? l)
+      l
+      (!if (pair? l)
+        (cons (f (car l)) (map f (cdr l)))
+        (make-fail (list 'not-a-list l)))))))))
+
+; definition of 'expand-lambda'
+(!lambda (args body) (cons macroexpand (cons lambda (cons args (cons body '())))))
+```
+]
 
 === Let
 With the building blocks above, we define #ild("let") as:
