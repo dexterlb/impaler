@@ -4,7 +4,7 @@
 == A minimal host environment
 The base language, as defined in @semantics, is useless by itself. In this section we constrain
 $ildsethost$ to contain data structures, functions and constants that allow implementing non-trivial
-programs. To make them available to programs, we also define a root binding environment $Rho$
+programs. To make these values available to programs, we also define a root binding environment $Rho$
 that is used for the outermost eval.
 
 We will write #defas($Rho$, $ildapp("foo", v_1, v_2, ..., v_n)$, $omega$) to mean that:
@@ -42,6 +42,9 @@ $ { ildabstr(eta, P = (alpha_1, alpha_2, ..., alpha_n), B) | eta in ildsetenv, a
 
 be the set of abstractions. Each abstraction carries a binding environment ($eta$),
 a list of formal parameters ($P$) and a body ($B$).
+#footnote[The body being a single expression instead of a list of body
+expressions to be evaluated in order is purely a stylistic choise for the sake
+of simplicity.]
 
 An abstraction is applied by substituting the formal parameters by the actual parameters
 in the local binding environment, and then evaluating the body in the resulting environment:
@@ -50,17 +53,8 @@ $ #defas($rho$, $interpapply(ildabstr(eta, P = (alpha_1, alpha_2, ..., alpha_n),
 where
 $ rho = eta [ alpha_1 / a_1 ] [ alpha_2 / a_2 ] ... [ alpha_n / a_n ] $
 
-The function $ildsym("mk-lambda")$ shall be provided in order to allow constructing such abstractions:
-$ #defas($Rho$, $ildapp("mk-lambda", e, P, B)$, $ret(ildabstr(eta, P, B))$) $
-where $eta$ is an environment constructed from the key-value list $e$
-(the opposite operation of the one done in @semantics-notes)#footnote[Instead of encoding/decoding
-environments into key/value lists, we may encode them directly as a host value. High-performance
-implementations will do that, but for us it is a stylistic choice.]
-
-#comment[Note that $ildsym("mk-lambda")$ accepts a single body expression instead
-of a list of body expressions to be evaluated in order. This is just for the sake
-of simplicity/minimality: sequential execution can easily be implemented in the form
-of a $ildsym("do")$ procedure.]
+To let programs build such abstractions, we provide a data contructor:
+$ #defas($Rho$, $ildapp("mk-lambda", eta, P, B) $, $ret(ildabstr(eta, P, B))$) $
 
 === A recursion operator
 A meta-operator $ildsym("poly-fix")$ shall be provided to allow constructing
