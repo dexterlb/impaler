@@ -27,28 +27,10 @@ for numeric, string and boolean host value types.
 
 == Semantics <semantics>
 
-=== Continuations
-We define the semantics of ILD in terms of a _continuation monad_
-#cite(<wadler>, supplement: [Section 3]), in order to be able to reason about
-first-class continuations (@first-class-continuations) and side effects (@side-effects):
-
-$contmonad(A, W)$ is the set of computations of type $(W -> A) -> A$, where A
-is a set of "answers".
-
-The unit computation is:
-$ ret(x) = lambda c (c x) $
-The bind operation is defined as:
-$ (bindop) : contmonad(A, W) -> (W -> contmonad(A, U)) -> contmonad(A, U) $
-$ (phi bindop f) = lambda c (phi (lambda x (f x c))) $
-
-Throughout this paper we use the standard monadic $ildmono("do")$-notation as
-sugar for $bindop$:
+We define the semantics of ILD in terms of a _continuation monad_ with unit
+$ret : V -> contmonad(A, V)$ and the standard do-notation:
 $ mdo(bind(x_1, m_1), bind(x_2, m_2), ..., bind(x_n, m_n), e) $
-stands for the nested binds:
-$ m_1 bindop (lambda x_1 (m_2 bindop (lambda x_2 (dots.h m_n bindop (lambda x_n (e)) dots.h)))). $
-
-#comment[
-When the answer set is not relevant, we write $contmonad(V)$ instead of $contmonad(A, V)$.]
+For more details, see @continuation-monad.
 
 === Binding environments
 A _binding environment_ is a key-value list $ildlist(ildpair(a_1, alpha_1), dots, ildpair(a_n, alpha_n)) in ildsetlist$
@@ -87,10 +69,6 @@ Special forms:
   step($phi = ildsf("free-vars")$, $interpcomb(rho, phi)$, $ret(rho)$),
 )
 #step($phi = ildsf("macroexpand")$, $interpcomb(rho, phi, m, accent(a, arrow))$, $mdo(bind(mu, interpeval(rho, m)), bind(nu, interpapply(mu, accent(a, arrow))), interpeval(rho, nu))$)
-
-#note[
-The do-notation cases handwave a big-step in each bind, this should probably be made explicit
-]
 
 === Notes on selected cases <semantics-notes>
 - $interpcomb(rho, ildsf("free-vars"))$ returns $rho$. This special form

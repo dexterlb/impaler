@@ -28,5 +28,6 @@
 = Appendix
 
 #include "/common/poly-fix-y.typ"
+#include "/common/continuation-monad.typ"
 
 #bibliography("/common/refs.bib")

@@ -1,4 +1,4 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, evalsto, defas, ildlist, ildapp, ildpair, ildabstr, ildsetsym, ildsethost, ildsetnum, ildsetbool, ildsetstr, ildsetenv, ildsetcont, interpeval, interpcomb, interpapply, ildhost
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, steprow, evalsto, defas, ildlist, ildapp, ildpair, ildabstr, ildsetsym, ildsethost, ildsetnum, ildsetbool, ildsetstr, ildsetenv, ildsetcont, interpeval, interpcomb, interpapply, ildhost
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
 == A minimal host environment
@@ -78,7 +78,12 @@ sides#citneeded. Lazy languages like Haskell and Nix do not have this problem.#c
 Even though formally unnecessary (an ILD interpreter can be implemented in ILD),
 it is #paraphrase[useful] to allow programs to call into the interpreter:
 - $ildapp("apply", f, (a_1 ... a_n))$ and $ildapp("eval", e, v)$
-  expose $interop("apply")$ and $interop("eval")$ to programs.
+  expose $interop("apply")$ and $interop("eval")$ to programs:
+  #steprow(
+    $#evalsto($interpapply(ildhost("apply"), f, ildlist(a_1, dots, a_n))$, $interpapply(f, a_1, ..., a_n)$)$,
+    $#evalsto($interpapply(ildhost("eval"), e, v)$, $interpeval(e, v)$)$,
+  )
+  #v(0.5em)
 - $ildapp("read-source", p)$ returns the ILD program named
   with the string $p$#footnote[in actual implementations $p$ is a file path and
   $ildsym("read-source")$ parses the file and returns the parsed program.]
