@@ -16,7 +16,7 @@
 #let c-interop = rgb("#1a7f37")
 #let c-sym = rgb("#0b6e99")
 #let c-sf = rgb("#8250df")
-#let c-fail = rgb("#cf222e")
+#let c-host = rgb("#cf222e")
 #let c-ildset = rgb("#a94a2b")
 
 #let ildmono(body, color: black) = text(font: mono-font, weight: mono-weight, size: 0.9em, fill: color)[#body]
@@ -24,12 +24,16 @@
 #let interop(body) = ildmono(body, color: c-interop)
 #let ildsym(body) = ildmono(body, color: c-sym)
 #let ildsf(body) = ildmono(body, color: c-sf)
-#let ildfailbare = $#ildmono("Fail", color: c-fail)$
-#let ildfail(..args) = $#(ildfailbare)lr((#args.pos().join($, $)))$
-#let ildhost(body) = $#ildmono(body, color: c-fail)$
-#let ildcontbare = $#ildmono("Cont", color: c-fail)$
-#let ildcont(..args) = $#(ildcontbare)lr((#args.pos().join($, $)))$
 #let ildset(name) = $#text(name, fill: c-ildset, weight: "bold")$
+
+#let ildhost(body) = $#ildmono("#" + body, color: c-host)$
+#let ildangles(..args) = $#text(fill: c-host)[$⟨$]#args.pos().join($, $)#text(fill: c-host)[$⟩$]$
+#let ildabstrbare = $#ildmono("#Λ", color: c-host)$
+#let ildabstr(..args) = $#(ildabstrbare)#ildangles(..args)$
+#let ildfailbare = $#ildmono("#fail", color: c-host)$
+#let ildfail(..args) = $#(ildfailbare)#ildangles(..args)$
+#let ildcontbare = $#ildmono("#cont", color: c-host)$
+#let ildcont(..args) = $#(ildcontbare)#ildangles(..args)$
 
 #let ildsetsym = ildset("Sym")
 #let ildsetlist = ildset("List")
@@ -60,13 +64,12 @@
 #let bindop = box(baseline: 0.1em, image("/lib/bind.svg", height: 0.72em))
 
 #let evalsto(from, to) = $#from -> #to$
-#let defas(lhs, rhs) = $#lhs := #rhs$
+#let defas(env, lhs, rhs) = $#lhs class("relation", attach(limits(#pad(top: -0.45em)[$arrow.r.long.squiggly$]), t: script(#env))) #rhs$
 
 #let ildlist-gap = 0.25em
 #let ildlist(..items) = $lr((#items.pos().join(h(ildlist-gap))))$
+#let ildapp(f, ..args) = ildlist(ildsym(f), ..args)
 #let ildpair(a, d) = $lr((#a #h(ildlist-gap) . #h(ildlist-gap) #d))$
-#let ildabstrbare = $#ildmono("Λ", color: c-fail)$
-#let ildabstr(..args) = $#(ildabstrbare)lr((#args.pos().join($, $)))$
 #let step(prereqs, from, to) = $ #prereqs / #evalsto(from, to) $
 #let steprow(..items) = align(center, grid(
   columns: items.pos().len(), column-gutter: 1em, align: horizon, ..items.pos(),

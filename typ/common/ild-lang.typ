@@ -93,9 +93,7 @@ The do-notation cases handwave a big-step in each bind, this should probably be 
 ]
 
 === Notes on selected cases <semantics-notes>
-- $interpcomb(rho, ildsf("free-vars"))$ returns a
-  list-of-pairs#footnote[For the sake of performance, implementations may use a
-  more efficient data structure.] representation of $rho$. This special form
+- $interpcomb(rho, ildsf("free-vars"))$ returns $rho$. This special form
   is used to capture the binding environment by higher-level constructs like
   the lambda macro (@lambda-macro).
 - The head of a combination is always evaluated. If the result of that is a special
