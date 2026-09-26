@@ -64,11 +64,11 @@
 #let bindop = box(baseline: 0.1em, image("/lib/bind.svg", height: 0.72em))
 
 #let evalsto(from, to) = $#from -> #to$
-#let defas(env, lhs, rhs) = $#lhs class("relation", attach(limits(#pad(top: -0.45em)[$arrow.r.long.squiggly$]), t: script(#env))) #rhs$
 
 #let ildlist-gap = 0.25em
 #let ildlist(..items) = $lr((#items.pos().join(h(ildlist-gap))))$
 #let ildapp(f, ..args) = ildlist(ildsym(f), ..args)
+#let defas(env, rhs, f, ..args) = $#(ildapp(f, ..args)) class("relation", attach(limits(#pad(top: -0.45em)[$arrow.r.long.squiggly$]), t: script(#env))) #rhs$
 #let ildpair(a, d) = $lr((#a #h(ildlist-gap) . #h(ildlist-gap) #d))$
 #let step(prereqs, from, to) = $ #prereqs / #evalsto(from, to) $
 #let steprow(..items) = align(center, grid(

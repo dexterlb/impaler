@@ -7,7 +7,7 @@ $ildsethost$ to contain data structures, functions and constants that allow impl
 programs. To make these values available to programs, we also define a root binding environment $Rho$
 that is used for the outermost eval.
 
-We will write #defas($Rho$, $ildapp("foo", v_1, v_2, ..., v_n)$, $omega$) to mean that:
+We will write $defas(Rho, omega, "foo", v_1, v_2, ..., v_n)$ to mean that:
 - $ildhost("foo") in ildsethost$
 - $#evalsto($interpapply(ildhost("foo"), v_1, v_2, dots, v_n)$, $omega$)$
 - $Rho = ildlist(dots, ildpair(ildsym("foo"), ildhost("foo")), dots)$
@@ -22,20 +22,19 @@ and strings.
   $ildapp("-", x, y)$, $ildapp("/", x, y)$.
 - Comparison, $ildsetnum times ildsetnum -> ildsetbool$ -- $ildsym("=")$, $ildsym("<")$,
   $ildsym(">")$, $ildsym("<=")$, $ildsym(">=")$.
-- Pairs -- #defas($Rho$, $ildapp("cons", a, d)$, $ret(ildpair(a, d))$), #defas($Rho$, $ildapp("car", ildpair(a, d))$, $ret(a)$),
-  #defas($Rho$, $ildapp("cdr", ildpair(a, d))$, $ret(d)$).
+- Pairs -- $defas(Rho, ret(ildpair(a, d)), "cons", a, d)$, $defas(Rho, ret(a), "car", ildpair(a, d))$,
+  $defas(Rho, ret(d), "cdr", ildpair(a, d))$.
 - Predicates, $V -> ildsetbool$ -- $ildsym("null?")$, $ildsym("pair?")$,
   $ildsym("symbol?")$, $ildsym("string?")$, $ildsym("func?")$,
   $ildsym("fail?")$
 - Equality -- $ildapp("sym-eq?", s_1, s_2)$, $ildapp("str-eq?", s_1, s_2)$
-- Failure -- #defas($Rho$, $ildapp("make-fail", v)$, $ret(ildfail(v))$).
+- Failure -- $defas(Rho, ret(ildfail(v)), "make-fail", v)$.
 - Branching -- $ildapp("bool-to-k", b)$ returns a function on two arguments that
   returns its first argument if $b$ is true and the second otherwise.
 
 === Abstractions <abstraction>
 For ILD to become Turing-complete, and, equivalently, a superset of the $lambda$-calculus,
 we give it a mechanism for building $lambda$-abstractions.
-
 Let
 
 $ { ildabstr(eta, P = (alpha_1, alpha_2, ..., alpha_n), B) | eta in ildsetenv, alpha_1 ... alpha_n in ildsetsym, B in V} subset ildsethost $
@@ -49,12 +48,12 @@ of simplicity.]
 An abstraction is applied by substituting the formal parameters by the actual parameters
 in the local binding environment, and then evaluating the body in the resulting environment:
 
-$ #defas($rho$, $interpapply(ildabstr(eta, P = (alpha_1, alpha_2, ..., alpha_n), B), a_1, a_2, ..., a_n)$, $interpeval(rho, B)$) $
+$ #evalsto($interpapply(ildabstr(eta, P = (alpha_1, alpha_2, ..., alpha_n), B), a_1, a_2, ..., a_n)$, $interpeval(rho, B)$) $
 where
 $ rho = eta [ alpha_1 / a_1 ] [ alpha_2 / a_2 ] ... [ alpha_n / a_n ] $
 
 To let programs build such abstractions, we provide a data contructor:
-$ #defas($Rho$, $ildapp("mk-lambda", eta, P, B) $, $ret(ildabstr(eta, P, B))$) $
+$ defas(Rho, ret(ildabstr(eta, P, B)), "mk-lambda", eta, P, B) $
 
 === A recursion operator
 A meta-operator $ildsym("poly-fix")$ shall be provided to allow constructing
@@ -63,7 +62,7 @@ mutually-recursive functions.
 #comment[If we don't care about performance and have infinite memory, the host implementation
 of $ildsym("poly-fix")$ is optional, since we can just implement the Y-combinator in ILD itself.#context if query(<poly-fix-Y>).len() > 0 [ For this exercise, see @poly-fix-Y.]]
 
-$ #defas($Rho$, $ildapp("poly-fix", Gamma_1, Gamma_2, ..., Gamma_n)$, $ret(ildlist(f_1, f_2, ..., f_n))$) $
+$ defas(Rho, ret(ildlist(f_1, f_2, ..., f_n)), "poly-fix", Gamma_1, Gamma_2, ..., Gamma_n) $
 
 where $f_1, ..., f_n$ are such that:
 
@@ -79,10 +78,10 @@ sides#citneeded. Lazy languages like Haskell and Nix do not have this problem.#c
 Even though formally unnecessary (an ILD interpreter can be implemented in ILD),
 it is #paraphrase[useful] to allow programs to call into the interpreter:
 - $ildapp("apply", f, (a_1 ... a_n))$ and $ildapp("eval", e, v)$
-  expose $interop("apply")$ and $interop("eval")$ to programs, with $e$ an
-  environment encoded as returned by $ildsf("free-vars")$ (@semantics-notes).
-- $ildapp("read-source", p)$ parses and returns the ILD program named
-  with the string $p$ (in actual implementations $p$ is a file path).
+  expose $interop("apply")$ and $interop("eval")$ to programs.
+- $ildapp("read-source", p)$ returns the ILD program named
+  with the string $p$#footnote[in actual implementations $p$ is a file path and
+  $ildsym("read-source")$ parses the file and returns the parsed program.]
 
 == Effectful computations <side-effects>
 By choosing the answer set for the continuation monad to be $M(A)$ for another monad $M$,
@@ -92,7 +91,7 @@ we can incorporate any effects modelled by $M$ into the CPS semantics of ILD
 === Gensym
 Our host environment shall provide a function $ildsym("gensym")$ such that:
 
-$ #defas($Rho$, $ildapp("gensym", s)$, $ret(<text("a fresh symbol whose prefix is ")s>)$) $
+$ defas(Rho, ret(<text("a fresh symbol whose prefix is ")s>), "gensym", s) $
 
 Freshness can be guaranteed by e.g. storing the last generated symbol id in a
 State monad wrapper.
@@ -107,4 +106,4 @@ To allow ILD programs to implement complex control flow, we define
 a host function $ildsym("call/cc")$ that passes the current continuation as a
 first-class value to a given callable #cite(<wadler>, supplement: [Section 3.2]):
 
-$ #defas($Rho$, $ildapp("call/cc", f)$, $lambda k (interpapply(f, ildcont(k)) k)$) $
+$ defas(Rho, lambda k (interpapply(f, ildcont(k)) k), "call/cc", f) $
