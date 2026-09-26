@@ -9,6 +9,8 @@ more complex ergonomic syntax.
 == Lambda <lambda-macro>
 First, we define a macro called #ild("lambda") that will let us build abstractions (@abstraction)
 easily:
+#footnote[The #ild("(free-vars)") closure given to the host #ild("mk-lambda") can be replaced
+by a closure that contains only #ild("cons"), #ild("mk-lambda"), #ild("quote") and #ild("free-vars").]
 ```ild
 (mk-lambda
   (free-vars)
@@ -19,9 +21,6 @@ easily:
         (cons (cons quote (cons body '()))           ; quoted body
           '())))))
 ```
-
-#comment[The #ild("(free-vars)") closure given to the host #ild("mk-lambda") can be replaced
-by a closure that contains only #ild("cons"), #ild("mk-lambda"), #ild("quote") and #ild("free-vars").]
 
 Expansions of the #ild("lambda") macro such as
 ```ild
@@ -47,11 +46,10 @@ value of #ild("lambda")):
 ```
 
 == Basic utilities
-
-#comment[We do not yet have a mechanism to "define" values other than
+We do not yet have a mechanism to "define" values other than
 using the trick with #ild("lambda") given above, so everything we define from here to
 after the definition of #ild("let") would have to be exposed to code that uses it
-with nested #ild("lambda") abstractions.]
+with nested #ild("lambda") abstractions.
 
 - #ild("expand-lambda"):
   ```ild
