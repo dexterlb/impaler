@@ -72,6 +72,6 @@
 #let defas(env, rhs, f, ..args) = $#(ildapp(f, ..args)) class("relation", attach(limits(#pad(top: -0.45em)[$arrow.r.long.squiggly$]), t: script(#env))) #rhs$
 #let ildpair(a, d) = $lr((#a #h(ildlist-gap) . #h(ildlist-gap) #d))$
 #let step(prereqs, from, to) = $ #prereqs / #evalsto(from, to) $
-#let steprow(..items) = align(center, grid(
+#let row(..items) = align(center, grid(
   columns: items.pos().len(), column-gutter: 1em, align: horizon, ..items.pos(),
 ))

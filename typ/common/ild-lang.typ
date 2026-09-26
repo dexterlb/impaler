@@ -1,4 +1,4 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, steprow, evalsto, ildlist, ildpair, ildsetsym, ildsetlist, ildsetsf, ildsetfail, ildsethost, ildsetenv, interpeval, interpcomb, interpapply
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, evalsto, ildlist, ildpair, ildsetsym, ildsetlist, ildsetsf, ildsetfail, ildsethost, ildsetenv, interpeval, interpcomb, interpapply
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref, cong
 
 = The language ILD
@@ -52,7 +52,7 @@ in the computation $omega$.
 === Small-step semantics <stepped-semantics>
 
 Simple cases:
-#steprow(
+#row(
   step($s in ildsetsym and rho = ildlist(dots, ildpair(s, v), dots)$, $interpeval(rho, s)$, $ret(v)$),
   step($v in ildsetsf union ildsethost union ildsetfail$, $interpeval(rho, v)$, $ret(v)$),
 )
@@ -64,7 +64,7 @@ Evaluating a combination (list): eval the head, decide what to do depending on r
 #step($phi in ildsethost$, $interpcomb(rho, phi, a_1, ..., a_n)$, $mdo(bind(alpha_1, interpeval(rho, a_1)), ..., bind(alpha_n, interpeval(rho, a_n)), interpapply(phi, alpha_1, ..., alpha_n))$)
 
 Special forms:
-#steprow(
+#row(
   step($phi = ildsf("quote")$, $interpcomb(rho, phi, v)$, $ret(v)$),
   step($phi = ildsf("free-vars")$, $interpcomb(rho, phi)$, $ret(rho)$),
 )

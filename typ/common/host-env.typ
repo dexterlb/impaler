@@ -1,4 +1,4 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, steprow, evalsto, defas, ildlist, ildapp, ildpair, ildabstr, ildsetsym, ildsethost, ildsetnum, ildsetbool, ildsetstr, ildsetenv, ildsetcont, interpeval, interpcomb, interpapply, ildhost
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, evalsto, defas, ildlist, ildapp, ildpair, ildabstr, ildsetsym, ildsethost, ildsetnum, ildsetbool, ildsetstr, ildsetenv, ildsetcont, interpeval, interpcomb, interpapply, ildhost
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
 == A minimal host environment
@@ -8,9 +8,11 @@ programs. To make these values available to programs, we also define a root bind
 that is used for the outermost eval.
 
 We will write $defas(Rho, omega, "foo", v_1, v_2, ..., v_n)$ to mean that:
-- $ildhost("foo") in ildsethost$
-- $#evalsto($interpapply(ildhost("foo"), v_1, v_2, dots, v_n)$, $omega$)$
-- $Rho = ildlist(dots, ildpair(ildsym("foo"), ildhost("foo")), dots)$
+#row(
+  $ildhost("foo") in ildsethost,$,
+  $#evalsto($interpapply(ildhost("foo"), v_1, v_2, dots, v_n)$, $omega$),$,
+  $Rho = ildlist(dots, ildpair(ildsym("foo"), ildhost("foo")), dots)$,
+)
 
 === #paraphrase[Boring] values
 Let $ildsetnum$, $ildsetbool$, $ildsetstr subset ildsethost$ for the host numbers, booleans
@@ -79,7 +81,7 @@ Even though formally unnecessary (an ILD interpreter can be implemented in ILD),
 it is #paraphrase[useful] to allow programs to call into the interpreter:
 - $ildapp("apply", f, (a_1 ... a_n))$ and $ildapp("eval", e, v)$
   expose $interop("apply")$ and $interop("eval")$ to programs:
-  #steprow(
+  #row(
     $#evalsto($interpapply(ildhost("apply"), f, ildlist(a_1, dots, a_n))$, $interpapply(f, a_1, ..., a_n)$)$,
     $#evalsto($interpapply(ildhost("eval"), e, v)$, $interpeval(e, v)$)$,
   )
