@@ -1,4 +1,4 @@
-#import "/lib/misc.typ": citneeded, clink, paraphrase, note
+#import "/lib/misc.typ": citneeded, clink, paraphrase, note, lst
 #import "/lib/ild-stuff.typ": ildmono
 
 = Motivation <motivation>
@@ -33,6 +33,7 @@ implement cyclic data structures like mutually-recursive function definitions
 languages are usually _statements_ like #ildmono("define") that _mutate_ a global
 _environment_.
 
+#lst(caption: "Function definitions in Scheme")[
 ```scheme
 (define (even? x)
     (if (= x 0)
@@ -49,6 +50,7 @@ _environment_.
 ; state after both mutations have taken place
 (display (even? 42))
 ```
+]
 
 Other LISP-like languages, such as LFE, guarantee immutability of all
 data, but handle a lot of the complexity in the interpreter itself: the

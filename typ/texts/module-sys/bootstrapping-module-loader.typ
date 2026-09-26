@@ -1,5 +1,5 @@
 #import "/lib/ild-stuff.typ": ild
-#import "/lib/misc.typ": note
+#import "/lib/misc.typ": note, lst
 
 = Bootstrapping the module loader
 
@@ -8,6 +8,7 @@
 == An example program
 #note[this section is unfinished]
 
+#lst(caption: "Example module")[
 ```ild
 (module
   (doc "this module calculates the factorial of 5")
@@ -24,6 +25,7 @@
         1
         (* x (fact (+ x -1)))))))
 ```
+]
 
 == Complex control flow on top of CPS
 
@@ -31,6 +33,7 @@
 
 The following example illustrates early return from the recursive computation
 enacted by #ild("map"):
+#lst(caption: "Early return from map")[
 ```ild
 (!fn try-map (f l)
   (call/cc (!lambda (return)
@@ -40,6 +43,7 @@ enacted by #ild("map"):
           (return (make-fail (list 'fail-in-element x (f x))))
           (f x))) l)))))
 ```
+]
 If #ild("f") returns failure for an item in the list, the subsequent items will not
 be processed.
 

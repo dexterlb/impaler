@@ -6,6 +6,7 @@
   show raw.where(lang: "ild"): set raw(syntaxes: "/lib/ild.sublime-syntax")
   show heading: it => {
     counter("definition").update(0)
+    counter(figure.where(kind: "listing")).update(0)
     it
   }
   body

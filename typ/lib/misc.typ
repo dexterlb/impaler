@@ -80,6 +80,17 @@
   ]
 }
 
+#let lst(body, label: none, caption: none) = {
+  let fig = figure(
+    body,
+    kind: "listing",
+    supplement: [Listing],
+    numbering: n => context (counter(heading).get() + (n,)).map(str).join("."),
+    caption: caption,
+  )
+  if label == none { fig } else { [#fig#std.label(label)] }
+}
+
 #let cases-gap = 0.7em
 #let cases(gap: cases-gap, ..args) = {
   let add-gap(row) = {
