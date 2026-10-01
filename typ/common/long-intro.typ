@@ -10,7 +10,7 @@ trying here is *callsite-annotated macro expansion*.
 Parts of this section should be moved to @discussion.
 ]
 
-We present a programming language that is as minimal as possible
+We design a programming language that is as minimal as possible
 while being expressive enough for general-purpose use. #paraphrase[We are aiming towards] the
 following properties:
 + Minimality <c-minimality>
@@ -33,7 +33,7 @@ implement cyclic data structures like mutually-recursive function definitions
 languages are usually _statements_ like #ildmono("define") that _mutate_ a global
 _environment_.
 
-#lst(caption: "Function definition in Scheme mutates the global environment")[
+#lst(caption: "Function definitions in Scheme")[
 ```scheme
 (define (even? x)
     (if (= x 0)
@@ -45,6 +45,9 @@ _environment_.
         #t
         (even? (- 1 x))))
 
+; in this example, both functions see each other's definitions because
+; during their runtime they see the toplevel environment in its final
+; state after both mutations have taken place
 (display (even? 42))
 ```
 ]
@@ -67,10 +70,10 @@ which adheres to the #clink(<c-minimality>)[minimality] constraints, and then
 demonstrate expressiveness by implementing increasingly-complex constructs in
 ILD, including a way to define mutually-recursive functions (@letrec).
 
-The techniques appliet in this paper are similar to research regarding
-F-expressions #cite(<fexpr>)#cite(<fexpr-pe>). However, instead of declaring
-whether an object is a function or macro upon construction, ILD differentiates
-between function and macro calls at the callsite (@macroexpand-mechanism).
+In further research, we aim to also meet the
+#clink(<c-performance>)[performance] constraint by employing partial evaluation
+as an optimisation step, which is a technique known#cite(<hudak>)#cite(<anydsl>) to give good
+results for reducing the overhead incurred by metaprogramming.
 
 #[
 #set text(size: 0.8em)
@@ -88,10 +91,10 @@ between function and macro calls at the callsite (@macroexpand-mechanism).
 )
 ]
 
-To demonstrate expressiveness, we #paraphrase[present] a program called a
-_module loader_ (@module-loader), written in ILD and making use of
-callsite-triggered macros, that is in turn able to execute programs that are
-decomposed into _modules_ such as the following example:
+We #paraphrase[present] a program called a _module loader_ (@module-loader),
+written in ILD and making use of callsite-triggered macros, that is in turn
+able to execute programs that are decomposed into _modules_ such as the
+following example:
 
 #lst(caption: "Example module")[
 ```ild
@@ -111,9 +114,3 @@ decomposed into _modules_ such as the following example:
         (* x (fact (+ x -1)))))))
 ```
 ]
-
-In further research, we aim to also meet the
-#clink(<c-performance>)[performance] constraint by employing partial evaluation
-as an optimisation step, which is a technique
-known#cite(<hudak>)#cite(<anydsl>) to give good results for reducing the
-overhead incurred by metaprogramming.

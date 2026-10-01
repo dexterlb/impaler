@@ -12,7 +12,7 @@ Where:
 - $ildsetlist cong { () } union { ildpair(v_1, v_2) | v_1, v_2 in V }$ is the set of S-expression _lists_
 - $ildsetsf = { ildsf("free-vars"), ildsf("quote"), ildsf("macroexpand") }$ is the set of _special forms_
 - $ildsetfail = { ildfail(v) | v in V }$ is the set of _failure objects_ (each carries a context value)
-- $ildsethost$ is the set of _host values_, which are opaque to ILD (@embedding)
+- $ildsethost$ is the set of _host values_, which are opaque to the base language (@embedding)
 
 == Syntax
 A subset of ILD values can be represented as text. We call such values _programs_.
