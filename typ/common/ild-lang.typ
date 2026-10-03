@@ -1,4 +1,4 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, grules, evalsto, ildlist, ildpair, ildabstr, ildsetval, ildsetprog, ildsetsym, ildsetsexp, ildsetlist, ildsetparlist, ildsetsf, ildsetfail, ildsethost, ildsethostfunc, ildsetnum, ildsetbool, ildsetstr, ildsetabstr, ildsetcont, ildsetcv, ildsetcc, ildsetenv, ildhost, interop
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, grules, evalsto, ildlist, ildpair, ildabstr, ildsetval, ildsetprog, ildsetsym, ildsetsexp, ildsetlist, ildsetparlist, ildsetsf, ildsetfail, ildsethost, ildsethostfunc, ildsetnum, ildsetbool, ildsetstr, ildsetabstr, ildsetcont, ildsetcv, ildsetcc, ildsetenv, ildhost, interop, interopword, cpsabstr, cpsapp
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref, cong
 
 = The base language
@@ -11,7 +11,7 @@
   ($ildsetsexp$, $() | ildpair(ildsetval, ildsetval)$, [S-expressions]),
   ($ildsetlist$, $() | ildpair(ildsetval, ildsetlist)$, [S-expression _lists_]),
   ($ildsetparlist$, $() | ildpair(ildsetsym, ildsetparlist)$, [param lists (lists of symbols)]),
-  ($ildsetenv$, $() | ildpair(ildpair(ildsetsym, ildsetval), ildsetenv)$, [binding environments, key-value lists with distinct symbols]),
+  ($ildsetenv$, $() | ildpair(ildpair(ildsetsym, ildsetval), ildsetenv)$, [binding environments#footnote[We assume keys are restricted to be unique (@stepped-semantics). Furthermore, performant implementations will use other representations of binding environments.]]),
   ($ildsetsf$, $ildsf("free-vars") | ildsf("quote") | ildsf("macroexpand")$, [special forms]),
   ($ildsetfail$, $ildfail(ildsetval)$, [failure objects, each carries a context value]),
   ($ildsethostfunc$, $ildhost("+") | ildhost("cons") | ildhost("apply") | ildhost("call/cc") | ...$, [host functions, opaque to the base language (@embedding)]),
@@ -23,30 +23,21 @@
   ($ildsetcont$, ${ ildcont(k) | k in contmonad(W, A) }$, [continuations, @first-class-continuations], $in$),
   ($ildsetprog$, $ildsetsym | () | ildpair(ildsetprog, ildsetprog) | ildsetstr | ildsetnum | ildsetbool$, [surface syntax]),
   ($ildsetcv$, $alpha_1, alpha_2, dots$, [continuation variables]),
-  ($ildsetcc$, ($ildsetval | ildsetcv | (lambda ildsetcv . ildsetcc) | (ildsetcc ildsetcc) |$, $interop("eval", ildsetenv, ildsetcc, dots) | interop("comb", ildsetenv, ildsetcc, dots) |$, $interop("apply", ildsetcc, dots)$), [evaluation CPS calculus]),
+  ($ildsetcc$, ($ildsetval | interop("eval", ildsetenv, ildsetcc, dots) |$, $interop("apply", ildsetcc, dots) | interop("comb", ildsetenv, ildsetcc, dots) |$, $ret(ildsetval) | mdo(ildsetcv <- ildsetcc, dots, ildsetcc) |$, $ildsetcv | cpsapp(ildsetcc, ildsetcc) | cpsabstr(ildsetcv, ildsetcc)$), [evaluation CPS calculus]),
 )
 
-We define ILD as a homoiconic language where parseable programs ($ildsetprog$)
-are a subset of the internal syntax $CC$. In addition, we assume that
-the parser supports the following shorthands:
+We define ILD as a homoiconic language where parseable programs ($ildsetprog$,
+standard S-expressions) are a subset of the internal syntax $ildsetcc$. In
+addition, we assume that the parser supports the following shorthands:
 - Quote: #ild("'<expr>") $arrow.r.double.bar$ #ild("(quote <expr>)")
 - Macroexpand: #ild("(!<expr1> ... <exprN>)") $arrow.r.double.bar$
   #ild("(macroexpand <expr1> ... <exprN>)")
 
 == Semantics <semantics>
-#note[the continuation monad stuff can now become a small-step rule]
-We define the semantics of ILD in terms of a _continuation monad_ with unit
-$ret : ildsetval -> contmonad(A, ildsetval)$ and the standard do-notation:
-$ mdo(bind(x_1, m_1), bind(x_2, m_2), ..., bind(x_n, m_n), e) $
-For more details, see @continuation-monad.
-
-=== Binding environments
-A _binding environment_ is a key-value list $ildlist(ildpair(a_1, alpha_1), dots, ildpair(a_n, alpha_n)) in ildsetlist$
-where $a_i eq.not a_j "for" i eq.not j$ and ${a_1, dots, a_n} subset ildsetsym$.
-#footnote[
-  Performant implementations will use other representations of environments
-]
-Throughout this paper, we will use $rho$ to denote a binding environment.
+We define the semantics of ILD in terms of a CPS calculus based on
+the untyped $lambda$-calculus reduction rules and monadic combinators
+over the set of _computations_ ($ildsetcc$). The computation domain
+is further discussed in @continuation-monad.
 
 === Embedding <embedding>
 #note[this can probably be merged with the intro at host-env]
@@ -78,6 +69,13 @@ Special forms:
   evalsto($interop("comb", rho, ildsf("free-vars"))$, $ret(rho)$),
 )
 #row(evalsto($interop("comb", rho, ildsf("macroexpand"), m, accent(a, arrow))$, $mdo(bind(mu, interop("eval", rho, m)), bind(nu, interop("apply", mu, accent(a, arrow))), interop("eval", rho, nu))$))
+
+Monadic CPS calculus:
+#row(evalsto($mdo(bind(alpha_1, omega_1), dots, bind(alpha_n, omega_n), omega)$, $omega_1 bindop cpsabstr(alpha_1, dots.h omega_n bindop cpsabstr(alpha_n, omega) dots.h)$))
+#row(
+  evalsto($phi bindop f$, $cpsabstr(c, cpsapp(phi, cpsabstr(x, cpsapp(f, x, c))))$),
+  evalsto($ret(v)$, $cpsabstr(c, cpsapp(c, v))$),
+)
 
 === Notes on selected cases <semantics-notes>
 - $interop("comb", rho, ildsf("free-vars"))$ returns $rho$. This special form

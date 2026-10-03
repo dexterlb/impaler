@@ -23,6 +23,7 @@
 #let ildmono(body, color: black) = text(font: mono-font, weight: mono-weight, size: 0.9em, fill: color)[#body]
 
 #let ildsym(body) = ildmono(body, color: c-sym)
+#let interopword(body) = ildmono(body, color: c-interop)
 #let ildsf(body) = ildmono(body, color: c-sf)
 #let ildset(name) = $#text(name, fill: c-ildset, weight: "bold")$
 
@@ -60,11 +61,9 @@
   let p = args.pos()
   if p.len() == 1 { $K lr((#p.at(0)))$ } else { $K_(#p.at(0)) lr((#p.at(1)))$ }
 }
-#let retbare = ildmono("ret")
-#let ret(body) = $retbare lr((#body))$
+#let retbare = interopword("ret")
 
 #let bind(v, m) = $#v <- #m$
-#let mdo(..steps) = $#ildmono("do")lr({ #steps.pos().join($ ; $) })$
 
 #let bindop = box(baseline: 0.1em, image("/lib/bind.svg", height: 0.72em))
 
@@ -72,7 +71,11 @@
 
 #let ildlist-gap = 0.25em
 #let ildlist(..items) = $lr((#items.pos().join(h(ildlist-gap))))$
-#let interop(kind, ..args) = $[ #ildmono(kind, color: c-interop) #args.pos().join(h(ildlist-gap)) ]$
+#let interop(kind, sep: none, ..args) = $[ #ildmono(kind, color: c-interop) #args.pos().join(if sep == none { h(ildlist-gap) } else { sep }) ]$
+#let cpsabstr(cv, cc) = $lr((lambda #cv #h(ildlist-gap) . #h(ildlist-gap) #cc))$
+#let cpsapp(..cc) = $lr((#cc.pos().join(h(ildlist-gap))))$
+#let mdo(..steps) = interop("do", sep: $ ; $, ..steps)
+#let ret(..body) = interop("ret", ..body)
 #let ildapp(f, ..args) = ildlist(ildsym(f), ..args)
 #let defas(env, rhs, f, ..args) = $#(ildapp(f, ..args)) class("relation", attach(limits(#pad(top: -0.45em)[$arrow.r.long.squiggly$]), t: script(#env))) #rhs$
 #let grule(name, def, comment) = block($#name := #def #h(1em) (#comment)$)
@@ -85,7 +88,7 @@
       cells.push(if i == 0 { r.at(0) } else { [] })
       cells.push(if i == 0 { if r.len() > 3 { r.at(3) } else { $:=$ } } else { [] })
       cells.push(line)
-      cells.push(if i == 0 and r.len() > 2 { $(#r.at(2))$ } else { [] })
+      cells.push(if i == 0 and r.len() > 2 { [(#r.at(2))] } else { [] })
     }
   }
   block(grid(
