@@ -88,13 +88,17 @@
       cells.push(if i == 0 { r.at(0) } else { [] })
       cells.push(if i == 0 { if r.len() > 3 { r.at(3) } else { $:=$ } } else { [] })
       cells.push(line)
-      cells.push(if i == 0 and r.len() > 2 { [(#r.at(2))] } else { [] })
+      if i == 0 {
+        cells.push(table.cell(rowspan: lines.len(), if r.len() > 2 { [(#r.at(2))] } else { [] }))
+      }
     }
   }
-  block(grid(
+  block(table(
     columns: (auto, auto, auto, auto),
     column-gutter: 0.7em,
     row-gutter: 0.5em,
+    stroke: none,
+    inset: 0pt,
     align: (right + top, center + top, left + top, left + top),
     ..cells,
   ))
