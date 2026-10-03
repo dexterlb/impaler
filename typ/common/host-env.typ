@@ -1,4 +1,4 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, evalsto, defas, ildlist, ildapp, ildpair, ildabstr, ildsetsym, ildsethost, ildsetnum, ildsetbool, ildsetstr, ildsetenv, ildsetcont, interpeval, interpcomb, interpapply, ildhost
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, evalsto, defas, ildlist, ildapp, ildpair, ildabstr, ildsetsym, ildsethost, ildsetval, ildsetnum, ildsetbool, ildsetstr, ildsetenv, ildsetcont, interpeval, interpcomb, interpapply, ildhost
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
 == A minimal host environment
@@ -26,7 +26,7 @@ and strings.
   $ildsym(">")$, $ildsym("<=")$, $ildsym(">=")$.
 - Pairs -- $defas(Rho, ret(ildpair(a, d)), "cons", a, d)$, $defas(Rho, ret(a), "car", ildpair(a, d))$,
   $defas(Rho, ret(d), "cdr", ildpair(a, d))$.
-- Predicates, $V -> ildsetbool$ -- $ildsym("null?")$, $ildsym("pair?")$,
+- Predicates, $ildsetval -> ildsetbool$ -- $ildsym("null?")$, $ildsym("pair?")$,
   $ildsym("symbol?")$, $ildsym("string?")$, $ildsym("func?")$,
   $ildsym("fail?")$
 - Equality -- $ildapp("sym-eq?", s_1, s_2)$, $ildapp("str-eq?", s_1, s_2)$
@@ -39,7 +39,7 @@ For ILD to become Turing-complete, and, equivalently, a superset of the $lambda$
 we give it a mechanism for building $lambda$-abstractions.
 Let
 
-$ { ildabstr(eta, P = (alpha_1, alpha_2, ..., alpha_n), B) | eta in ildsetenv, alpha_1 ... alpha_n in ildsetsym, B in V} subset ildsethost $
+$ { ildabstr(eta, P = (alpha_1, alpha_2, ..., alpha_n), B) | eta in ildsetenv, alpha_1 ... alpha_n in ildsetsym, B in ildsetval} subset ildsethost $
 
 be the set of abstractions. Each abstraction carries a binding environment ($eta$),
 a list of formal parameters ($P$) and a body ($B$).

@@ -1,4 +1,4 @@
-#import "/lib/ild-stuff.typ": ildmono, contmonad, ret, bind, bindop, mdo
+#import "/lib/ild-stuff.typ": ildmono, contmonad, ret, bind, bindop, mdo, ildsetval
 #import "/lib/misc.typ": note, optref
 
 == Continuations <continuation-monad>
@@ -20,7 +20,7 @@ $ mdo(bind(x_1, m_1), bind(x_2, m_2), ..., bind(x_n, m_n), e) $
 stands for the nested binds:
 $ m_1 bindop (lambda x_1 (m_2 bindop (lambda x_2 (dots.h m_n bindop (lambda x_n (e)) dots.h)))). $
 
-When the answer set is not relevant, we write $contmonad(V)$ instead of $contmonad(A, V)$.
+When the answer set is not relevant, we write $contmonad(ildsetval)$ instead of $contmonad(A, ildsetval)$.
 
 #note[
 The do-notation cases handwave a big-step in each bind, this should probably be explained

@@ -1,34 +1,43 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, evalsto, ildlist, ildpair, ildsetsym, ildsetlist, ildsetsf, ildsetfail, ildsethost, ildsetenv, interpeval, interpcomb, interpapply
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, grules, evalsto, ildlist, ildpair, ildabstr, ildsetval, ildsetprog, ildsetsym, ildsetsexp, ildsetlist, ildsetparlist, ildsetsf, ildsetfail, ildsethost, ildsethostfunc, ildsetnum, ildsetbool, ildsetstr, ildsetabstr, ildsetcont, ildsetcv, ildsetcc, ildsetet, ildsetenv, ildhost, eteval, etcomb, etapply, interpeval, interpcomb, interpapply
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref, cong
 
-= The language ILD
+= The base language
 
-== Programs and values <values>
+== Syntax <syntax>
 
-We define ILD as a homoiconic language where programs and values share the same domain $V$:
-$ V cong ildsetsym union ildsetlist union ildsetsf union ildsetfail union ildsethost $
-Where:
-- $ildsetsym$ is the set of _symbols_ (as in standard S-expressions)
-- $ildsetlist cong { () } union { ildpair(v_1, v_2) | v_1, v_2 in V }$ is the set of S-expression _lists_
-- $ildsetsf = { ildsf("free-vars"), ildsf("quote"), ildsf("macroexpand") }$ is the set of _special forms_
-- $ildsetfail = { ildfail(v) | v in V }$ is the set of _failure objects_ (each carries a context value)
-- $ildsethost$ is the set of _host values_, which are opaque to the base language (@embedding)
+#grules(
+  ($ildsetval$, $ildsetsym | ildsetsexp | ildsetsf | ildsetfail | ildsethost$, [values and programs]),
+  ($ildsetsym$, [_symbols_]),
+  ($ildsetsexp$, $() | ildpair(ildsetval, ildsetval)$, [S-expressions]),
+  ($ildsetlist$, $() | ildpair(ildsetval, ildsetlist)$, [S-expression _lists_]),
+  ($ildsetparlist$, $() | ildpair(ildsetsym, ildsetparlist)$, [param lists (lists of symbols)]),
+  ($ildsetenv$, $() | ildpair(ildpair(ildsetsym, ildsetval), ildsetenv)$, [binding environments, key-value lists with distinct symbols]),
+  ($ildsetsf$, $ildsf("free-vars") | ildsf("quote") | ildsf("macroexpand")$, [special forms]),
+  ($ildsetfail$, $ildfail(ildsetval)$, [failure objects, each carries a context value]),
+  ($ildsethostfunc$, $ildhost("+") | ildhost("cons") | ildhost("apply") | ildhost("call/cc") | ...$, [host functions, opaque to the base language (@embedding)]),
+  ($ildsethost$, ($ildsetnum | ildsetbool | ildsetstr | ildsetabstr | ildsetcont |$, $ildsethostfunc | ...$), [host values, opaque to the base language (@embedding)]),
+  ($ildsetnum$, [_numbers_]),
+  ($ildsetbool$, $ildhost("t") | ildhost("f")$),
+  ($ildsetstr$, [_strings_]),
+  ($ildsetabstr$, $ildabstr(ildsetenv, ildsetparlist, ildsetval)$, [abstractions, @abstraction]),
+  ($ildsetcont$, ${ ildcont(k) | k in contmonad(W, A) }$, [continuations, @first-class-continuations], $in$),
+  ($ildsetprog$, $ildsetsym | () | ildpair(ildsetprog, ildsetprog) | ildsetstr | ildsetnum | ildsetbool$, [surface syntax]),
+  ($ildsetcv$, $alpha_1, alpha_2, dots$, [continuation variables]),
+  ($ildsetcc$, $ildsetval | ildsetcv | (lambda ildsetcv . ildsetcc) | (ildsetcc ildsetcc)$, [CPS calculus]),
+  ($ildsetet$, ($eteval(ildsetenv, ildsetcc, dots) | etcomb(ildsetenv, ildsetcc, dots) |$, $etapply(ildsetcc, dots)$), [evaluation terms]),
+)
 
-== Syntax
-A subset of ILD values can be represented as text. We call such values _programs_.
-The syntax is based on standard S-expressions#cite(<sexp>) with two extra syntax
-sugars:
+We define ILD as a homoiconic language where parseable programs ($ildsetprog$)
+are a subset of the internal syntax $ildsetval$. In addition, we assume that
+the parser supports the following shorthands:
 - Quote: #ild("'<expr>") $arrow.r.double.bar$ #ild("(quote <expr>)")
 - Macroexpand: #ild("(!<expr1> ... <exprN>)") $arrow.r.double.bar$
   #ild("(macroexpand <expr1> ... <exprN>)")
 
-In addition, although formally unnecessary, the parser is assumed to allow syntax
-for numeric, string and boolean host value types.
-
 == Semantics <semantics>
 
 We define the semantics of ILD in terms of a _continuation monad_ with unit
-$ret : V -> contmonad(A, V)$ and the standard do-notation:
+$ret : ildsetval -> contmonad(A, ildsetval)$ and the standard do-notation:
 $ mdo(bind(x_1, m_1), bind(x_2, m_2), ..., bind(x_n, m_n), e) $
 For more details, see @continuation-monad.
 

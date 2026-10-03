@@ -37,15 +37,29 @@
 #let ildcont(..args) = $#(ildcontbare)#ildangles(..args)$
 
 #let ildsetsym = ildset("Sym")
+#let ildsetval = ildset("Val")
+#let ildsetprog = ildset("Prog")
+#let ildsetsexp = ildset("Sexp")
 #let ildsetlist = ildset("List")
+#let ildsetparlist = ildset("ParList")
 #let ildsetsf = ildset("SF")
 #let ildsetfail = ildset("Fail")
 #let ildsethost = ildset("Host")
+#let ildsethostfunc = ildset("HostFunc")
 #let ildsetnum = ildset("Num")
 #let ildsetbool = ildset("Bool")
 #let ildsetstr = ildset("Str")
 #let ildsetenv = ildset("Env")
+#let ildsetabstr = ildset("Abstr")
 #let ildsetcont = ildset("Cont")
+#let ildsetcomp = ildset("Comp")
+#let ildsetcv = ildset("CV")
+#let ildsetcc = ildset("CC")
+#let ildsetet = ildset("ET")
+
+#let eteval(env, ..cc) = $[ #ildmono("eval") #env #cc.pos().join(h(0.4em)) ]$
+#let etcomb(env, ..cc) = $[ #ildmono("comb") #env #cc.pos().join(h(0.4em)) ]$
+#let etapply(..cc) = $[ #ildmono("apply") #cc.pos().join(h(0.4em)) ]$
 
 #let interpeval(rho, ..args) = $#interop("eval")_(#rho)lr((#args.pos().join($, $)))$
 #let interpcomb(rho, ..args) = $#interop("comb")_(#rho)lr((#args.pos().join($, $)))$
@@ -70,6 +84,28 @@
 #let ildlist(..items) = $lr((#items.pos().join(h(ildlist-gap))))$
 #let ildapp(f, ..args) = ildlist(ildsym(f), ..args)
 #let defas(env, rhs, f, ..args) = $#(ildapp(f, ..args)) class("relation", attach(limits(#pad(top: -0.45em)[$arrow.r.long.squiggly$]), t: script(#env))) #rhs$
+#let grule(name, def, comment) = block($#name := #def #h(1em) (#comment)$)
+
+#let grules(..rules) = {
+  let cells = ()
+  for r in rules.pos() {
+    let lines = if type(r.at(1)) == array { r.at(1) } else { (r.at(1),) }
+    for (i, line) in lines.enumerate() {
+      cells.push(if i == 0 { r.at(0) } else { [] })
+      cells.push(if i == 0 { if r.len() > 3 { r.at(3) } else { $:=$ } } else { [] })
+      cells.push(line)
+      cells.push(if i == 0 and r.len() > 2 { $(#r.at(2))$ } else { [] })
+    }
+  }
+  block(grid(
+    columns: (auto, auto, auto, auto),
+    column-gutter: 0.7em,
+    row-gutter: 0.5em,
+    align: (right + top, center + top, left + top, left + top),
+    ..cells,
+  ))
+}
+
 #let ildpair(a, d) = $lr((#a #h(ildlist-gap) . #h(ildlist-gap) #d))$
 #let step(prereqs, from, to) = $ #prereqs / #evalsto(from, to) $
 #let row(..items) = align(center, grid(
