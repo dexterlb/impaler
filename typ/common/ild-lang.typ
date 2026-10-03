@@ -1,4 +1,4 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, grules, evalsto, ildlist, ildpair, ildabstr, ildsetval, ildsetprog, ildsetsym, ildsetsexp, ildsetlist, ildsetparlist, ildsetsf, ildsetfail, ildsethost, ildsethostfunc, ildsetnum, ildsetbool, ildsetstr, ildsetabstr, ildsetcont, ildsetcv, ildsetcc, ildsetet, ildsetenv, ildhost, eteval, etcomb, etapply, interpeval, interpcomb, interpapply
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, grules, evalsto, ildlist, ildpair, ildabstr, ildsetval, ildsetprog, ildsetsym, ildsetsexp, ildsetlist, ildsetparlist, ildsetsf, ildsetfail, ildsethost, ildsethostfunc, ildsetnum, ildsetbool, ildsetstr, ildsetabstr, ildsetcont, ildsetcv, ildsetcc, ildsetenv, ildhost, interop
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref, cong
 
 = The base language
@@ -23,7 +23,7 @@
   ($ildsetcont$, ${ ildcont(k) | k in contmonad(W, A) }$, [continuations, @first-class-continuations], $in$),
   ($ildsetprog$, $ildsetsym | () | ildpair(ildsetprog, ildsetprog) | ildsetstr | ildsetnum | ildsetbool$, [surface syntax]),
   ($ildsetcv$, $alpha_1, alpha_2, dots$, [continuation variables]),
-  ($ildsetcc$, ($ildsetval | ildsetcv | (lambda ildsetcv . ildsetcc) | (ildsetcc ildsetcc) |$, $eteval(ildsetenv, ildsetcc, dots) | etcomb(ildsetenv, ildsetcc, dots) |$, $etapply(ildsetcc, dots)$), [evaluation CPS calculus]),
+  ($ildsetcc$, ($ildsetval | ildsetcv | (lambda ildsetcv . ildsetcc) | (ildsetcc ildsetcc) |$, $interop("eval", ildsetenv, ildsetcc, dots) | interop("comb", ildsetenv, ildsetcc, dots) |$, $interop("apply", ildsetcc, dots)$), [evaluation CPS calculus]),
 )
 
 We define ILD as a homoiconic language where parseable programs ($ildsetprog$)
@@ -54,7 +54,7 @@ ILD is designed to be embedded into a host environment, which supplies the set
 $ildsethost$ of _host values_: values of the host's data structures, together with
 the functions over them. Host values are opaque to ILD: We define FFI semantics
 for some host values like
-$ #evalsto($interpapply(v, a_1, a_2, ..., a_n)$, $omega$) $
+$ #evalsto($interop("apply", v, a_1, a_2, ..., a_n)$, $omega$) $
 to denote that _calling_ the host value $v$ with arguments $a_1 ... a_n$ results
 in the computation $omega$.
 
@@ -62,30 +62,30 @@ in the computation $omega$.
 
 Simple cases:
 #row(
-  step($s in ildsetsym and rho = ildlist(dots, ildpair(s, v), dots)$, $interpeval(rho, s)$, $ret(v)$),
-  step($v in ildsetsf union ildsethost union ildsetfail$, $interpeval(rho, v)$, $ret(v)$),
+  step($s in ildsetsym and rho = ildlist(dots, ildpair(s, v), dots)$, $interop("eval", rho, s)$, $ret(v)$),
+  step($v in ildsetsf union ildsethost union ildsetfail$, $interop("eval", rho, v)$, $ret(v)$),
 )
 
 
 Evaluating a combination (list): eval the head, decide what to do depending on result:
-#step($$, $interpeval(rho, ildlist(f, a_1, dots, a_n))$, $mdo(bind(phi, interpeval(rho, f)), interpcomb(rho, phi, a_1, dots, a_n))$)
+#row(evalsto($interop("eval", rho, ildlist(f, a_1, dots, a_n))$, $mdo(bind(phi, interop("eval", rho, f)), interop("comb", rho, phi, a_1, dots, a_n))$))
 
-#step($phi in ildsethost$, $interpcomb(rho, phi, a_1, ..., a_n)$, $mdo(bind(alpha_1, interpeval(rho, a_1)), ..., bind(alpha_n, interpeval(rho, a_n)), interpapply(phi, alpha_1, ..., alpha_n))$)
+#step($phi in ildsethostfunc$, $interop("comb", rho, phi, a_1, ..., a_n)$, $mdo(bind(alpha_1, interop("eval", rho, a_1)), ..., bind(alpha_n, interop("eval", rho, a_n)), interop("apply", phi, alpha_1, ..., alpha_n))$)
 
 Special forms:
 #row(
-  step($phi = ildsf("quote")$, $interpcomb(rho, phi, v)$, $ret(v)$),
-  step($phi = ildsf("free-vars")$, $interpcomb(rho, phi)$, $ret(rho)$),
+  evalsto($interop("comb", rho, ildsf("quote"), v)$, $ret(v)$),
+  evalsto($interop("comb", rho, ildsf("free-vars"))$, $ret(rho)$),
 )
-#step($phi = ildsf("macroexpand")$, $interpcomb(rho, phi, m, accent(a, arrow))$, $mdo(bind(mu, interpeval(rho, m)), bind(nu, interpapply(mu, accent(a, arrow))), interpeval(rho, nu))$)
+#row(evalsto($interop("comb", rho, ildsf("macroexpand"), m, accent(a, arrow))$, $mdo(bind(mu, interop("eval", rho, m)), bind(nu, interop("apply", mu, accent(a, arrow))), interop("eval", rho, nu))$))
 
 === Notes on selected cases <semantics-notes>
-- $interpcomb(rho, ildsf("free-vars"))$ returns $rho$. This special form
+- $interop("comb", rho, ildsf("free-vars"))$ returns $rho$. This special form
   is used to capture the binding environment by higher-level constructs like
   the lambda macro (@lambda-macro).
 - The head of a combination is always evaluated. If the result of that is a special
   form, the special form is applied on the unevaluated tail of the combination.
-  If the head is a host value, the operands are evaluated and then the head is applied
+  If the head is a host function, the operands are evaluated and then the head is applied
   to the resulting arguments.
 - $ildlist(ildsf("macroexpand"), f, a_1, a_2, ..., a_n)$ evaluates just $f$ and then passes the
   *unevaluated* arguments to it. The result is then in turn evaluated. This mechanism

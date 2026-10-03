@@ -1,4 +1,4 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, interop, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, evalsto, defas, ildlist, ildapp, ildpair, ildabstr, ildsetsym, ildsethost, ildsetval, ildsetnum, ildsetbool, ildsetstr, ildsetenv, ildsetcont, interpeval, interpcomb, interpapply, ildhost
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, evalsto, defas, ildlist, ildapp, ildpair, ildabstr, ildsetsym, ildsethost, ildsetval, ildsetnum, ildsetbool, ildsetstr, ildsetenv, ildsetcont, interop, ildhost
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
 == A minimal host environment
@@ -10,7 +10,7 @@ that is used for the outermost eval.
 We will write $defas(Rho, omega, "foo", v_1, v_2, ..., v_n)$ to mean that:
 #row(
   $ildhost("foo") in ildsethost,$,
-  $#evalsto($interpapply(ildhost("foo"), v_1, v_2, dots, v_n)$, $omega$),$,
+  $#evalsto($interop("apply", ildhost("foo"), v_1, v_2, dots, v_n)$, $omega$),$,
   $Rho = ildlist(dots, ildpair(ildsym("foo"), ildhost("foo")), dots)$,
 )
 
@@ -50,7 +50,7 @@ of simplicity.]
 An abstraction is applied by substituting the formal parameters by the actual parameters
 in the local binding environment, and then evaluating the body in the resulting environment:
 
-$ #evalsto($interpapply(ildabstr(eta, P = (alpha_1, alpha_2, ..., alpha_n), B), a_1, a_2, ..., a_n)$, $interpeval(rho, B)$) $
+$ #evalsto($interop("apply", ildabstr(eta, P = (alpha_1, alpha_2, ..., alpha_n), B), a_1, a_2, ..., a_n)$, $interop("eval", rho, B)$) $
 where
 $ rho = eta [ alpha_1 / a_1 ] [ alpha_2 / a_2 ] ... [ alpha_n / a_n ] $
 
@@ -68,7 +68,7 @@ $ defas(Rho, ret(ildlist(f_1, f_2, ..., f_n)), "poly-fix", Gamma_1, Gamma_2, ...
 
 where $f_1, ..., f_n$ are such that:
 
-$ #evalsto($interpapply(f_i, a_1, ..., a_n)$, $mdo(bind(phi, interpapply(Gamma_i, f_1, f_2, ..., f_n)), interpapply(phi, a_1, ..., a_n))$) $
+$ #evalsto($interop("apply", f_i, a_1, ..., a_n)$, $mdo(bind(phi, interop("apply", Gamma_i, f_1, f_2, ..., f_n)), interop("apply", phi, a_1, ..., a_n))$) $
 
 #comment[A stronger definition of $f_1, ..., f_n$ would be $f_i = Gamma_i (f_1, f_2, ..., f_n)$,
 but this leads to divergence problems when the language has strict (non-lazy) semantics.
@@ -80,10 +80,10 @@ sides#citneeded. Lazy languages like Haskell and Nix do not have this problem.#c
 Even though formally unnecessary (an ILD interpreter can be implemented in ILD),
 it is #paraphrase[useful] to allow programs to call into the interpreter:
 - $ildapp("apply", f, (a_1 ... a_n))$ and $ildapp("eval", e, v)$
-  expose $interop("apply")$ and $interop("eval")$ to programs:
+  expose the evaluation forms to programs:
   #row(
-    $#evalsto($interpapply(ildhost("apply"), f, ildlist(a_1, dots, a_n))$, $interpapply(f, a_1, ..., a_n)$)$,
-    $#evalsto($interpapply(ildhost("eval"), e, v)$, $interpeval(e, v)$)$,
+    $#evalsto($interop("apply", ildhost("apply"), f, ildlist(a_1, dots, a_n))$, $interop("apply", f, a_1, ..., a_n)$)$,
+    $#evalsto($interop("apply", ildhost("eval"), e, v)$, $interop("eval", e, v)$)$,
   )
   #v(0.5em)
 - $ildapp("read-source", p)$ returns the ILD program named
@@ -113,4 +113,4 @@ To allow ILD programs to implement complex control flow, we define
 a host function $ildsym("call/cc")$ that passes the current continuation as a
 first-class value to a given callable #cite(<wadler>, supplement: [Section 3.2]):
 
-$ defas(Rho, lambda k (interpapply(f, ildcont(k)) k), "call/cc", f) $
+$ defas(Rho, lambda k (interop("apply", f, ildcont(k)) k), "call/cc", f) $

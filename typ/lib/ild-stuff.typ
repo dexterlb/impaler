@@ -22,7 +22,6 @@
 
 #let ildmono(body, color: black) = text(font: mono-font, weight: mono-weight, size: 0.9em, fill: color)[#body]
 
-#let interop(body) = ildmono(body, color: c-interop)
 #let ildsym(body) = ildmono(body, color: c-sym)
 #let ildsf(body) = ildmono(body, color: c-sf)
 #let ildset(name) = $#text(name, fill: c-ildset, weight: "bold")$
@@ -55,15 +54,6 @@
 #let ildsetcomp = ildset("Comp")
 #let ildsetcv = ildset("CV")
 #let ildsetcc = ildset("CC")
-#let ildsetet = ildset("ET")
-
-#let eteval(env, ..cc) = $[ #ildmono("eval") #env #cc.pos().join(h(0.4em)) ]$
-#let etcomb(env, ..cc) = $[ #ildmono("comb") #env #cc.pos().join(h(0.4em)) ]$
-#let etapply(..cc) = $[ #ildmono("apply") #cc.pos().join(h(0.4em)) ]$
-
-#let interpeval(rho, ..args) = $#interop("eval")_(#rho)lr((#args.pos().join($, $)))$
-#let interpcomb(rho, ..args) = $#interop("comb")_(#rho)lr((#args.pos().join($, $)))$
-#let interpapply(..args) = $#interop("apply")lr((#args.pos().join($, $)))$
 
 #let sem(body) = $lr(⟦ #body ⟧)$
 #let contmonad(..args) = {
@@ -82,6 +72,7 @@
 
 #let ildlist-gap = 0.25em
 #let ildlist(..items) = $lr((#items.pos().join(h(ildlist-gap))))$
+#let interop(kind, ..args) = $[ #ildmono(kind, color: c-interop) #args.pos().join(h(ildlist-gap)) ]$
 #let ildapp(f, ..args) = ildlist(ildsym(f), ..args)
 #let defas(env, rhs, f, ..args) = $#(ildapp(f, ..args)) class("relation", attach(limits(#pad(top: -0.45em)[$arrow.r.long.squiggly$]), t: script(#env))) #rhs$
 #let grule(name, def, comment) = block($#name := #def #h(1em) (#comment)$)
