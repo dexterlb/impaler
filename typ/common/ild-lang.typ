@@ -6,24 +6,82 @@
 == Syntax <syntax>
 
 #grules(
-  ($ildsetval$, $ildsetsym | ildsetsexp | ildsetsf | ildsetfail | ildsethost$, [values and programs]),
+  (
+    $ildsetval$,
+    $ildsetsym | ildsetsexp | ildsetsf | ildsetfail | ildsethost$,
+    [values and programs]
+  ),
   ($ildsetsym$, [_symbols_]),
   ($ildsetsexp$, $() | ildpair(ildsetval, ildsetval)$, [S-expressions]),
   ($ildsetlist$, $() | ildpair(ildsetval, ildsetlist)$, [S-expression _lists_]),
-  ($ildsetparlist$, $() | ildpair(ildsetsym, ildsetparlist)$, [param lists (lists of symbols)]),
-  ($ildsetenv$, $() | ildpair(ildpair(ildsetsym, ildsetval), ildsetenv)$, [binding environments#footnote[We assume keys are restricted to be unique (@stepped-semantics). Furthermore, performant implementations will use other representations of binding environments.]]),
-  ($ildsetsf$, $ildsf("free-vars") | ildsf("quote") | ildsf("macroexpand")$, [special forms]),
-  ($ildsetfail$, $ildfail(ildsetval)$, [failure objects, each carries a context value]),
-  ($ildsethostfunc$, $ildhost("+") | ildhost("cons") | ildhost("apply") | ildhost("call/cc") | ...$, [host functions, opaque to the base language (@embedding)]),
-  ($ildsethost$, ($ildsetnum | ildsetbool | ildsetstr | ildsetabstr | ildsetcont |$, $ildsethostfunc | ...$), [host values, opaque to the base language (@embedding)]),
+  (
+    $ildsetparlist$,
+    $() | ildpair(ildsetsym, ildsetparlist)$,
+    [param lists (lists of symbols)]
+  ),
+  (
+    $ildsetenv$,
+    $() | ildpair(ildpair(ildsetsym, ildsetval), ildsetenv)$,
+    [binding environments#footnote[We assume keys are restricted to be unique
+      (@stepped-semantics). Furthermore, performant implementations will use
+      other representations of binding environments.]]
+  ),
+  (
+    $ildsetsf$,
+    $ildsf("free-vars") | ildsf("quote") | ildsf("macroexpand")$,
+    [special forms]
+  ),
+  (
+    $ildsetfail$,
+    $ildfail(ildsetval)$,
+    [failure objects, each carries a context value]
+  ),
+  (
+    $ildsethostfunc$,
+    $ildhost("+") | ildhost("cons") | ildhost("apply") |
+      ildhost("call/cc") | ...$,
+    [host functions, opaque to the base language (@embedding)]
+  ),
+  (
+    $ildsethost$,
+    (
+      $ildsetnum | ildsetbool | ildsetstr | ildsetabstr | ildsetcont |$,
+      $ildsethostfunc | ...$
+    ),
+    [host values, opaque to the base language (@embedding)]
+  ),
   ($ildsetnum$, [_numbers_]),
   ($ildsetbool$, $ildhost("t") | ildhost("f")$),
   ($ildsetstr$, [_strings_]),
-  ($ildsetabstr$, $ildabstr(ildsetenv, ildsetparlist, ildsetval)$, [abstractions, @abstraction]),
-  ($ildsetcont$, ${ ildcont(k) | k in contmonad(W, A) }$, [continuations, @first-class-continuations], $in$),
-  ($ildsetprog$, $ildsetsym | () | ildpair(ildsetprog, ildsetprog) | ildsetstr | ildsetnum | ildsetbool$, [surface syntax]),
+  (
+    $ildsetabstr$,
+    $ildabstr(ildsetenv, ildsetparlist, ildsetval)$,
+    [abstractions, @abstraction]
+  ),
+  (
+    $ildsetcont$,
+    ${ ildcont(k) | k in contmonad(W, A) }$,
+    [continuations, @first-class-continuations],
+    $in$
+  ),
+  (
+    $ildsetprog$,
+    $ildsetsym | () | ildpair(ildsetprog, ildsetprog) |
+      ildsetstr | ildsetnum | ildsetbool$,
+    [surface syntax]
+  ),
   ($ildsetcv$, $alpha_1, alpha_2, dots$, [continuation variables]),
-  ($ildsetcc$, ($ildsetval | interop("eval", ildsetenv, ildsetcc, dots) |$, $interop("apply", ildsetcc, dots) | interop("comb", ildsetenv, ildsetcc, dots) |$, $ret(ildsetval) | mdo(ildsetcv <- ildsetcc, dots, ildsetcc) |$, $ildsetcv | cpsapp(ildsetcc, ildsetcc) | cpsabstr(ildsetcv, ildsetcc)$), [evaluation CPS calculus]),
+  (
+    $ildsetcc$,
+    (
+      $ildsetval | interop("eval", ildsetenv, ildsetcc, dots) |$,
+      $interop("apply", ildsetcc, dots) |
+        interop("comb", ildsetenv, ildsetcc, dots) |$,
+      $ret(ildsetval) | mdo(ildsetcv <- ildsetcc, dots, ildsetcc) |$,
+      $ildsetcv | cpsapp(ildsetcc, ildsetcc) | cpsabstr(ildsetcv, ildsetcc)$
+    ),
+    [evaluation CPS calculus]
+  ),
 )
 
 We define ILD as a homoiconic language where parseable programs ($ildsetprog$,
