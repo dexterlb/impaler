@@ -23,19 +23,18 @@
   ($ildsetcont$, ${ ildcont(k) | k in contmonad(W, A) }$, [continuations, @first-class-continuations], $in$),
   ($ildsetprog$, $ildsetsym | () | ildpair(ildsetprog, ildsetprog) | ildsetstr | ildsetnum | ildsetbool$, [surface syntax]),
   ($ildsetcv$, $alpha_1, alpha_2, dots$, [continuation variables]),
-  ($ildsetcc$, $ildsetval | ildsetcv | (lambda ildsetcv . ildsetcc) | (ildsetcc ildsetcc)$, [CPS calculus]),
-  ($ildsetet$, ($eteval(ildsetenv, ildsetcc, dots) | etcomb(ildsetenv, ildsetcc, dots) |$, $etapply(ildsetcc, dots)$), [evaluation terms]),
+  ($ildsetcc$, ($ildsetval | ildsetcv | (lambda ildsetcv . ildsetcc) | (ildsetcc ildsetcc) |$, $eteval(ildsetenv, ildsetcc, dots) | etcomb(ildsetenv, ildsetcc, dots) |$, $etapply(ildsetcc, dots)$), [evaluation CPS calculus]),
 )
 
 We define ILD as a homoiconic language where parseable programs ($ildsetprog$)
-are a subset of the internal syntax $ildsetval$. In addition, we assume that
+are a subset of the internal syntax $CC$. In addition, we assume that
 the parser supports the following shorthands:
 - Quote: #ild("'<expr>") $arrow.r.double.bar$ #ild("(quote <expr>)")
 - Macroexpand: #ild("(!<expr1> ... <exprN>)") $arrow.r.double.bar$
   #ild("(macroexpand <expr1> ... <exprN>)")
 
 == Semantics <semantics>
-
+#note[the continuation monad stuff can now become a small-step rule]
 We define the semantics of ILD in terms of a _continuation monad_ with unit
 $ret : ildsetval -> contmonad(A, ildsetval)$ and the standard do-notation:
 $ mdo(bind(x_1, m_1), bind(x_2, m_2), ..., bind(x_n, m_n), e) $
@@ -50,6 +49,7 @@ where $a_i eq.not a_j "for" i eq.not j$ and ${a_1, dots, a_n} subset ildsetsym$.
 Throughout this paper, we will use $rho$ to denote a binding environment.
 
 === Embedding <embedding>
+#note[this can probably be merged with the intro at host-env]
 ILD is designed to be embedded into a host environment, which supplies the set
 $ildsethost$ of _host values_: values of the host's data structures, together with
 the functions over them. Host values are opaque to ILD: We define FFI semantics
