@@ -115,5 +115,5 @@
 #let ildpair(a, d) = $lr((#a #h(ildlist-gap) . #h(ildlist-gap) #d))$
 #let step(prereqs, from, to) = $ #prereqs / #evalsto(from, to) $
 #let row(..items) = align(center, grid(
-  columns: items.pos().len(), column-gutter: 1em, align: horizon, ..items.pos(),
+  columns: items.pos().len(), column-gutter: 3em, align: horizon, ..items.pos(),
 ))

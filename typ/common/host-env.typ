@@ -1,4 +1,4 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, evalsto, defas, ildlist, ildapp, ildpair, ildabstr, ildsetsym, ildsethost, ildsetval, ildsetnum, ildsetbool, ildsetstr, ildsetenv, ildsetcont, interop, cpsabstr, cpsapp, ildhost, cpsret
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, evalsto, defas, ildlist, ildapp, ildpair, ildabstr, ildsetsym, ildsethost, ildsetval, ildsetnum, ildsetbool, ildsetstr, ildsetenv, ildsetcont, interop, cpsabstr, cpsapp, ildhost, cpsret, ildsetabstr
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
 == A minimal host environment <root-env>
@@ -37,29 +37,27 @@ and strings.
 === Abstractions <abstraction>
 For ILD to become Turing-complete, and, equivalently, a superset of the $lambda$-calculus,
 we give it a mechanism for building $lambda$-abstractions.
-Let
 
-$ { ildabstr(eta, P = (alpha_1, alpha_2, ..., alpha_n), B) | eta in ildsetenv, alpha_1 ... alpha_n in ildsetsym, B in ildsetval} subset ildsethost $
-
-be the set of abstractions. Each abstraction carries a binding environment ($eta$),
-a list of formal parameters ($P$) and a body ($B$).
+An $ildsetabstr$-term carrying a binding environment $eta$,
+a list of formal parameters $P$ and a body
 #footnote[The body being a single expression instead of a list of body
 expressions to be evaluated in order is purely a stylistic choise for the sake
-of simplicity.]
-
-An abstraction is applied by substituting the formal parameters by the actual parameters
+of simplicity.] $B$
+is applied by substituting the formal parameters by the actual parameters
 in the local binding environment, and then evaluating the body in the resulting environment:
 
-$ #evalsto(
-    $interop(
-      "apply", C,
-      ildabstr(eta, P = (alpha_1, alpha_2, ..., alpha_n), B),
-      a_1, a_2, ..., a_n
-    )$,
-    $interop("eval", C, rho, B)$
-) $
-where
-$ rho = eta [ alpha_1 / a_1 ] [ alpha_2 / a_2 ] ... [ alpha_n / a_n ] $
+$
+  #evalsto(
+      $interop(
+        "apply", C,
+        ildabstr(eta, P = (alpha_1, alpha_2, dots, alpha_n), B),
+        a_1, a_2, ..., a_n
+      )$,
+      $interop("eval", C, rho, B)$
+  )
+  text(", where")
+  rho = eta [ alpha_1 / a_1 ] [ alpha_2 / a_2 ] dots [ alpha_n / a_n ]
+$
 
 To let programs build such abstractions, we provide a data contructor:
 $ defas(Rho, cpsapp(cpsret, ildabstr(eta, P, B)), "mk-lambda", eta, P, B) $
@@ -106,9 +104,10 @@ $ defas(Rho, cpsapp(cpsret, <text("a fresh symbol whose prefix is ")s>), "gensym
 === First-class continuations <first-class-continuations>
 To allow ILD programs to implement complex control flow, we define
 a host function $ildsym("call/cc")$ that passes the current continuation as a
-first-class value to a given callable #cite(<wadler>, supplement: [Section 3.2]):
-$ defas(Rho, interop("apply", f, ildcont(cpsret)), "call/cc", f) $
-The reified continuation $ildcont(dot)$ is then consumed via
-the following rule:
+first-class value to a given callable, and a rule to consume such reified
+continuations by discarding the current continuation:
+#row(
+  $defas(Rho, interop("apply", f, ildcont(cpsret)), "call/cc", f)$,
+  $evalsto(interop("apply", C, ildcont(C'), v), cpsapp(C', v))$,
+)
 
-$ evalsto(interop("apply", C, ildcont(C'), v), cpsapp(C', v)) $
