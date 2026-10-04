@@ -1,4 +1,4 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, grules, evalsto, ildlist, ildpair, ildabstr, ildsetval, ildsetprog, ildsetsym, ildsetsexp, ildsetlist, ildsetparlist, ildsetsf, ildsetfail, ildsethost, ildsethostfunc, ildsetnum, ildsetbool, ildsetstr, ildsetabstr, ildsetcont, ildsetcv, ildsetcc, ildsetenv, ildhost, interop, interopword, cpsabstr, cpsapp, ildsetcomp, ildsetansw, ildsetvv, cpsyield
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, grules, evalsto, ildlist, ildpair, ildabstr, ildsetval, ildsetprog, ildsetsym, ildsetsexp, ildsetlist, ildsetparlist, ildsetsf, ildsetfail, ildsethost, ildsethostfunc, ildsetnum, ildsetbool, ildsetstr, ildsetabstr, ildsetcont, ildsetcv, ildsetcc, ildsetenv, ildhost, interop, interopword, cpsabstr, cpsapp, ildsetcomp, ildsetansw, ildsetvv, ildsetcval, cpsyield
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref, cong
 
 = The base language
@@ -70,13 +70,14 @@
     [surface syntax]
   ),
   ($ildsetvv$, $x_1, x_2, dots$, [CPS calculus value variables]),
+  ($ildsetcval$, $ildsetvv | ildsetval$, [CPS calculus value terms]),
   (
     $ildsetcomp$,
     (
-      $interop("eval", ildsetcont, ildsetenv, ildsetval) |$,
-      $interop("apply", ildsetcont, ildsethostfunc, (ildsetval*)) |$,
-      $interop("comb", ildsetcont, ildsetenv, ildsetval, (ildsetval*)) |$,
-      $cpsapp(ildsetcont, ildsetval)$,  // applying a continuation to a value yields a computation
+      $interop("eval", ildsetcont, ildsetenv, ildsetcval) |$,
+      $interop("apply", ildsetcont, ildsethostfunc, (ildsetcval*)) |$,
+      $interop("comb", ildsetcont, ildsetenv, ildsetcval, (ildsetcval*)) |$,
+      $cpsapp(ildsetcont, ildsetcval)$,  // applying a continuation to a value yields a computation
     ),
     [CPS calculus computation terms]
   ),

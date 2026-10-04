@@ -57,10 +57,12 @@
 #let ildsetcomp = ildset("Comp")
 #let ildsetcv = ildset("CV")
 #let ildsetvv = ildset("VV")
+#let ildsetcval = ildset("CVal")
 #let ildsetcc = ildset("CC")
 #let ildsetansw = ildset("Answ")
 
 #let cpsyield = cpsword("yield")
+#let cpsret = cpsword("ret")
 
 #let sem(body) = $lr(⟦ #body ⟧)$
 #let contmonad(..args) = {

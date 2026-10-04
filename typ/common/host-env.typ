@@ -1,4 +1,4 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, evalsto, defas, ildlist, ildapp, ildpair, ildabstr, ildsetsym, ildsethost, ildsetval, ildsetnum, ildsetbool, ildsetstr, ildsetenv, ildsetcont, interop, ildhost
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, evalsto, defas, ildlist, ildapp, ildpair, ildabstr, ildsetsym, ildsethost, ildsetval, ildsetnum, ildsetbool, ildsetstr, ildsetenv, ildsetcont, interop, cpsabstr, cpsapp, ildhost, cpsret
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
 == A minimal host environment <root-env>
@@ -10,7 +10,7 @@ that is used for the outermost eval.
 We will write $defas(Rho, omega, "foo", v_1, v_2, ..., v_n)$ to mean that:
 #row(
   $ildhost("foo") in ildsethost,$,
-  $#evalsto($interop("apply", ildhost("foo"), v_1, v_2, dots, v_n)$, $omega$),$,
+  $#evalsto($interop("apply", C, ildhost("foo"), v_1, v_2, dots, v_n)$, $omega[cpsret / C]$),$,
   $Rho = ildlist(dots, ildpair(ildsym("foo"), ildhost("foo")), dots)$,
 )
 
@@ -24,13 +24,13 @@ and strings.
   $ildapp("-", x, y)$, $ildapp("/", x, y)$.
 - Comparison, $ildsetnum times ildsetnum -> ildsetbool$ -- $ildsym("=")$, $ildsym("<")$,
   $ildsym(">")$, $ildsym("<=")$, $ildsym(">=")$.
-- Pairs -- $defas(Rho, ret(ildpair(a, d)), "cons", a, d)$, $defas(Rho, ret(a), "car", ildpair(a, d))$,
-  $defas(Rho, ret(d), "cdr", ildpair(a, d))$.
+- Pairs -- $defas(Rho, cpsapp(cpsret, ildpair(a, d)), "cons", a, d)$, $defas(Rho, cpsapp(cpsret, a), "car", ildpair(a, d))$,
+  $defas(Rho, cpsapp(cpsret, d), "cdr", ildpair(a, d))$.
 - Predicates, $ildsetval -> ildsetbool$ -- $ildsym("null?")$, $ildsym("pair?")$,
   $ildsym("symbol?")$, $ildsym("string?")$, $ildsym("func?")$,
   $ildsym("fail?")$
 - Equality -- $ildapp("sym-eq?", s_1, s_2)$, $ildapp("str-eq?", s_1, s_2)$
-- Failure -- $defas(Rho, ret(ildfail(v)), "make-fail", v)$.
+- Failure -- $defas(Rho, cpsapp(cpsret, ildfail(v)), "make-fail", v)$.
 - Branching -- $ildapp("bool-to-k", b)$ returns a function on two arguments that
   returns its first argument if $b$ is true and the second otherwise.
 
@@ -50,12 +50,19 @@ of simplicity.]
 An abstraction is applied by substituting the formal parameters by the actual parameters
 in the local binding environment, and then evaluating the body in the resulting environment:
 
-$ #evalsto($interop("apply", ildabstr(eta, P = (alpha_1, alpha_2, ..., alpha_n), B), a_1, a_2, ..., a_n)$, $interop("eval", rho, B)$) $
+$ #evalsto(
+    $interop(
+      "apply", C,
+      ildabstr(eta, P = (alpha_1, alpha_2, ..., alpha_n), B),
+      a_1, a_2, ..., a_n
+    )$,
+    $interop("eval", C, rho, B)$
+) $
 where
 $ rho = eta [ alpha_1 / a_1 ] [ alpha_2 / a_2 ] ... [ alpha_n / a_n ] $
 
 To let programs build such abstractions, we provide a data contructor:
-$ defas(Rho, ret(ildabstr(eta, P, B)), "mk-lambda", eta, P, B) $
+$ defas(Rho, cpsapp(cpsret, ildabstr(eta, P, B)), "mk-lambda", eta, P, B) $
 
 === A recursion operator
 A meta-operator $ildsym("poly-fix")$ shall be provided to allow constructing
@@ -64,11 +71,11 @@ mutually-recursive functions.
 #comment[If we don't care about performance and have infinite memory, the host implementation
 of $ildsym("poly-fix")$ is optional, since we can just implement the Y-combinator in ILD itself.#context if query(<poly-fix-Y>).len() > 0 [ For this exercise, see @poly-fix-Y.]]
 
-$ defas(Rho, ret(ildlist(f_1, f_2, ..., f_n)), "poly-fix", Gamma_1, Gamma_2, ..., Gamma_n) $
+$ defas(Rho, cpsapp(cpsret, ildlist(f_1, f_2, ..., f_n)), "poly-fix", Gamma_1, Gamma_2, ..., Gamma_n) $
 
 where $f_1, ..., f_n$ are such that:
 
-$ #evalsto($interop("apply", f_i, a_1, ..., a_n)$, $mdo(bind(phi, interop("apply", Gamma_i, f_1, f_2, ..., f_n)), interop("apply", phi, a_1, ..., a_n))$) $
+$ #evalsto($interop("apply", C, f_i, a_1, ..., a_n)$, $interop("apply", cpsabstr(phi, interop("apply", C, phi, a_1, ..., a_n)), Gamma_i, f_1, f_2, ..., f_n)$) $
 
 #comment[A stronger definition of $f_1, ..., f_n$ would be $f_i = Gamma_i (f_1, f_2, ..., f_n)$,
 but this leads to divergence problems when the language has strict (non-lazy) semantics.
@@ -79,11 +86,11 @@ sides#citneeded. Lazy languages like Haskell and Nix do not have this problem.#c
 === Interpreter #paraphrase[access]
 Even though formally unnecessary (an ILD interpreter can be implemented in ILD),
 it is #paraphrase[useful] to allow programs to call into the interpreter:
-- $ildapp("apply", f, (a_1 ... a_n))$ and $ildapp("eval", e, v)$
-  expose the evaluation forms to programs:
+- $ildapp("apply", f, a_1, dots, a_n)$ and $ildapp("eval", e, v)$
+  expose the evaluation terms to programs:
   #row(
-    $#evalsto($interop("apply", ildhost("apply"), f, ildlist(a_1, dots, a_n))$, $interop("apply", f, a_1, ..., a_n)$)$,
-    $#evalsto($interop("apply", ildhost("eval"), e, v)$, $interop("eval", e, v)$)$,
+    $#evalsto($interop("apply", C, ildhost("apply"), f, a_1, dots, a_n)$, $interop("apply", C, f, a_1, ..., a_n)$)$,
+    $#evalsto($interop("apply", C, ildhost("eval"), e, v)$, $interop("eval", C, e, v)$)$,
   )
   #v(0.5em)
 - $ildapp("read-source", p)$ returns the ILD program named
@@ -98,7 +105,7 @@ we can incorporate any effects modelled by $M$ into the CPS semantics of ILD
 === Gensym
 Our host environment shall provide a function $ildsym("gensym")$ such that:
 
-$ defas(Rho, ret(<text("a fresh symbol whose prefix is ")s>), "gensym", s) $
+$ defas(Rho, cpsapp(cpsret, <text("a fresh symbol whose prefix is ")s>), "gensym", s) $
 
 Freshness can be guaranteed by e.g. storing the last generated symbol id in a
 State monad wrapper.
