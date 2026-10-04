@@ -9,7 +9,7 @@
   (
     $ildsetval$,
     $ildsetsym | ildsetsexp | ildsetsf | ildsetfail | ildsethost$,
-    [values and programs]
+    [#paraphrase[Tangible] values]
   ),
   ($ildsetsym$, [_symbols_]),
   ($ildsetsexp$, $() | ildpair(ildsetval, ildsetval)$, [S-expressions]),
@@ -17,30 +17,30 @@
   (
     $ildsetparlist$,
     $() | ildpair(ildsetsym, ildsetparlist)$,
-    [param lists (lists of symbols)]
+    [Param lists (lists of symbols)]
   ),
   (
     $ildsetenv$,
     $() | ildpair(ildpair(ildsetsym, ildsetval), ildsetenv)$,
-    [binding environments#footnote[We assume keys are restricted to be unique
+    [Binding environments#footnote[We assume keys are restricted to be unique
       (@stepped-semantics). Furthermore, performant implementations will use
-      other representations of binding environments.]]
+      other representations of binding environments.] (K/V lists)]
   ),
   (
     $ildsetsf$,
     $ildsf("free-vars") | ildsf("quote") | ildsf("macroexpand")$,
-    [special forms]
+    [Special forms]
   ),
   (
     $ildsetfail$,
     $ildfail(ildsetval)$,
-    [failure objects, each carries a context value]
+    [Failure objects, carrying a context value]
   ),
   (
     $ildsethostfunc$,
     $ildhost("+") | ildhost("cons") | ildhost("apply") |
       ildhost("call/cc") | ...$,
-    [host functions, opaque to the base language (@embedding)]
+    [Host functions, opaque to the base language (@embedding)]
   ),
   (
     $ildsethost$,
@@ -48,7 +48,7 @@
       $ildsetnum | ildsetbool | ildsetstr | ildsetabstr | ildsetcont |$,
       $ildsethostfunc | ...$
     ),
-    [host values, opaque to the base language (@embedding)]
+    [Host values, opaque to the base language (@embedding)]
   ),
   ($ildsetnum$, [_numbers_]),
   ($ildsetbool$, $ildhost("t") | ildhost("f")$),
@@ -56,18 +56,18 @@
   (
     $ildsetabstr$,
     $ildabstr(ildsetenv, ildsetparlist, ildsetval)$,
-    [abstractions, @abstraction]
+    [Abstraction terms, @abstraction]
   ),
   (
     $ildsetcont$,
     $ildcont(ildsetcont)$,
-    [continuations, @first-class-continuations],
+    [Reified continuations, @first-class-continuations],
   ),
   (
     $ildsetprog$,
     $ildsetsym | () | ildpair(ildsetprog, ildsetprog) |
       ildsetstr | ildsetnum | ildsetbool$,
-    [surface syntax]
+    [Surface syntax (programs)]
   ),
   ($ildsetvv$, $x_1, x_2, dots$, [CPS calculus value variables]),
   ($ildsetcval$, $ildsetvv | ildsetval$, [CPS calculus value terms]),
@@ -90,12 +90,14 @@
   ),
 )
 
-We define ILD as a homoiconic language where parseable programs ($ildsetprog$,
-standard S-expressions) are a subset of the internal syntax $ildsetcomp$. In
-addition, we assume that the parser supports the following shorthands:
+We define ILD as a homoiconic language where parseable programs ($ildsetprog$)
+are a subset of the internal syntax $ildsetval$. Source code is parsed as
+standard S-expressions augmented with the following syntax sugars:
 - Quote: #ild("'<expr>") $arrow.r.double.bar$ #ild("(quote <expr>)")
 - Macroexpand: #ild("(!<expr1> ... <exprN>)") $arrow.r.double.bar$
   #ild("(macroexpand <expr1> ... <exprN>)")
+We also introduce a set of computation terms ($ildsetcomp$) that facillitate
+the operational semantics.
 
 == Semantics <semantics>
 We define the semantics of ILD in terms of a CPS calculus based on

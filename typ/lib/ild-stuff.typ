@@ -97,7 +97,7 @@
       cells.push(if i == 0 { if r.len() > 3 { r.at(3) } else { $:=$ } } else { [] })
       cells.push(line)
       if i == 0 {
-        cells.push(table.cell(rowspan: lines.len(), if r.len() > 2 { [(#r.at(2))] } else { [] }))
+        cells.push(table.cell(rowspan: lines.len(), if r.len() > 2 { [#r.at(2)] } else { [] }))
       }
     }
   }
