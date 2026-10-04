@@ -1,4 +1,4 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, grules, evalsto, ildlist, ildpair, ildabstr, ildsetval, ildsetprog, ildsetsym, ildsetsexp, ildsetlist, ildsetparlist, ildsetsf, ildsetfail, ildsethost, ildsethostfunc, ildsetnum, ildsetbool, ildsetstr, ildsetabstr, ildsetcont, ildsetcv, ildsetcc, ildsetenv, ildhost, interop, interopword, cpsabstr, cpsapp, ildsetcomp, ildsetansw, ildsetvv
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, grules, evalsto, ildlist, ildpair, ildabstr, ildsetval, ildsetprog, ildsetsym, ildsetsexp, ildsetlist, ildsetparlist, ildsetsf, ildsetfail, ildsethost, ildsethostfunc, ildsetnum, ildsetbool, ildsetstr, ildsetabstr, ildsetcont, ildsetcv, ildsetcc, ildsetenv, ildhost, interop, interopword, cpsabstr, cpsapp, ildsetcomp, ildsetansw, ildsetvv, cpsyield
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref, cong
 
 = The base language
@@ -60,7 +60,7 @@
   ),
   (
     $ildsetcont$,
-    $ildcont(ildsetcc)$,
+    $ildcont(ildsetcont)$,
     [continuations, @first-class-continuations],
   ),
   (
@@ -69,51 +69,28 @@
       ildsetstr | ildsetnum | ildsetbool$,
     [surface syntax]
   ),
-  ($ildsetcv$, $alpha_1, alpha_2, dots$, [continuation variables]),
-  ($ildsetvv$, $x_1, x_2, dots$, [value variables]),
-  (
-    $ildsetcc$,
-    (
-      $interop("eval", ildsetenv, ildsetcc, dots) |$,
-      $interop("apply", ildsetcc, dots) |
-        interop("comb", ildsetenv, ildsetcc, dots) |$,
-      $ret(ildsetval) | mdo(ildsetcv <- ildsetcc, dots, ildsetcc) |$,
-      $ildsetcv | cpsapp(ildsetcc, ildsetcc) |
-        cpsapp(ildsetcc, ildsetval) | cpsabstr(ildsetcv, ildsetcc)$
-    ),
-    [evaluation CPS calculus]
-  ),
+  ($ildsetvv$, $x_1, x_2, dots$, [CPS calculus value variables]),
   (
     $ildsetcomp$,
     (
-      $interop("eval", ildsetenv, ildsetcc, dots) |$,
-      $interop("apply", ildsetcc, dots) |
-        interop("comb", ildsetenv, ildsetcc, dots) |$,
-      $ret(ildsetval) | mdo(ildsetcv <- ildsetcc, dots, ildsetcc) |$,
-      $cpsabstr(ildsetcv, ildsetansw)$,
+      $interop("eval", ildsetcont, ildsetenv, ildsetval) |$,
+      $interop("apply", ildsetcont, ildsethostfunc, (ildsetval*)) |$,
+      $interop("comb", ildsetcont, ildsetenv, ildsetval, (ildsetval*)) |$,
+      $cpsapp(ildsetcont, ildsetval)$,  // applying a continuation to a value yields a computation
     ),
-    [computations, $(W -> A) -> A$]
+    [CPS calculus computation terms]
   ),
   (
     $ildsetcont$,
     (
-      $ildsetcv | cpsabstr(ildsetvv, ildsetansw)$
+      $cpsyield | cpsabstr(ildsetvv, ildsetcomp)$
     ),
-    [continuations, $W -> A$]
-  ),
-  (
-    $ildsetansw$,
-    (
-      $cpsapp(ildsetcont, ildsetval) | cpsapp(ildsetcont, ildsetvv) | cpsapp(ildsetcomp, ildsetcont)$,
-    ),
-    [answers, $A$]
+    [CPS calculus continuations#footnote[We handwave the details of variable renaming to avoid collisions away]]
   ),
 )
 
-#note[think about what to put in Cont - maybe CV? also think about restricting CC more]
-
 We define ILD as a homoiconic language where parseable programs ($ildsetprog$,
-standard S-expressions) are a subset of the internal syntax $ildsetcc$. In
+standard S-expressions) are a subset of the internal syntax $ildsetcomp$. In
 addition, we assume that the parser supports the following shorthands:
 - Quote: #ild("'<expr>") $arrow.r.double.bar$ #ild("(quote <expr>)")
 - Macroexpand: #ild("(!<expr1> ... <exprN>)") $arrow.r.double.bar$
@@ -121,19 +98,19 @@ addition, we assume that the parser supports the following shorthands:
 
 == Semantics <semantics>
 We define the semantics of ILD in terms of a CPS calculus based on
-the untyped $lambda$-calculus reduction rules and monadic combinators
-over the set of _computations_ ($ildsetcc$). The computation domain
-is further discussed in @continuation-monad.
+the #paraphrase[untyped][semi-typed?] $lambda$-calculus
+over the set of _computations_ ($ildsetcomp$). Evaluation starts from
+the term $interop("eval", cpsyield, Rho, v)$ for some value $v$, the root
+continuation $cpsyield$ and a root binding environment $Rho$ (@root-env).
 
 === Embedding <embedding>
-#note[this can probably be merged with the intro at host-env]
-ILD is designed to be embedded into a host environment, which supplies the set
-$ildsethost$ of _host values_: values of the host's data structures, together with
-the functions over them. Host values are opaque to ILD: We define FFI semantics
-for some host values like
-$ #evalsto($interop("apply", v, a_1, a_2, ..., a_n)$, $omega$) $
-to denote that _calling_ the host value $v$ with arguments $a_1 ... a_n$ results
-in the computation $omega$.
+#note[this needs to be heavily retold]
+ILD is designed to be embedded in a host environment that provides a set of datastructures
+and library functions ($ildsethost$). We split the semantics of ILD into:
+- Base language, whose semantics are shown in this section
+- FFI semantics of the host environment ($ildsethostfunc$) via
+  the term $interopword("apply")$. A small host environment, sufficient
+  for writing nontrivial programs, is discussed in @root-env.
 
 === Small-step semantics <stepped-semantics>
 

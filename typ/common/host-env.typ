@@ -1,7 +1,7 @@
 #import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, evalsto, defas, ildlist, ildapp, ildpair, ildabstr, ildsetsym, ildsethost, ildsetval, ildsetnum, ildsetbool, ildsetstr, ildsetenv, ildsetcont, interop, ildhost
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
-== A minimal host environment
+== A minimal host environment <root-env>
 The base language, as defined in @semantics, is useless by itself. In this section we constrain
 $ildsethost$ to contain data structures, functions and constants that allow implementing non-trivial
 programs. To make these values available to programs, we also define a root binding environment $Rho$

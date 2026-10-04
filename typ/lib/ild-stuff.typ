@@ -19,12 +19,14 @@
 #let c-sf = rgb("#8250df")
 #let c-host = rgb("#cf222e")
 #let c-ildset = rgb("#a94a2b")
+#let c-cps = rgb("#a94a2b")
 
 #let ildmono(body, color: black) = text(font: mono-font, weight: mono-weight, size: 0.9em, fill: color)[#body]
 
 #let ildsym(body) = ildmono(body, color: c-sym)
 #let interopword(body) = ildmono(body, color: c-interop)
 #let ildsf(body) = ildmono(body, color: c-sf)
+#let cpsword(body) = ildmono(body, color: c-cps)
 #let ildset(name) = $#text(name, fill: c-ildset, weight: "bold")$
 
 #let ildhost(body) = $#ildmono("#" + body, color: c-host)$
@@ -57,6 +59,8 @@
 #let ildsetvv = ildset("VV")
 #let ildsetcc = ildset("CC")
 #let ildsetansw = ildset("Answ")
+
+#let cpsyield = cpsword("yield")
 
 #let sem(body) = $lr(⟦ #body ⟧)$
 #let contmonad(..args) = {
