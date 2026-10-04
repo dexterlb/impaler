@@ -104,13 +104,11 @@ Freshness can be guaranteed by e.g. storing the last generated symbol id in a
 State monad wrapper.
 
 === First-class continuations <first-class-continuations>
-Let
-
-$ { ildcont(k) | k : (W -> A) -> A } = { ildcont(k) | k in contmonad(W, A) } subset ildsethost $
-
-Be the set of first-class (reified) continuations.
 To allow ILD programs to implement complex control flow, we define
 a host function $ildsym("call/cc")$ that passes the current continuation as a
 first-class value to a given callable #cite(<wadler>, supplement: [Section 3.2]):
-
 $ defas(Rho, lambda k (interop("apply", f, ildcont(k)) k), "call/cc", f) $
+The reified continuation $ildcont(omega)$ is then consumed via
+the following rule:
+
+$ evalsto(interop("apply", ildcont(omega), a), lambda k (omega(a))) $

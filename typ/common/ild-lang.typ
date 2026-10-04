@@ -60,9 +60,8 @@
   ),
   (
     $ildsetcont$,
-    ${ ildcont(k) | k in contmonad(W, A) }$,
+    $ildcont(ildsetcc)$,
     [continuations, @first-class-continuations],
-    $in$
   ),
   (
     $ildsetprog$,
@@ -74,15 +73,18 @@
   (
     $ildsetcc$,
     (
-      $ildsetval | interop("eval", ildsetenv, ildsetcc, dots) |$,
+      $interop("eval", ildsetenv, ildsetcc, dots) |$,
       $interop("apply", ildsetcc, dots) |
         interop("comb", ildsetenv, ildsetcc, dots) |$,
       $ret(ildsetval) | mdo(ildsetcv <- ildsetcc, dots, ildsetcc) |$,
-      $ildsetcv | cpsapp(ildsetcc, ildsetcc) | cpsabstr(ildsetcv, ildsetcc)$
+      $ildsetcv | cpsapp(ildsetcc, ildsetcc) |
+        cpsapp(ildsetcc, ildsetval) | cpsabstr(ildsetcv, ildsetcc)$
     ),
     [evaluation CPS calculus]
   ),
 )
+
+#note[think about what to put in Cont - maybe CV? also think about restricting CC more]
 
 We define ILD as a homoiconic language where parseable programs ($ildsetprog$,
 standard S-expressions) are a subset of the internal syntax $ildsetcc$. In
