@@ -116,32 +116,35 @@ and library functions ($ildsethost$). We split the semantics of ILD into:
 
 Simple cases:
 #row(
-  step($s in ildsetsym and rho = ildlist(dots, ildpair(s, v), dots)$, $interop("eval", rho, s)$, $ret(v)$),
-  step($v in ildsetsf union ildsethost union ildsetfail$, $interop("eval", rho, v)$, $ret(v)$),
+  step(
+    $s in ildsetsym and rho = ildlist(dots, ildpair(s, v), dots)$,
+    $interop("eval", C, rho, s)$, $cpsapp(C, v)$
+  ),
+  step(
+    $v in ildsetsf union ildsethost union ildsetfail$,
+    $interop("eval", C, rho, v)$, $cpsapp(C, v)$
+  ),
 )
 
 
 Evaluating a combination (list): eval the head, decide what to do depending on result:
-#row(evalsto($interop("eval", rho, ildlist(f, a_1, dots, a_n))$, $mdo(bind(phi, interop("eval", rho, f)), interop("comb", rho, phi, a_1, dots, a_n))$))
+#row(evalsto($interop("eval", C, rho, ildlist(f, a_1, dots, a_n))$,
+  $interop("eval", cpsabstr(phi, interop("comb", C, rho, phi, a_1, dots, a_n)), rho, f)$))
 
-#step($phi in ildsethostfunc$, $interop("comb", rho, phi, a_1, ..., a_n)$, $mdo(bind(alpha_1, interop("eval", rho, a_1)), ..., bind(alpha_n, interop("eval", rho, a_n)), interop("apply", phi, alpha_1, ..., alpha_n))$)
+#step($phi in ildsethostfunc$,
+  $interop("comb", C, rho, phi, a_1, ..., a_n)$,
+  $interop("eval", cpsabstr(alpha_1, dots.h interop("eval", cpsabstr(alpha_n, interop("apply", C, phi, alpha_1, dots, alpha_n)), rho, a_n) dots.h), rho, a_1)$)
 
 Special forms:
 #row(
-  evalsto($interop("comb", rho, ildsf("quote"), v)$, $ret(v)$),
-  evalsto($interop("comb", rho, ildsf("free-vars"))$, $ret(rho)$),
+  evalsto($interop("comb", C, rho, ildsf("quote"), v)$, $cpsapp(C, v)$),
+  evalsto($interop("comb", C, rho, ildsf("free-vars"))$, $cpsapp(C, rho)$),
 )
-#row(evalsto($interop("comb", rho, ildsf("macroexpand"), m, accent(a, arrow))$, $mdo(bind(mu, interop("eval", rho, m)), bind(nu, interop("apply", mu, accent(a, arrow))), interop("eval", rho, nu))$))
-
-Monadic CPS calculus:
-#row(evalsto($mdo(bind(alpha_1, omega_1), dots, bind(alpha_n, omega_n), omega)$, $omega_1 bindop cpsabstr(alpha_1, dots.h omega_n bindop cpsabstr(alpha_n, omega) dots.h)$))
-#row(
-  evalsto($phi bindop f$, $cpsabstr(c, cpsapp(phi, cpsabstr(x, cpsapp(f, x, c))))$),
-  evalsto($ret(v)$, $cpsabstr(c, cpsapp(c, v))$),
-)
+#row(evalsto($interop("comb", C, rho, ildsf("macroexpand"), m, accent(a, arrow))$,
+  $interop("eval", cpsabstr(mu, interop("apply", cpsabstr(nu, interop("eval", C, rho, nu)), mu, accent(a, arrow))), rho, m)$))
 
 === Notes on selected cases <semantics-notes>
-- $interop("comb", rho, ildsf("free-vars"))$ returns $rho$. This special form
+- $interop("comb", C, rho, ildsf("free-vars"))$ returns $rho$. This special form
   is used to capture the binding environment by higher-level constructs like
   the lambda macro (@lambda-macro).
 - The head of a combination is always evaluated. If the result of that is a special
