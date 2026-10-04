@@ -86,36 +86,29 @@ sides#citneeded. Lazy languages like Haskell and Nix do not have this problem.#c
 === Interpreter #paraphrase[access]
 Even though formally unnecessary (an ILD interpreter can be implemented in ILD),
 it is #paraphrase[useful] to allow programs to call into the interpreter:
-- $ildapp("apply", f, a_1, dots, a_n)$ and $ildapp("eval", e, v)$
-  expose the evaluation terms to programs:
+- Expose the evaluation terms to programs:
   #row(
-    $#evalsto($interop("apply", C, ildhost("apply"), f, a_1, dots, a_n)$, $interop("apply", C, f, a_1, ..., a_n)$)$,
-    $#evalsto($interop("apply", C, ildhost("eval"), e, v)$, $interop("eval", C, e, v)$)$,
+    $defas(Rho, interop("apply", cpsret, f, a_1, dots, a_n), "apply", f, a_1, dots, a_n)$,
+    $defas(Rho, interop("eval", cpsret, e, v), "eval", e, v)$,
   )
   #v(0.5em)
 - $ildapp("read-source", p)$ returns the ILD program named
   with the string $p$#footnote[in actual implementations $p$ is a file path and
   $ildsym("read-source")$ parses the file and returns the parsed program.]
 
-== Effectful computations <side-effects>
-By choosing the answer set for the continuation monad to be $M(A)$ for another monad $M$,
-we can incorporate any effects modelled by $M$ into the CPS semantics of ILD
-#cite(<wadler>, supplement: [Section 3.3]). This includes side effects like IO.
-
-=== Gensym
-Our host environment shall provide a function $ildsym("gensym")$ such that:
+=== Effectful computations <side-effects>
+The CPS calculus can be extended to model any monadic effect system
+#cite(<wadler>, supplement: [Section 3.3]). This includes side effects like IO,
+and functions like $ildsym("gensym")$:
 
 $ defas(Rho, cpsapp(cpsret, <text("a fresh symbol whose prefix is ")s>), "gensym", s) $
-
-Freshness can be guaranteed by e.g. storing the last generated symbol id in a
-State monad wrapper.
 
 === First-class continuations <first-class-continuations>
 To allow ILD programs to implement complex control flow, we define
 a host function $ildsym("call/cc")$ that passes the current continuation as a
 first-class value to a given callable #cite(<wadler>, supplement: [Section 3.2]):
-$ defas(Rho, lambda k (interop("apply", f, ildcont(k)) k), "call/cc", f) $
-The reified continuation $ildcont(omega)$ is then consumed via
+$ defas(Rho, interop("apply", f, ildcont(cpsret)), "call/cc", f) $
+The reified continuation $ildcont(dot)$ is then consumed via
 the following rule:
 
-$ evalsto(interop("apply", ildcont(omega), a), lambda k (omega(a))) $
+$ evalsto(interop("apply", C, ildcont(C'), v), cpsapp(C', v)) $
