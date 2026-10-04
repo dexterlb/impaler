@@ -54,7 +54,9 @@
 #let ildsetcont = ildset("Cont")
 #let ildsetcomp = ildset("Comp")
 #let ildsetcv = ildset("CV")
+#let ildsetvv = ildset("VV")
 #let ildsetcc = ildset("CC")
+#let ildsetansw = ildset("Answ")
 
 #let sem(body) = $lr(⟦ #body ⟧)$
 #let contmonad(..args) = {

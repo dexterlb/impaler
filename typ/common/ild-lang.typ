@@ -1,4 +1,4 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, grules, evalsto, ildlist, ildpair, ildabstr, ildsetval, ildsetprog, ildsetsym, ildsetsexp, ildsetlist, ildsetparlist, ildsetsf, ildsetfail, ildsethost, ildsethostfunc, ildsetnum, ildsetbool, ildsetstr, ildsetabstr, ildsetcont, ildsetcv, ildsetcc, ildsetenv, ildhost, interop, interopword, cpsabstr, cpsapp
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, grules, evalsto, ildlist, ildpair, ildabstr, ildsetval, ildsetprog, ildsetsym, ildsetsexp, ildsetlist, ildsetparlist, ildsetsf, ildsetfail, ildsethost, ildsethostfunc, ildsetnum, ildsetbool, ildsetstr, ildsetabstr, ildsetcont, ildsetcv, ildsetcc, ildsetenv, ildhost, interop, interopword, cpsabstr, cpsapp, ildsetcomp, ildsetansw, ildsetvv
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref, cong
 
 = The base language
@@ -70,6 +70,7 @@
     [surface syntax]
   ),
   ($ildsetcv$, $alpha_1, alpha_2, dots$, [continuation variables]),
+  ($ildsetvv$, $x_1, x_2, dots$, [value variables]),
   (
     $ildsetcc$,
     (
@@ -81,6 +82,31 @@
         cpsapp(ildsetcc, ildsetval) | cpsabstr(ildsetcv, ildsetcc)$
     ),
     [evaluation CPS calculus]
+  ),
+  (
+    $ildsetcomp$,
+    (
+      $interop("eval", ildsetenv, ildsetcc, dots) |$,
+      $interop("apply", ildsetcc, dots) |
+        interop("comb", ildsetenv, ildsetcc, dots) |$,
+      $ret(ildsetval) | mdo(ildsetcv <- ildsetcc, dots, ildsetcc) |$,
+      $cpsabstr(ildsetcv, ildsetansw)$,
+    ),
+    [computations, $(W -> A) -> A$]
+  ),
+  (
+    $ildsetcont$,
+    (
+      $ildsetcv | cpsabstr(ildsetvv, ildsetansw)$
+    ),
+    [continuations, $W -> A$]
+  ),
+  (
+    $ildsetansw$,
+    (
+      $cpsapp(ildsetcont, ildsetval) | cpsapp(ildsetcont, ildsetvv) | cpsapp(ildsetcomp, ildsetcont)$,
+    ),
+    [answers, $A$]
   ),
 )
 
