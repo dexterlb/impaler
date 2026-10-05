@@ -54,26 +54,13 @@
 #let ildsetenv = ildset("Env")
 #let ildsetabstr = ildset("Abstr")
 #let ildsetcont = ildset("Cont")
+#let ildsetvcont = ildset("VCont")
 #let ildsetcomp = ildset("Comp")
-#let ildsetcv = ildset("CV")
 #let ildsetvv = ildset("VV")
 #let ildsetcval = ildset("CVal")
-#let ildsetcc = ildset("CC")
-#let ildsetansw = ildset("Answ")
 
 #let cpsyield = cpsword("yield")
 #let cpsret = cpsword("ret")
-
-#let sem(body) = $lr(⟦ #body ⟧)$
-#let contmonad(..args) = {
-  let p = args.pos()
-  if p.len() == 1 { $K lr((#p.at(0)))$ } else { $K_(#p.at(0)) lr((#p.at(1)))$ }
-}
-#let retbare = interopword("ret")
-
-#let bind(v, m) = $#v <- #m$
-
-#let bindop = box(baseline: 0.1em, image("/lib/bind.svg", height: 0.72em))
 
 #let evalsto(from, to) = $#from -> #to$
 
@@ -82,11 +69,17 @@
 #let interop(kind, sep: none, ..args) = $[ #ildmono(kind, color: c-interop) #args.pos().join(if sep == none { h(ildlist-gap) } else { sep }) ]$
 #let cpsabstr(cv, cc) = $lr((lambda #cv #h(ildlist-gap) . #h(ildlist-gap) #cc))$
 #let cpsapp(..cc) = $lr((#cc.pos().join(h(ildlist-gap))))$
-#let mdo(..steps) = interop("do", sep: $ ; $, ..steps)
 #let ret(..body) = interop("ret", ..body)
 #let ildapp(f, ..args) = ildlist(ildsym(f), ..args)
 #let defas(env, rhs, f, ..args) = $#(ildapp(f, ..args)) class("relation", attach(limits(#pad(top: -0.45em)[$arrow.r.long.squiggly$]), t: script(#env))) #rhs$
-#let grule(name, def, comment) = block($#name := #def #h(1em) (#comment)$)
+#let dbarrow = rotate(90deg, reflow: true, $arrow.r.double.bar$)
+
+#let rlabel(label, body) = grid(
+  columns: (auto, 1fr),
+  column-gutter: 1em,
+  align: (right + top, left + top),
+  label, body,
+)
 
 #let grules(..rules) = {
   let cells = ()

@@ -3,8 +3,6 @@
 #let clink(dest, body) = link(dest, text(fill: blue, body))
 #let optref(target) = context if query(target).len() > 0 [ (#ref(target))]
 
-#let cong = sym.tilde.equiv
-
 #let squiggly_underline(body, color) = box(context {
   let w = measure(body).width
   let amp = 1pt

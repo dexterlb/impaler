@@ -1,4 +1,4 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, sem, contmonad, retbare, ret, bind, mdo, bindop, ildmono, ildcont, ild, step, row, evalsto, defas, ildlist, ildapp, ildpair, ildabstr, ildsetsym, ildsethost, ildsetval, ildsetnum, ildsetbool, ildsetstr, ildsetenv, ildsetcont, interop, cpsabstr, cpsapp, ildhost, cpsret, ildsetabstr
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, ildmono, ildcont, ild, step, row, dbarrow, evalsto, defas, ildlist, ildapp, ildpair, ildabstr, ildsetsym, ildsethost, ildsetval, ildsetnum, ildsetbool, ildsetstr, ildsetenv, ildsetcont, interop, cpsabstr, cpsapp, ildhost, cpsret, ildsetabstr, ildsethostfunc
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
 == A minimal host environment <root-env>
@@ -7,9 +7,16 @@ $ildsethost$ to contain data structures, functions and constants that allow impl
 programs. To make these values available to programs, we also define a root binding environment $Rho$
 that is used for the outermost eval.
 
-We will write $defas(Rho, omega, "foo", v_1, v_2, ..., v_n)$ to mean that:
+We will use the following notation#footnote[
+  $cpsret$ is used only in $arrow.r.long.squiggly$-terms to denote the current continuation.
+  It is not a part of the syntax grammar (but it is part of this paper's grammar!)
+]
+to define the semantics of the host functions:
+
+$ defas(Rho, omega, "foo", v_1, v_2, ..., v_n) $
+$ dbarrow $
 #row(
-  $ildhost("foo") in ildsethost,$,
+  $ildhost("foo") in ildsethostfunc,$,
   $#evalsto($interop("apply", C, ildhost("foo"), v_1, v_2, dots, v_n)$, $omega[cpsret / C]$),$,
   $Rho = ildlist(dots, ildpair(ildsym("foo"), ildhost("foo")), dots)$,
 )
@@ -59,7 +66,7 @@ $
   rho = eta [ alpha_1 / a_1 ] [ alpha_2 / a_2 ] dots [ alpha_n / a_n ]
 $
 
-To let programs build such abstractions, we provide a data contructor:
+To let programs build such abstractions, we provide a data constructor:
 $ defas(Rho, cpsapp(cpsret, ildabstr(eta, P, B)), "mk-lambda", eta, P, B) $
 
 === A recursion operator
