@@ -155,7 +155,7 @@ and library functions ($ildsethost$). We split the semantics of ILD into:
   form, the special form is applied on the *unevaluated* remaining elements of the combination.
   If the head is a host function, the operands are first *evaluated* and then the head is applied
   to the resulting arguments.
-- $ildlist(ildsf("macroexpand"), f, a_1, a_2, ..., a_n)$ evaluates just $f$ and then passes the
+- $ildlist(ildsf("macroexpand"), phi, alpha_1, alpha_2, ..., alpha_n)$ evaluates just $f$ and then passes the
   *unevaluated* arguments to it. The result is then in turn evaluated. This mechanism
   is discussed in @macroexpand-mechanism.
 - Congruence rules are omitted for brevity. Any $ildsetcont$ or $ildsetcomp$ subterm

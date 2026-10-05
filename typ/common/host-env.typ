@@ -51,7 +51,7 @@ An $ildsetabstr$-term carrying a binding environment $e$,
 a list of formal parameters $P$ and a body
 #footnote[The body being a single expression instead of a list of body
 expressions to be evaluated in order is purely a stylistic choise for the sake
-of simplicity.] $B$
+of simplicity.] $beta$
 is applied by substituting the formal parameters by the actual parameters
 in the local binding environment, and then evaluating the body in the resulting environment:
 
@@ -59,10 +59,10 @@ $
   #evalsto(
       $interop(
         "apply", C,
-        ildabstr(e, P = (p_1, p_2, dots, p_n), B),
+        ildabstr(e, P = (p_1, p_2, dots, p_n), beta),
         a_1, a_2, ..., a_n
       )$,
-      $interop("eval", C, e', B)$
+      $interop("eval", C, e', beta)$
   )
   text(", where")
   e' = e [ p_1 / a_1 ] [ p_2 / a_2 ] dots [ p_n / a_n ]
