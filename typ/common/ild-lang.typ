@@ -104,8 +104,8 @@ the operational semantics.
 We define the semantics of ILD in terms of a CPS calculus based on
 the #paraphrase[untyped][semi-typed?] $lambda$-calculus
 over the set of _computations_ ($ildsetcomp$). Evaluation starts from
-the term $interop("eval", cpsyield, Rho, v)$ for some value $v$, the root
-continuation $cpsyield$ and a root binding environment $Rho$ (@root-env).
+the term $interop("eval", cpsyield, E, v)$ for some value $v$, the root
+continuation $cpsyield$ and a root binding environment $E$ (@root-env).
 
 === Embedding <embedding>
 #note[this needs to be heavily retold]
@@ -120,33 +120,33 @@ and library functions ($ildsethost$). We split the semantics of ILD into:
 
 #rlabel([Simple cases: ], row(
   step(
-    $s in ildsetsym and rho = ildlist(dots, ildpair(s, v), dots)$,
-    $interop("eval", C, rho, s)$, $cpsapp(C, v)$
+    $s in ildsetsym and e = ildlist(dots, ildpair(s, v), dots)$,
+    $interop("eval", C, e, s)$, $cpsapp(C, v)$
   ),
   step(
     $v in ildsetsf union ildsethost union ildsetfail$,
-    $interop("eval", C, rho, v)$, $cpsapp(C, v)$
+    $interop("eval", C, e, v)$, $cpsapp(C, v)$
   ),
 ))
 
 #rlabel([Combinations: ], [
-  #row(evalsto($interop("eval", C, rho, ildlist(f, a_1, dots, a_n))$,
-    $interop("eval", cpsabstr(phi, interop("comb", C, rho, phi, a_1, dots, a_n)), rho, f)$))
+  #row(evalsto($interop("eval", C, e, ildlist(f, a_1, dots, a_n))$,
+    $interop("eval", cpsabstr(f, interop("comb", C, e, f, a_1, dots, a_n)), e, f)$))
 ])
-#step($phi in ildsethostfunc$,
-  $interop("comb", C, rho, phi, a_1, ..., a_n)$,
-  $interop("eval", cpsabstr(alpha_1, dots.h interop("eval", cpsabstr(alpha_n, interop("apply", C, phi, alpha_1, dots, alpha_n)), rho, a_n) dots.h), rho, a_1)$)
+#step($f in ildsethostfunc$,
+  $interop("comb", C, e, f, a_1, ..., a_n)$,
+  $interop("eval", cpsabstr(x_1, dots.h interop("eval", cpsabstr(x_n, interop("apply", C, f, x_1, dots, x_n)), e, a_n) dots.h), e, a_1)$)
 
 #rlabel([Special forms: ], [
   #row(
-    evalsto($interop("comb", C, rho, ildsf("quote"), v)$, $cpsapp(C, v)$),
-    evalsto($interop("comb", C, rho, ildsf("free-vars"))$, $cpsapp(C, rho)$),
+    evalsto($interop("comb", C, e, ildsf("quote"), v)$, $cpsapp(C, v)$),
+    evalsto($interop("comb", C, e, ildsf("free-vars"))$, $cpsapp(C, e)$),
   )
 ])
-#row(evalsto($interop("comb", C, rho, ildsf("macroexpand"), m, accent(a, arrow))$,
-  $interop("eval", cpsabstr(mu, interop("apply", cpsabstr(nu, interop("eval", C, rho, nu)), mu, accent(a, arrow))), rho, m)$))
+#row(evalsto($interop("comb", C, e, ildsf("macroexpand"), v, accent(a, arrow))$,
+  $interop("eval", cpsabstr(f, interop("apply", cpsabstr(w, interop("eval", C, e, w)), f, accent(a, arrow))), e, v)$))
 
-#rlabel([CPS calculus beta reduction:], row(evalsto($cpsapp(cpsabstr(x, M), v)$, $M[x / v]$)))
+#rlabel([CPS calculus $beta$-reduction:], row(evalsto($cpsapp(cpsabstr(x, M), v)$, $M[x / v]$)))
 
 === Notes on selected cases <semantics-notes>
 - $ildsf("free-vars")$ captures the current binding environment and is used by higher-level constructs

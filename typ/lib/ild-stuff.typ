@@ -30,6 +30,14 @@
 #let ildset(name) = $#text(name, fill: c-ildset, weight: "bold")$
 
 #let ildhost(body) = $#ildmono("#" + body, color: c-host)$
+#let ildconst(body) = {
+  let parts = body.split("_")
+  if parts.len() > 1 {
+    $#ildmono(parts.at(0), color: c-host)_(#ildmono(parts.slice(1).join("_"), color: c-host))$
+  } else {
+    $#ildmono(parts.at(0), color: c-host)$
+  }
+}
 #let ildangles(..args) = $#text(fill: c-host)[$⟨$]#args.pos().join($, $)#text(fill: c-host)[$⟩$]$
 #let ildabstrbare = $#ildmono("#Λ", color: c-host)$
 #let ildabstr(..args) = $#(ildabstrbare)#ildangles(..args)$
