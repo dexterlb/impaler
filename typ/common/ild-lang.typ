@@ -130,21 +130,21 @@ and library functions ($ildsethost$). We split the semantics of ILD into:
 ))
 
 #rlabel([Combinations: ], [
-  #row(evalsto($interop("eval", C, e, ildlist(f, a_1, dots, a_n))$,
-    $interop("eval", cpsabstr(f, interop("comb", C, e, f, a_1, dots, a_n)), e, f)$))
+  #row(evalsto($interop("eval", C, e, ildlist(phi, alpha_1, dots, alpha_n))$,
+    $interop("eval", cpsabstr(f, interop("comb", C, e, f, alpha_1, dots, alpha_n)), e, phi)$))
 ])
 #step($f in ildsethostfunc$,
-  $interop("comb", C, e, f, a_1, ..., a_n)$,
-  $interop("eval", cpsabstr(x_1, dots.h interop("eval", cpsabstr(x_n, interop("apply", C, f, x_1, dots, x_n)), e, a_n) dots.h), e, a_1)$)
+  $interop("comb", C, e, f, alpha_1, ..., alpha_n)$,
+  $interop("eval", cpsabstr(x_1, dots.h interop("eval", cpsabstr(x_n, interop("apply", C, f, x_1, dots, x_n)), e, alpha_n) dots.h), e, alpha_1)$)
 
 #rlabel([Special forms: ], [
   #row(
-    evalsto($interop("comb", C, e, ildsf("quote"), v)$, $cpsapp(C, v)$),
+    evalsto($interop("comb", C, e, ildsf("quote"), alpha)$, $cpsapp(C, alpha)$),
     evalsto($interop("comb", C, e, ildsf("free-vars"))$, $cpsapp(C, e)$),
   )
 ])
-#row(evalsto($interop("comb", C, e, ildsf("macroexpand"), v, accent(a, arrow))$,
-  $interop("eval", cpsabstr(f, interop("apply", cpsabstr(w, interop("eval", C, e, w)), f, accent(a, arrow))), e, v)$))
+#row(evalsto($interop("comb", C, e, ildsf("macroexpand"), phi, accent(alpha, arrow))$,
+  $interop("eval", cpsabstr(f, interop("apply", cpsabstr(x, interop("eval", C, e, x)), f, accent(alpha, arrow))), e, phi)$))
 
 #rlabel([CPS calculus $beta$-reduction:], row(evalsto($cpsapp(cpsabstr(x, M), v)$, $M[x / v]$)))
 
