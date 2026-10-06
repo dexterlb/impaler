@@ -11,7 +11,7 @@
 
 The following example illustrates early return from the recursive computation
 enacted by #ild("map"):
-#lst(caption: "Early return from map")[
+#lst(caption: [Early return from #ild("map")])[
 ```ild
 (!fn try-map (f l)
   (call/cc (!lambda (return)

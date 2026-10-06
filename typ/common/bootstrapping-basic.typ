@@ -1,5 +1,5 @@
 #import "/lib/ild-stuff.typ": ild, ildsf
-#import "/lib/misc.typ": paraphrase, note, comment, lst
+#import "/lib/misc.typ": paraphrase, note, comment, lst, side-by-side
 
 = Bootstrapping basic constructs <bootstrapping-basic>
 The base syntax of ILD is insufficient for writing nontrivial programs
@@ -14,7 +14,7 @@ First, we define a macro called #ild("lambda") that will let us build abstractio
 easily:
 #footnote[The #ild("(free-vars)") closure given to the host #ild("mk-lambda") can be replaced
 by a closure that contains only #ild("cons"), #ild("mk-lambda"), #ild("quote") and #ild("free-vars").]
-#lst(caption: "Implementation of the lambda macro")[
+#lst(caption: [Implementation of the #ild("lambda") macro])[
 ```ild
 (mk-lambda
   (free-vars)
@@ -37,7 +37,7 @@ it under a #ild("lambda") name usable from the body of the host abstraction. Sup
 this definition is stored as an ILD program called `core/bootstrap/lambda-macro.ild`,
 we recall it twice (once to define #ild("lambda"), and once to pass itself as the
 value of #ild("lambda")):
-#lst(caption: "Outermost usage of the lambda macro")[
+#lst(caption: [Outermost usage of the #ild("lambda") macro])[
 ```
 ((!(eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")) (lambda)
 
@@ -49,9 +49,18 @@ value of #ild("lambda")):
 ]
 
 == Basic utilities
-We define helper utilities in a scope where the #ild("lambda") macro is present.
+We define helper utilities in a scope where the #ild("lambda") macro is present. In particular,
+we define an #ild("expand-lambda") macro that generates expressions of the form
+#ild("(!lambda <args> <body>)"), which is in turn used in definitions of other
+metaprogramming primitives. Since these definitions already operate on code
+as data, calling #ild("expand-lambda") is no different from calling a regular
+function: an advantage of the macro/function duality in ILD (@macro-function-duality).
 
-#grid(columns: (auto, auto), column-gutter: 0.6em, align: horizon,
+Our definition of #ild("if") doesn't require a special form, since delayed execution
+and boolean introspection are already provided by #ild("mk-lambda") and #ild("bool-to-k")
+respectively.
+
+#side-by-side(
 lst(caption: "Definitions of basic helper primitives")[
 ```ild
 ; definition of 'list'
@@ -64,33 +73,8 @@ lst(caption: "Definitions of basic helper primitives")[
 (!lambda (f) (car (poly-fix f)))
 ```
 ],
-
-lst(caption: "Definition of the map function")[
+lst(caption: [Definition of #ild("expand-lambda")])[
 ```ild
-(Y (!lambda (map)
-  (!lambda (f l)
-    (!if (null? l)
-      l
-      (!if (pair? l)
-        (cons
-          (f (car l)) (map f (cdr l)))
-        (make-fail
-          (list 'not-a-list l)))))))))
-```
-]
-)
-
-=== Let
-The binding construct #ild("let") is simply a more ergonomic way
-of writing #ild("lambda") with specifically-named arguments. Thus,
-we first define a helper that lets our macros generate expressions
-of the form #ild("(!lambda <args> <body>)"), and then use it to
-define #ild("let") itself:
-
-#grid(columns: (auto, auto), column-gutter: 0.6em, align: horizon,
-lst(caption: "Definition of expand-lambda")[
-```ild
-
 (!lambda (args body)
   (cons macroexpand
     (cons lambda
@@ -98,8 +82,35 @@ lst(caption: "Definition of expand-lambda")[
         (cons body '())))))
 ```
 ],
-lst(caption: "Definition of let")[
+)
+
+#lst(caption: [Definition of #ild("if")])[
 ```ild
+(!lambda (cond t f)       ; read this definition bottom to top
+  (list                          ; force/unwrap the delayed computation
+    (list                        ; eval the K or K*, obtaining one of the two
+      (list bool-to-k cond)      ; convert the boolean condition to K or K*
+      (expand-lambda '() t)      ; computation that evals the "true" branch
+      (expand-lambda '() f))))   ; computation that evals the "false" branch
+```
+]
+
+
+#side-by-side(
+lst(caption: [Definition of #ild("map")])[
+```ild
+(Y (!lambda (map)
+  (!lambda (f l)
+    (!if (null? l)
+      l
+      (!if (pair? l)
+        (cons (f (car l)) (map f (cdr l)))
+        (make-fail (list 'not-a-list l)))))))))
+```
+],
+lst(caption: [Definition of #ild("let")])[
+```ild
+
 (!lambda (letlist body)
   (cons
     (expand-lambda
@@ -107,11 +118,13 @@ lst(caption: "Definition of let")[
       body)
     (map cadr letlist)))))
 ```
-])
+],
+)
 
 Now we can bind locally-scoped values ergonomically:
-#lst(caption: "Rewriting a lambda-based scope binding to use let")[
-#grid(columns: (auto, auto, auto), column-gutter: 0.6em, align: horizon,
+
+#lst(caption: [Rewriting a #ild("lambda")-based scope binding to use #ild("let")])[
+#side-by-side(
 ```ild
 ((!lambda (add1 fourty-two)
     (add1 fourty-two))
@@ -134,10 +147,11 @@ $=>$,
 ]
 
 == Letrec <letrec>
-We define letrec as a macro that builds each binding as a recursive operator
-that in turn takes all bindings as arguments, and passes the list of
-those bindings to #ild("poly-fix"):
-#lst(caption: "Definition of letrec")[
+We define letrec (a version of #ild("let") that allows
+mutual recursion) as a macro that builds each binding as a recursive operator
+that in turn takes all bindings as arguments, and passes the list of those
+bindings to #ild("poly-fix"):
+#lst(caption: [Definition of #ild("letrec")])[
 ```ild
 (!lambda (defs body)
   (!let

@@ -31,3 +31,6 @@ evaluated at runtime should not be at the distinction between "macro expansion" 
 We aim to explore this topic in further research by applying partial evaluation
 as an optimisation pass in ILD, similar to how this has been done in languages
 like Kraken #cite(<fexpr-pe>).
+
+=== Macros are functions <macro-function-duality>
+it is really neat that we can call macros as if they were functions from macro bodies

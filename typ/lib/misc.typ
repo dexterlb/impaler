@@ -96,6 +96,16 @@
   if label == none { fig } else { [#fig#std.label(label)] }
 }
 
+#let side-by-side(gutter: 0.6em, ..items) = {
+  let items = items.pos()
+  align(center, grid(
+    columns: (auto,) * items.len(),
+    column-gutter: gutter,
+    align: horizon,
+    ..items,
+  ))
+}
+
 #let cases-gap = 0.7em
 #let cases(gap: cases-gap, ..args) = {
   let add-gap(row) = {
