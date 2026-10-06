@@ -1,7 +1,7 @@
 #import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, ildmono, ildcont, ild, step, row, rlabel, grules, evalsto, ildlist, ildpair, ildabstr, ildsetval, ildsetprog, ildsetsym, ildsetsexp, ildsetlist, ildsetparlist, ildsetsf, ildsetfail, ildsethost, ildsethostfunc, ildsetnum, ildsetbool, ildsetstr, ildsetabstr, ildsetcont, ildsetvcont, ildsetenv, ildhost, interop, interopword, cpsabstr, cpsapp, ildsetcomp, ildsetvv, ildsetcval, cpsyield
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
-= The base language
+= The language ILD
 
 == Syntax <syntax>
 #grules(
@@ -108,7 +108,7 @@ the term $interop("eval", cpsyield, E, v)$ for some value $v$, the root
 continuation $cpsyield$ and a root binding environment $E$ (@root-env).
 
 === Embedding <embedding>
-#note[this needs to be heavily retold]
+#note[this needs to be heavily reworded]
 ILD is designed to be embedded in a host environment that provides a set of datastructures
 and library functions ($ildsethost$). We split the semantics of ILD into:
 - Base language, whose semantics are shown in this section

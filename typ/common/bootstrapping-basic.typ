@@ -1,10 +1,13 @@
-#import "/lib/ild-stuff.typ": ild
+#import "/lib/ild-stuff.typ": ild, ildsf
 #import "/lib/misc.typ": paraphrase, note, comment, lst
 
 = Bootstrapping basic constructs <bootstrapping-basic>
-Now that we have defined our minimal language with its minimal host environment,
-we can build upon them using metaprogramming and macros to incrementally define
-more complex ergonomic syntax.
+The base syntax of ILD is insufficient for writing nontrivial programs
+in a succint way. However, its $ildsf("macroexpand")$ facillity allows
+extending the syntax with arbitrary metaprogramming constructs, which we
+build incrementally.
+
+#note[maybe here add a note that this power is similar to fexpr stuff but uses a different mechanism?]
 
 == Lambda <lambda-macro>
 First, we define a macro called #ild("lambda") that will let us build abstractions (@abstraction)
@@ -25,18 +28,14 @@ by a closure that contains only #ild("cons"), #ild("mk-lambda"), #ild("quote") a
 ]
 
 Expansions of the #ild("lambda") macro such as
-```ild
-(!lambda (x y) (+ x y))
-```
-will replace themselves by calls to #ild("mk-lambda") such as
-```ild
-(mk-lambda (free-vars) (quote (x y)) (quote (+ x y)))
-```
+#ild("(!lambda (x y) (+ x y))")
+will be substituted by calls to #ild("mk-lambda") such as
+#ild("(mk-lambda (free-vars) (quote (x y)) (quote (+ x y)))").
 
 We can then wrap this definition in another call of #ild("mk-lambda") in order to expose
-it as a #ild("lambda") name usable from the body of the host abstraction. For brevity,
-we write the definition as an ILD program called `core/bootstrap/lambda-macro.ild`
-and then recall it twice (once to define #ild("lambda"), and once to pass itself as the
+it under a #ild("lambda") name usable from the body of the host abstraction. Supposing that
+this definition is stored as an ILD program called `core/bootstrap/lambda-macro.ild`,
+we recall it twice (once to define #ild("lambda"), and once to pass itself as the
 value of #ild("lambda")):
 #lst(caption: "Outermost usage of the lambda macro")[
 ```
@@ -50,12 +49,10 @@ value of #ild("lambda")):
 ]
 
 == Basic utilities
-We do not yet have a mechanism to "define" values other than
-using the trick with #ild("lambda") given above, so everything we define from here to
-after the definition of #ild("let") would have to be exposed to code that uses it
-with nested #ild("lambda") abstractions.
+We define helper utilities in a scope where the #ild("lambda") macro is present.
 
-#lst(caption: "Definitions of basic helper primitives")[
+#grid(columns: (auto, auto), column-gutter: 0.6em, align: horizon,
+lst(caption: "Definitions of basic helper primitives")[
 ```ild
 ; definition of 'list'
 (!lambda args args)
@@ -63,33 +60,55 @@ with nested #ild("lambda") abstractions.
 ; definition of 'cadr'
 (!lambda (p) (car (cdr p)))
 
-; definition of 'Y' (special case of poly-fix)
+; 'Y' is special case of poly-fix
 (!lambda (f) (car (poly-fix f)))
+```
+],
 
-; definition of 'map'
+lst(caption: "Definition of the map function")[
+```ild
 (Y (!lambda (map)
   (!lambda (f l)
     (!if (null? l)
       l
       (!if (pair? l)
-        (cons (f (car l)) (map f (cdr l)))
-        (make-fail (list 'not-a-list l)))))))))
-
-; definition of 'expand-lambda'
-(!lambda (args body) (cons macroexpand (cons lambda (cons args (cons body '())))))
+        (cons
+          (f (car l)) (map f (cdr l)))
+        (make-fail
+          (list 'not-a-list l)))))))))
 ```
 ]
+)
 
 === Let
-With the building blocks above, we define #ild("let") as:
-#lst(caption: "Definition of let")[
+The binding construct #ild("let") is simply a more ergonomic way
+of writing #ild("lambda") with specifically-named arguments. Thus,
+we first define a helper that lets our macros generate expressions
+of the form #ild("(!lambda <args> <body>)"), and then use it to
+define #ild("let") itself:
+
+#grid(columns: (auto, auto), column-gutter: 0.6em, align: horizon,
+lst(caption: "Definition of expand-lambda")[
+```ild
+
+(!lambda (args body)
+  (cons macroexpand
+    (cons lambda
+      (cons args
+        (cons body '())))))
+```
+],
+lst(caption: "Definition of let")[
 ```ild
 (!lambda (letlist body)
   (cons
-    (expand-lambda (map car letlist) body)
+    (expand-lambda
+      (map car letlist)
+      body)
     (map cadr letlist)))))
 ```
-]
+])
+
 Now we can bind locally-scoped values ergonomically:
 #lst(caption: "Rewriting a lambda-based scope binding to use let")[
 #grid(columns: (auto, auto, auto), column-gutter: 0.6em, align: horizon,
