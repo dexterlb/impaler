@@ -1,4 +1,4 @@
-#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, ildmono, ildcont, ild, step, row, dbarrow, evalsto, defas, ildlist, ildapp, ildpair, ildabstr, ildsetsym, ildsethost, ildsetval, ildsetnum, ildsetbool, ildsetstr, ildsetenv, ildsetcont, interop, cpsabstr, cpsapp, ildhost, ildconst, cpsret, ildsetabstr, ildsethostfunc
+#import "/lib/ild-stuff.typ": ildfail, ildfailbare, ildsf, ildsym, ildmono, ildcont, ild, step, row, dbarrow, evalsto, defas, ildlist, ildapp, ildpair, ildabstr, ildsetsym, ildsethost, ildsetval, ildsetnum, ildsetbool, ildsetstr, ildsetenv, ildsetcont, interop, cpsabstr, cpsapp, ildhost, ildconst, cpsret, ildsetabstr, ildsethostfunc, ildsetcomp
 #import "/lib/misc.typ": citneeded, paraphrase, note, comment, cases, definition, optref
 
 == A minimal host environment <root-env>
@@ -7,14 +7,14 @@ $ildsethost$ to contain data structures, functions and constants that allow impl
 programs. To make these values available to programs, we also define a root binding environment $E$
 that is used for the outermost eval.
 
-We will use the following notation#footnote[
-  $cpsret$ is used only in $arrow.r.long.squiggly$-terms to denote the current continuation.
-  It is not a part of the syntax grammar (but it is part of this paper's grammar!)
-]
+We will use the following notation
 to define the semantics of the host functions:
 
 $ defas(E, omega, "foo", v_1, v_2, ..., v_n) $
-$ dbarrow $
+means that the symbol #ildsym("foo") stands for the host value #ildhost("foo"),
+which in turn, when applied to arguments $arrow(v)$, results in the term $omega$.
+Within $omega$-terms, we use the marker $cpsret$ to denote the _current continuation_.
+Formally, the aforementioned definition of #ildsym("foo") stands for:
 #row(
   $ildhost("foo") in ildsethostfunc,$,
   $#evalsto($interop("apply", C, ildhost("foo"), v_1, v_2, dots, v_n)$, $omega[cpsret / C]$),$,
@@ -52,14 +52,14 @@ a list of formal parameters $P$ and a body
 #footnote[The body being a single expression instead of a list of body
 expressions to be evaluated in order is purely a stylistic choise for the sake
 of simplicity.] $beta$
-is applied by substituting the formal parameters by the actual parameters
+is applied by substituting (@env-substitution) the formal parameters by the actual parameters
 in the local binding environment, and then evaluating the body in the resulting environment:
-
+// MTODO: add an env-substitution appendix that explains the environment substitution notation
 $
   #evalsto(
       $interop(
         "apply", C,
-        ildabstr(e, P = (p_1, p_2, dots, p_n), beta),
+        ildabstr(e, P = ildlist(p_1, p_2, dots, p_n), beta),
         a_1, a_2, ..., a_n
       )$,
       $interop("eval", C, e', beta)$

@@ -25,16 +25,17 @@
   (
     $ildsethost$,
     (
-      $ildsetnum | ildsetbool | ildsetstr | ildsetabstr | ildsetvcont |$,
-      $ildsethostfunc | ...$
+      $ildsetnum | ildsetbool | ildsetstr | ildsethostfunc | dots$
     ),
-    [Host values, opaque to the base language (@embedding)]
+    [Host values and]
   ),
   (
     $ildsethostfunc$,
-    $ildhost("+") | ildhost("cons") | ildhost("apply") |
-      ildhost("call/cc") | ...$,
-    [Host functions, opaque to the base language (@embedding)]
+    (
+      $ildsetabstr | ildsetvcont |  ildhost("+") | ildhost("cons") |$,
+      $ildhost("apply") | ildhost("call/cc") | dots$,
+    ),
+    [host functions, opaque to the base language (@embedding)]
   ),
   ($ildsetnum$, [_numbers_], [], $in$),
   ($ildsetbool$, $ildhost("t") | ildhost("f")$),
@@ -72,8 +73,8 @@
     $ildsetcomp$,
     (
       $interop("eval", ildsetcont, ildsetenv, ildsetcval) |$,
-      $interop("apply", ildsetcont, ildsethostfunc, (ildsetcval*)) |$,
-      $interop("comb", ildsetcont, ildsetenv, ildsetcval, (ildsetcval*)) |$,
+      $interop("apply", ildsetcont, ildsethostfunc, ildsetcval^*) |$,
+      $interop("comb", ildsetcont, ildsetenv, ildsetcval, ildsetcval^*) |$,
       $cpsapp(ildsetcont, ildsetcval)$,
       // applying a continuation to a value yields a computation
     ),
@@ -93,10 +94,14 @@
 
 We define ILD as a homoiconic language where parseable programs ($ildsetprog$)
 are a subset of the internal syntax $ildsetval$. Source code is parsed as
-standard S-expressions augmented with the following syntax sugars:
+standard S-expressions. Throughout this paper, we use the $ildlist(a_1, a_2, dots, a_n)$
+syntax to denote S-expression lists (MTODO: expand the former with ildpair).
+
+In addition, the parser of ILD is augmented with the following syntax sugars:
 - Quote: #ild("'<expr>") $arrow.r.double.bar$ #ild("(quote <expr>)")
 - Macroexpand: #ild("(!<expr1> ... <exprN>)") $arrow.r.double.bar$
   #ild("(macroexpand <expr1> ... <exprN>)")
+
 We also introduce a set of computation terms ($ildsetcomp$) that facillitate
 the operational semantics.
 
@@ -153,7 +158,7 @@ and library functions ($ildsethost$). We split the semantics of ILD into:
   such as the lambda macro (@lambda-macro).
 - The head of a combination is always evaluated. If the result of that is a special
   form, the special form is applied on the *unevaluated* remaining elements of the combination.
-  If the head is a host function, the operands are first *evaluated* and then the head is applied
+  If the head is a host function, the operands are then *evaluated* and then the head is applied
   to the resulting arguments.
 - $ildlist(ildsf("macroexpand"), phi, alpha_1, alpha_2, ..., alpha_n)$ evaluates just $f$ and then passes the
   *unevaluated* arguments to it. The result is then in turn evaluated. This mechanism

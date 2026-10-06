@@ -67,10 +67,13 @@ which adheres to the #clink(<c-minimality>)[minimality] constraints, and then
 demonstrate expressiveness by implementing increasingly-complex constructs in
 ILD, including a way to define mutually-recursive functions (@letrec).
 
-The techniques appliet in this paper are similar to research regarding
+The techniques applied in this paper are similar to research regarding
 F-expressions #cite(<fexpr-shutt>)#cite(<fexpr-pe>). However, instead of declaring
 whether an object is a function or macro upon construction, ILD differentiates
 between function and macro calls at the callsite (@macroexpand-mechanism).
+
+ILD tries to #paraphrase[fill the spot] for a LISP-like language that supports
+first-class continuations and macros with a minimal core.
 
 #[
 #set text(size: 0.8em)
