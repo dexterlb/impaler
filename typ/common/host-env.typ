@@ -54,7 +54,6 @@ expressions to be evaluated in order is purely a stylistic choise for the sake
 of simplicity.] $beta$
 is applied by substituting (@env-substitution) the formal parameters by the actual parameters
 in the local binding environment, and then evaluating the body in the resulting environment:
-// MTODO: add an env-substitution appendix that explains the environment substitution notation
 $
   #evalsto(
       $interop(

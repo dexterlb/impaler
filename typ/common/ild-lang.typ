@@ -95,7 +95,8 @@
 We define ILD as a homoiconic language where parseable programs ($ildsetprog$)
 are a subset of the internal syntax $ildsetval$. Source code is parsed as
 standard S-expressions. Throughout this paper, we use the $ildlist(a_1, a_2, dots, a_n)$
-syntax to denote S-expression lists (MTODO: expand the former with ildpair).
+syntax to denote S-expression lists, e.g.
+$ildpair(a_1, ildpair(a_2, dots ildpair(a_n, ()) dots))$.
 
 In addition, the parser of ILD is augmented with the following syntax sugars:
 - Quote: #ild("'<expr>") $arrow.r.double.bar$ #ild("(quote <expr>)")

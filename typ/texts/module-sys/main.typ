@@ -23,5 +23,6 @@
 = Appendix
 
 #include "/common/poly-fix-y.typ"
+#include "/common/env-substitution.typ"
 
 #bibliography("/common/refs.bib")
