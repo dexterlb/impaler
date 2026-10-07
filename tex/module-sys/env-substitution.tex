@@ -1,22 +1,8 @@
 \subsection{Environment substitution}
 \label{env-substitution}
-Applying an $\ildsetAbstr$-term binds its formal parameters to the actual
-parameter values in a new binding environment (\ref{abstraction}). We write
-$e [ x / v ]$ for the environment $e$ in which the symbol $x$ is bound to the
-value $v$. Since binding environments are key/value lists with unique keys
-(\ref{stepped-semantics}), the notation \emph{rebinds} $x$: a pre-existing binding of $x$
-is replaced. As a consequence, the substitutions
-$e [ x_1 / v_1 ] \dots [ x_n / v_n ]$ apply from left to right,
 
-\[
-  e [ x_1 / v_1 ] \dots [ x_n / v_n ] = (e [ x_1 / v_1 ]) [ x_2 / v_2 ] \dots [ x_n / v_n ],
-\]
-
-and their order matters whenever the $x_i$ are not pairwise distinct.
-
-Formally, $e [ x / v ]$ is defined recursively on the structure of the
-environment, where $y$ ranges over symbols other than $x$ and $w$ over values:
-
+Formally, substituting a symbol/value pair in a binding environment
+can be defined as:
 \[
   e [ x / v ] =
   \begin{cases}

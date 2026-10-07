@@ -61,3 +61,19 @@
   \par\nobreak\smallskip\noindent
   \refstepcounter{listing}\textbf{Listing \thelisting:} #1\par\medskip
 }
+
+% --- Full-width floats ------------------------------------------------------
+% \begin{cfig}{<name>}{<caption>} ... \end{cfig}: a two-column-spanning float
+% captioned "<name> <n>: <caption>".
+\newenvironment{cfig}[2]{%
+  \begin{figure*}[t]
+  \centering
+  \refstepcounter{figure}%
+  \def\cfigname{#1}%
+  \def\cfigcaption{#2}%
+}{%
+  \addtocounter{figure}{-1}%
+  \captionsetup{name={\cfigname},labelsep=colon}%
+  \caption{\cfigcaption}%
+  \end{figure*}%
+}

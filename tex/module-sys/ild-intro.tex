@@ -78,7 +78,7 @@ between function and macro calls at the callsite (\ref{macroexpand-mechanism}).
 ILD tries to \paraphrase{fill the spot} for a LISP-like language that supports
 first-class continuations and macros with a minimal core.
 
-\begin{center}
+\begin{cfig}{Table}{Feature comparison of similar languages}
 \begin{tabular}{clcccll}
 \toprule
 Language & Immutable & Continuations & Special forms & Macros & Expansion semantics & Trigger \\
@@ -90,7 +90,7 @@ Kraken \cite{fexpr-pe} & yes & no & one & fexprs & runtime & bind time \\
 ILD & yes & yes & three & unhygienic & runtime & callsite \\
 \bottomrule
 \end{tabular}
-\end{center}
+\end{cfig}
 
 To demonstrate expressiveness, we \paraphrase{present} a program called a
 \emph{module loader} (\ref{module-loader}), written in ILD and making use of

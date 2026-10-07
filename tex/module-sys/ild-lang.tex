@@ -2,7 +2,7 @@
 
 \subsection{Syntax}
 \label{syntax}
-\begin{center}
+\begin{cfig}{Grammar}{Syntax of ILD}
 \begin{tabular}{r@{\;}c@{\;}l@{\qquad}l}
 $\ildsetVal$ & $:=$ & $\ildsetSym \mid \ildsetSexp \mid \ildsetSF \mid \ildsetFail \mid \ildsetHost$ & \paraphrase{Tangible} values \\
 $\ildsetSym$ & $\in$ & \emph{symbols} & \\
@@ -30,7 +30,7 @@ $\ildsetCont$ & $:=$ & $\cpsyield \mid \cpsabstr{\ildsetVV}{\ildsetComp}$ & CPS 
 $\ildsetCVal$ & $:=$ & $\ildsetVV \mid \ildsetVal$ & CPS calculus value terms \\
 $\ildsetVV$ & $\in$ & $\{x_1, x_2, \dots\}$ & CPS calculus value variables \\
 \end{tabular}
-\end{center}
+\end{cfig}
 
 We define ILD as a homoiconic language where parseable programs ($\ildsetProg$)
 are a subset of the internal syntax $\ildsetVal$. Source code is parsed as
@@ -56,8 +56,6 @@ over the set of \emph{computations} ($\ildsetComp$). Evaluation starts from
 the term $\interop{eval}{\cpsyield,\, E,\, v}$ for some value $v$, the root
 continuation $\cpsyield$ and a root binding environment $E$ (\ref{root-env}).
 
-\subsubsection{Embedding}
-\label{embedding}
 \begin{note}
 this needs to be heavily reworded
 \end{note}
@@ -70,43 +68,43 @@ and library functions ($\ildsetHost$). We split the semantics of ILD into:
     for writing nontrivial programs, is discussed in \ref{root-env}.
 \end{itemize}
 
-\subsubsection{Small-step semantics}
+\begin{cfig}{Figure}{Small-step semantics of ILD}
 \label{stepped-semantics}
-
-\rlabel{Simple cases:}{%
-\steprow{%
+\begin{semgroup}{Simple cases:}
+\semrow{%
   \step{s \in \ildsetSym \text{ and } e = \ildlist{\dots\, \ildpair{s}{v}\, \dots}}{\interop{eval}{C,\, e,\, s}}{\cpsapp{C,\, v}}
   \qquad
   \step{v \in \ildsetSF \cup \ildsetHost \cup \ildsetFail}{\interop{eval}{C,\, e,\, v}}{\cpsapp{C,\, v}}
 }%
-}
+\end{semgroup}
 
-\rlabel{Combinations:}{%
-\steprow{%
+\begin{semgroup}{Combinations:}
+\semrow{%
   \evalsto{\interop{eval}{C,\, e,\, \ildlist{\phi\, \alpha_1\, \dots\, \alpha_n}}}{\interop{eval}{\cpsabstr{f}{\interop{comb}{C,\, e,\, f,\, \alpha_1,\, \dots,\, \alpha_n}},\, e,\, \phi}}
 }%
-}
-\steprow{%
+\semrow{%
   \step{f \in \ildsetHostFunc}{\interop{comb}{C,\, e,\, f,\, \alpha_1,\, \dots,\, \alpha_n}}{\interop{eval}{\cpsabstr{x_1}{\cdots \interop{eval}{\cpsabstr{x_n}{\interop{apply}{C,\, f,\, x_1,\, \dots,\, x_n}},\, e,\, \alpha_n} \cdots},\, e,\, \alpha_1}}
 }%
+\end{semgroup}
 
-\rlabel{Special forms:}{%
-\steprow{%
+\begin{semgroup}{Special forms:}
+\semrow{%
   \evalsto{\interop{comb}{C,\, e,\, \ildsf{quote},\, \alpha}}{\cpsapp{C,\, \alpha}}
   \qquad
   \evalsto{\interop{comb}{C,\, e,\, \ildsf{free-vars}}}{\cpsapp{C,\, e}}
 }%
-}
-\steprow{%
+\semrow{%
   \evalsto{\interop{comb}{C,\, e,\, \ildsf{macroexpand},\, \phi,\, \vec{\alpha}}}{\interop{eval}{\cpsabstr{f}{\interop{apply}{\cpsabstr{x}{\interop{eval}{C,\, e,\, x}},\, f,\, \vec{\alpha}}},\, e,\, \phi}}
 }%
+\end{semgroup}
 
-\rlabel{CPS calculus $\beta$-reduction:}{%
-\steprow{\evalsto{\cpsapp{\cpsabstr{x}{M},\, v}}{M[x/v]}}%
-}
+\begin{semgroup}{CPS calculus $\beta$-reduction:}
+\semrow{\evalsto{\cpsapp{\cpsabstr{x}{M},\, v}}{M[x/v]}}%
+\end{semgroup}
+\end{cfig}
 
-\subsubsection{Notes on selected cases}
-\label{semantics-notes}
+Small-step semantics is outlined in \ref{stepped-semantics}. A few notes
+on selected cases:
 \begin{itemize}
   \item $\ildsf{free-vars}$ captures the current binding environment and is used by higher-level constructs
     such as the lambda macro (\ref{lambda-macro}).

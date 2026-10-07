@@ -64,4 +64,16 @@
 
 % --- Layout helpers ---------------------------------------------------------
 \newcommand{\steprow}[1]{\par\medskip\centerline{$\displaystyle #1$}\par\medskip}
-\newcommand{\rlabel}[2]{\par\medskip\noindent\textit{#1}\quad #2\par\medskip}
+\newcommand{\semrow}[1]{\centerline{$\displaystyle #1$}\par\medskip}
+\newlength{\semlabelwidth}
+\newenvironment{semgroup}[1]{%
+  \par\medskip\noindent
+  \setlength{\semlabelwidth}{0.2\linewidth}%
+  \hbox to\linewidth\bgroup
+  \begin{minipage}[t]{\semlabelwidth}\raggedright\itshape #1\end{minipage}%
+  \hfill
+  \begin{minipage}[t]{\dimexpr\linewidth-\semlabelwidth-1em\relax}%
+}{%
+  \end{minipage}%
+  \egroup\par\medskip
+}
