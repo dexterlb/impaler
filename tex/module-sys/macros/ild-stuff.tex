@@ -1,0 +1,67 @@
+% ILD notation macros.
+
+% --- Inline monospaced fragments -------------------------------------------
+\newcommand{\ild}[1]{\texttt{#1}}
+\newcommand{\ildmono}[1]{\texttt{#1}}
+\newcommand{\ildsym}[1]{\textcolor{csym}{\texttt{#1}}}
+\newcommand{\interopword}[1]{\textcolor{cinterop}{\texttt{#1}}}
+\newcommand{\ildsf}[1]{\textcolor{csf}{\texttt{#1}}}
+\newcommand{\cpsword}[1]{\textcolor{cildset}{\texttt{#1}}}
+\newcommand{\ildset}[1]{\textcolor{cildset}{\textbf{\textsf{#1}}}}
+
+% --- Set names --------------------------------------------------------------
+\newcommand{\ildsetSym}{\ildset{Sym}}
+\newcommand{\ildsetVal}{\ildset{Val}}
+\newcommand{\ildsetProg}{\ildset{Prog}}
+\newcommand{\ildsetSexp}{\ildset{Sexp}}
+\newcommand{\ildsetList}{\ildset{List}}
+\newcommand{\ildsetParList}{\ildset{ParList}}
+\newcommand{\ildsetSF}{\ildset{SF}}
+\newcommand{\ildsetFail}{\ildset{Fail}}
+\newcommand{\ildsetHost}{\ildset{Host}}
+\newcommand{\ildsetHostFunc}{\ildset{HostFunc}}
+\newcommand{\ildsetNum}{\ildset{Num}}
+\newcommand{\ildsetBool}{\ildset{Bool}}
+\newcommand{\ildsetStr}{\ildset{Str}}
+\newcommand{\ildsetEnv}{\ildset{Env}}
+\newcommand{\ildsetAbstr}{\ildset{Abstr}}
+\newcommand{\ildsetCont}{\ildset{Cont}}
+\newcommand{\ildsetVCont}{\ildset{VCont}}
+\newcommand{\ildsetComp}{\ildset{Comp}}
+\newcommand{\ildsetVV}{\ildset{VV}}
+\newcommand{\ildsetCVal}{\ildset{CVal}}
+
+% --- CPS calculus markers ---------------------------------------------------
+\newcommand{\cpsyield}{\cpsword{yield}}
+\newcommand{\cpsret}{\cpsword{ret}}
+
+% --- Host values ------------------------------------------------------------
+\newcommand{\ildhost}[1]{\textcolor{chost}{\texttt{\#{}#1}}}
+\newcommand{\ildconst}[2]{\textcolor{chost}{\texttt{\#{}#1}}_{#2}}
+\newcommand{\ildfailbare}{\textcolor{chost}{\texttt{\#fail}}}
+\newcommand{\ildfail}[1]{\ildfailbare\langle#1\rangle}
+\newcommand{\ildabstrbare}{\textcolor{chost}{\texttt{\#}\ensuremath{\Lambda}}}
+\newcommand{\ildabstr}[1]{\ildabstrbare\langle#1\rangle}
+\newcommand{\ildcontbare}{\textcolor{chost}{\texttt{\#cont}}}
+\newcommand{\ildcont}[1]{\ildcontbare\langle#1\rangle}
+
+% --- Lists, pairs and applications -----------------------------------------
+\newcommand{\ildlist}[1]{\left(#1\right)}
+\newcommand{\ildpair}[2]{\ildlist{#1 \,.\, #2}}
+\newcommand{\ildapp}[2]{\ildlist{\ildsym{#1}\ #2}}
+
+% --- Host interop brackets --------------------------------------------------
+\newcommand{\interop}[2]{\left[\,\textcolor{cinterop}{\texttt{#1}}\ #2\,\right]}
+
+% --- CPS calculus terms -----------------------------------------------------
+\newcommand{\cpsabstr}[2]{\ildlist{\lambda\,#1\,.\, #2}}
+\newcommand{\cpsapp}[1]{\ildlist{#1}}
+
+% --- Semantic relations -----------------------------------------------------
+\newcommand{\evalsto}[2]{#1 \to #2}
+\newcommand{\defas}[3]{#1 \mathrel{\underset{#2}{\rightsquigarrow}} #3}
+\newcommand{\step}[3]{\dfrac{#1}{#2 \to #3}}
+
+% --- Layout helpers ---------------------------------------------------------
+\newcommand{\steprow}[1]{\par\medskip\centerline{$\displaystyle #1$}\par\medskip}
+\newcommand{\rlabel}[2]{\par\medskip\noindent\textit{#1}\quad #2\par\medskip}

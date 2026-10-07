@@ -1,0 +1,119 @@
+\subsection{A minimal host environment}
+\label{root-env}
+The base language, as defined in \ref{semantics}, is useless by itself. In this section we constrain
+$\ildsetHost$ to contain data structures, functions and constants that allow implementing non-trivial
+programs. To make these values available to programs, we also define a root binding environment $E$
+that is used for the outermost eval.
+
+We will use the following notation
+to define the semantics of the host functions:
+
+\[ \defas{\ildapp{foo}{v_1\, v_2\, \dots\, v_n}}{E}{\omega} \]
+means that the symbol \ildsym{foo} stands for the host value \ildhost{foo},
+which in turn, when applied to arguments $\vec{v}$, results in the term $\omega$.
+Within $\omega$-terms, we use the marker $\cpsret$ to denote the \emph{current continuation}.
+Formally, the aforementioned definition of \ildsym{foo} stands for:
+\steprow{%
+  \ildhost{foo} \in \ildsetHostFunc,
+  \quad
+  \evalsto{\interop{apply}{C,\, \ildhost{foo},\, v_1,\, v_2,\, \dots,\, v_n}}{\omega[\cpsret/C]},
+  \quad
+  E = \ildlist{\dots\, \ildpair{\ildsym{foo}}{\ildhost{foo}}\, \dots}
+}
+
+\subsubsection{\paraphrase{Boring} values}
+Let $\ildsetNum, \ildsetBool, \ildsetStr \subset \ildsetHost$ for the host numbers, booleans
+and strings.
+
+\begin{itemize}
+  \item Special forms:
+    \( E = \ildlist{\dots,\, \ildpair{\ildsym{quote}}{\ildsf{quote}},\, \ildpair{\ildsym{macroexpand}}{\ildsf{macroexpand}},\, \ildpair{\ildsym{free-vars}}{\ildsf{free-vars}},\, \dots} \)
+  \item Arithmetic on $\ildsetNum$ --- $\ildapp{+}{x_1\, \dots\, x_n}$, $\ildapp{*}{x_1\, \dots\, x_n}$,
+    $\ildapp{-}{x\, y}$, $\ildapp{/}{x\, y}$.
+  \item Comparison, $\ildsetNum \times \ildsetNum \to \ildsetBool$ --- $\ildsym{=}$, $\ildsym{<}$,
+    $\ildsym{>}$, $\ildsym{<=}$, $\ildsym{>=}$.
+  \item Pairs --- $\defas{\ildapp{cons}{a\, d}}{E}{\cpsapp{\cpsret,\, \ildpair{a}{d}}}$, $\defas{\ildapp{car}{\ildpair{a}{d}}}{E}{\cpsapp{\cpsret,\, a}}$,
+    $\defas{\ildapp{cdr}{\ildpair{a}{d}}}{E}{\cpsapp{\cpsret,\, d}}$.
+  \item Predicates, $\ildsetVal \to \ildsetBool$ --- $\ildsym{null?}$, $\ildsym{pair?}$,
+    $\ildsym{symbol?}$, $\ildsym{string?}$, $\ildsym{func?}$,
+    $\ildsym{fail?}$
+  \item Equality --- $\ildapp{sym-eq?}{s_1\, s_2}$, $\ildapp{str-eq?}{s_1\, s_2}$
+  \item Failure --- $\defas{\ildapp{make-fail}{v}}{E}{\cpsapp{\cpsret,\, \ildfail{v}}}$.
+  \item Branching --- $\ildapp{bool-to-k}{b}$ returns a function on two arguments that
+    returns its first argument if $b$ is true and the second otherwise.
+\end{itemize}
+
+\subsubsection{Abstractions}
+\label{abstraction}
+For ILD to become Turing-complete, and, equivalently, a superset of the $\lambda$-calculus,
+we give it a mechanism for building $\lambda$-abstractions.
+
+An $\ildsetAbstr$-term carrying a binding environment $e$,
+a list of formal parameters $P$ and a body
+\footnote{The body being a single expression instead of a list of body
+expressions to be evaluated in order is purely a stylistic choise for the sake
+of simplicity.} $\beta$
+is applied by substituting (\ref{env-substitution}) the formal parameters by the actual parameters
+in the local binding environment, and then evaluating the body in the resulting environment:
+\[
+  \evalsto{\interop{apply}{C,\, \ildabstr{e,\, P = \ildlist{p_1\, p_2\, \dots\, p_n},\, \beta},\, a_1,\, a_2,\, \dots,\, a_n}}{\interop{eval}{C,\, e',\, \beta}}
+  \quad \text{, where} \quad
+  e' = e\, [p_1/a_1]\, [p_2/a_2]\, \dots\, [p_n/a_n]
+\]
+
+To let programs build such abstractions, we provide a data constructor:
+\[ \defas{\ildapp{mk-lambda}{e\, P\, B}}{E}{\cpsapp{\cpsret,\, \ildabstr{e, P, B}}} \]
+
+\subsubsection{A recursion operator}
+A meta-operator $\ildsym{poly-fix}$ shall be provided to allow constructing
+mutually-recursive functions
+\footnote{If we don't care about performance and have infinite memory, the host implementation
+of $\ildsym{poly-fix}$ is optional, since we can just implement the Y-combinator in ILD itself. For this exercise, see \ref{poly-fix-Y}.}:
+
+\[ \defas{\ildapp{poly-fix}{\Gamma_1\, \Gamma_2\, \dots\, \Gamma_n}}{E}{\cpsapp{\cpsret,\, \ildlist{\ildconst{f}{1},\, \ildconst{f}{2},\, \dots,\, \ildconst{f}{n}}}} \]
+
+where $\ildconst{f}{1}, \dots, \ildconst{f}{n}$ are such that:
+
+\[ \evalsto{\interop{apply}{C,\, \ildconst{f}{i},\, a_1,\, \dots,\, a_n}}{\interop{apply}{\cpsabstr{{f_i}'}{\interop{apply}{C,\, {f_i}',\, a_1,\, \dots,\, a_n}},\, \Gamma_i,\, \ildconst{f}{1},\, \ildconst{f}{2},\, \dots,\, \ildconst{f}{n}}} \]
+
+% A stronger definition of $#f_1, ..., #f_n$ would be $#f_i = Gamma_i (#f_1, ..., #f_n)$,
+% but this leads to divergence problems when the language has strict (non-lazy) semantics.
+% Indeed, other strictly-evaluated languages, like Scheme, only support the weaker version
+% of the recursion operator: `letrec` in Scheme does not allow non-functional right-hand
+% sides. Lazy languages like Haskell and Nix do not have this problem.
+
+\subsubsection{Interpreter \paraphrase{access}}
+Even though formally unnecessary (an ILD interpreter can be implemented in ILD),
+it is \paraphrase{useful} to allow programs to call into the interpreter:
+\begin{itemize}
+  \item Expose the evaluation terms to programs:
+    \steprow{%
+      \defas{\ildapp{apply}{f\, a_1\, \dots\, a_n}}{E}{\interop{apply}{\cpsret,\, f,\, a_1,\, \dots,\, a_n}},
+      \quad
+      \defas{\ildapp{eval}{e\, v}}{E}{\interop{eval}{\cpsret,\, e,\, v}}
+    }
+    \vspace{0.5em}
+  \item $\ildapp{read-source}{p}$ returns the ILD program named
+    with the string $p$\footnote{in actual implementations $p$ is a file path and
+    $\ildsym{read-source}$ parses the file and returns the parsed program.}
+\end{itemize}
+
+\subsubsection{Effectful computations}
+\label{side-effects}
+The CPS calculus can be extended to model any monadic effect system
+\cite[Section 3.3]{wadler}. This includes side effects like IO,
+and functions like $\ildsym{gensym}$:
+
+\[ \defas{\ildapp{gensym}{s}}{E}{\cpsapp{\cpsret,\, \text{a fresh symbol whose prefix is } s}} \]
+
+\subsubsection{First-class continuations}
+\label{first-class-continuations}
+To allow ILD programs to implement complex control flow, we define
+a host function $\ildsym{call/cc}$ that passes the current continuation as a
+first-class value to a given callable, and a rule to consume such reified
+continuations by discarding the current continuation:
+\steprow{%
+  \defas{\ildapp{call/cc}{f}}{E}{\interop{apply}{f,\, \ildcont{\cpsret}}},
+  \qquad
+  \evalsto{\interop{apply}{C,\, \ildcont{C'},\, v}}{\cpsapp{C',\, v}}
+}

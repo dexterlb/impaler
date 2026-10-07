@@ -41,6 +41,47 @@
           "cyrillic"
           "babel-bulgarian" "babel-english"
           "minted"
+
+          # (acmart / SIGPLAN)
+          "acmart"
+          "amsmath"
+          "amsfonts"
+          "babel"
+          "booktabs"
+          "caption"
+          "cmap"
+          "comment"
+          "draftwatermark"
+          "environ"
+          "etoolbox"
+          "fancyhdr"
+          "float"
+          "fontaxes"
+          "framed"
+          "graphics"
+          "hyperxmp"
+          "ifmtarg"
+          "iftex"
+          "inconsolata"
+          "listings"
+          "libertinus-fonts"
+          "lm-math"
+          "luacode"
+          "microtype"
+          "natbib"
+          "ncctools"
+          "newtx"
+          "oberdiek"
+          "pbalance"
+          "pdfescape"
+          "preprint"
+          "refcount"
+          "setspace"
+          "stringenc"
+          "totpages"
+          "xcolor"
+          "xkeyval"
+          "xstring"
         ];
 
         extraBuildDeps = [
@@ -50,6 +91,7 @@
         latexTools = latex_tools.lib.mkLatexTools { inherit nixpkgs pkgs texPkgs extraBuildDeps; };
         fmiSpringSession2024 = (import ./fmi_spring_session_2024) { inherit pkgs latexTools; };
         fmiSpringSession2026 = (import ./fmi_spring_session_2026) { inherit pkgs latexTools; };
+        module-sys = (import ./module-sys) { inherit pkgs latexTools; };
         isesia = (import ./isesia) { inherit pkgs latexTools; };
         thesis = (import ./thesis) { inherit pkgs latexTools; };
       in
@@ -59,6 +101,7 @@
           // fmiSpringSession2026.packages
           // isesia.packages
           // thesis.packages
+          // module-sys.packages
           // rec {
             default = thesis.packages.thesis;
           };

@@ -1,0 +1,63 @@
+% Miscellaneous markup helpers.
+
+% --- Editorial markers ------------------------------------------------------
+\newcommand{\citneeded}{\textcolor{blue}{[citation needed]}}
+\newcommand{\clink}[2]{\hyperref[#1]{\textcolor{blue}{#2}}}
+\newcommand{\optref}[1]{\ref{#1}}
+% \paraphrase[replacement]{body}: a marked draft phrase.
+\newcommand{\paraphrase}[2][]{#2\ifx\relax#1\relax\else\ \textcolor{orange}{(#1)}\fi}
+
+% --- Editorial boxes --------------------------------------------------------
+\newmdenv[
+  backgroundcolor=notebg, linecolor=boxborder, linewidth=2pt,
+  topline=true, bottomline=false, leftline=false, rightline=false,
+  innerleftmargin=6pt, innerrightmargin=6pt,
+  innertopmargin=4pt, innerbottommargin=4pt,
+  skipabove=6pt, skipbelow=6pt,
+]{note}
+
+\newmdenv[
+  backgroundcolor=commentbg, linecolor=boxborder, linewidth=2pt,
+  topline=true, bottomline=false, leftline=false, rightline=false,
+  innerleftmargin=6pt, innerrightmargin=6pt,
+  innertopmargin=4pt, innerbottommargin=4pt,
+  skipabove=6pt, skipbelow=6pt,
+]{commentbox}
+
+\newmdenv[
+  backgroundcolor=reviewbg, linecolor=boxborder, linewidth=2pt,
+  topline=false, bottomline=false, leftline=true, rightline=false,
+  innerleftmargin=6pt, innerrightmargin=6pt,
+  innertopmargin=4pt, innerbottommargin=4pt,
+  skipabove=6pt, skipbelow=6pt,
+]{reviewbox}
+
+% --- Listings ---------------------------------------------------------------
+\lstdefinelanguage{ild}{
+  sensitive=true,
+  morecomment=[l]{;},
+  morestring=[b]",
+  morekeywords={macroexpand,quote,free-vars,mk-lambda,cons,car,cdr,
+    lambda,let,letrec,poly-fix,map,gensym,apply,eval,read-source,
+    make-fail,bool-to-k,list,cadr,Y,f,args,body,defs,def-body,item-bodies,
+    arg-bodies,flist,result-body,func},
+}
+\lstdefinestyle{ildstyle}{
+  language=ild,
+  basicstyle=\ttfamily\footnotesize,
+  backgroundcolor=\color{listingfill},
+  frame=none,
+  xleftmargin=6pt, xrightmargin=6pt,
+  aboveskip=6pt, belowskip=2pt,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+}
+\lstnewenvironment{ildcode}[1][]{\lstset{style=ildstyle,#1}}{}
+\lstnewenvironment{schemecode}[1][]{\lstset{style=ildstyle,language=Lisp,#1}}{}
+
+\newcounter{listing}
+\newcommand{\lstcaption}[1]{%
+  \par\nobreak\smallskip\noindent
+  \refstepcounter{listing}\textbf{Listing \thelisting:} #1\par\medskip
+}

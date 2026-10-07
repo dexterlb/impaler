@@ -1,0 +1,32 @@
+\subsection{Environment substitution}
+\label{env-substitution}
+Applying an $\ildsetAbstr$-term binds its formal parameters to the actual
+parameter values in a new binding environment (\ref{abstraction}). We write
+$e [ x / v ]$ for the environment $e$ in which the symbol $x$ is bound to the
+value $v$. Since binding environments are key/value lists with unique keys
+(\ref{stepped-semantics}), the notation \emph{rebinds} $x$: a pre-existing binding of $x$
+is replaced. As a consequence, the substitutions
+$e [ x_1 / v_1 ] \dots [ x_n / v_n ]$ apply from left to right,
+
+\[
+  e [ x_1 / v_1 ] \dots [ x_n / v_n ] = (e [ x_1 / v_1 ]) [ x_2 / v_2 ] \dots [ x_n / v_n ],
+\]
+
+and their order matters whenever the $x_i$ are not pairwise distinct.
+
+Formally, $e [ x / v ]$ is defined recursively on the structure of the
+environment, where $y$ ranges over symbols other than $x$ and $w$ over values:
+
+\[
+  e [ x / v ] =
+  \begin{cases}
+    \ildpair{\ildpair{x}{v}}{()} & \text{if } e = (), \\
+    \ildpair{\ildpair{x}{v}}{e_1} & \text{if } e = \ildpair{\ildpair{x}{w}}{e_1}, \\
+    \ildpair{\ildpair{y}{w}}{e_1 [ x / v ]} & \text{if } e = \ildpair{\ildpair{y}{w}}{e_1} \text{ and } y \neq x.
+  \end{cases}
+\]
+
+In particular, evaluating the body $\beta$ of an \ref{abstraction} in the resulting
+environment $e' = e [ p_1 / a_1 ] \dots [ p_n / a_n]$ resolves each formal
+parameter $p_i$ to the corresponding actual parameter $a_i$ via the symbol
+lookup rule (\ref{stepped-semantics}).
