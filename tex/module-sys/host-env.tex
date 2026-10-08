@@ -1,6 +1,6 @@
 \subsection{A minimal host environment}
 \label{root-env}
-The base language, as defined in \ref{semantics}, is useless by itself. In this section we constrain
+The base language, as defined in \cref{semantics}, is useless by itself. In this section we constrain
 $\ildsetHost$ to contain data structures, functions and constants that allow implementing non-trivial
 programs. To make these values available to programs, we also define a root binding environment $E$
 that is used for the outermost eval.
@@ -53,7 +53,7 @@ a list of formal parameters $P$ and a body
 \footnote{The body being a single expression instead of a list of body
 expressions to be evaluated in order is purely a stylistic choise for the sake
 of simplicity.} $\beta$
-is applied by substituting (\ref{env-substitution}) the formal parameters by the actual parameters
+is applied by substituting (\cref{env-substitution}) the formal parameters by the actual parameters
 in the local binding environment, and then evaluating the body in the resulting environment:
 \[
   \evalsto{\interop{apply}{C,\, \ildabstr{e,\, P = \ildlist{p_1\, p_2\, \dots\, p_n},\, \beta},\, a_1,\, a_2,\, \dots,\, a_n}}{\interop{eval}{C,\, e',\, \beta}}
@@ -68,7 +68,7 @@ To let programs build such abstractions, we provide a data constructor:
 A meta-operator $\ildsym{poly-fix}$ shall be provided to allow constructing
 mutually-recursive functions
 \footnote{If we don't care about performance and have infinite memory, the host implementation
-of $\ildsym{poly-fix}$ is optional, since we can just implement the Y-combinator in ILD itself. For this exercise, see \ref{poly-fix-Y}.}:
+of $\ildsym{poly-fix}$ is optional, since we can just implement the Y-combinator in ILD itself. For this exercise, see \cref{poly-fix-Y}.}:
 
 \[ \defas{\ildapp{poly-fix}{\Gamma_1\, \Gamma_2\, \dots\, \Gamma_n}}{E}{\cpsapp{\cpsret,\, \ildlist{\ildconst{f}{1},\, \ildconst{f}{2},\, \dots,\, \ildconst{f}{n}}}} \]
 

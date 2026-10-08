@@ -5,7 +5,7 @@
 We should focus on the fact that a similar thing has been done before
 (\cite{fexpr-shutt}\cite{fexpr-pe}), and that the novel thing we're trying
 here is \textbf{callsite-annotated macro expansion}.
-Parts of this section should be moved to \ref{discussion}.
+Parts of this section should be moved to \cref{discussion}.
 \end{note}
 
 We present a programming language that is as minimal as possible
@@ -68,12 +68,12 @@ It is therefore interesting to see if we can design a language that meets all
 these goals at the same time. We define a language (which we will call ILD)
 which adheres to the \clink{c-minimality}{minimality} constraints, and then
 demonstrate expressiveness by implementing increasingly-complex constructs in
-ILD, including a way to define mutually-recursive functions (\ref{letrec}).
+ILD, including a way to define mutually-recursive functions (\cref{letrec}).
 
 The techniques applied in this paper are similar to research regarding
 F-expressions \cite{fexpr-shutt}\cite{fexpr-pe}. However, instead of declaring
 whether an object is a function or macro upon construction, ILD differentiates
-between function and macro calls at the callsite (\ref{macroexpand-mechanism}).
+between function and macro calls at the callsite (\cref{macroexpand-mechanism}).
 
 ILD tries to \paraphrase{fill the spot} for a LISP-like language that supports
 first-class continuations and macros with a minimal core.
@@ -93,7 +93,7 @@ ILD & yes & yes & three & unhygienic & runtime & callsite \\
 \end{cfig}
 
 To demonstrate expressiveness, we \paraphrase{present} a program called a
-\emph{module loader} (\ref{module-loader}), written in ILD and making use of
+\emph{module loader} (\cref{module-loader}), written in ILD and making use of
 callsite-triggered macros, that is in turn able to execute programs that are
 decomposed into \emph{modules} such as the following example:
 
