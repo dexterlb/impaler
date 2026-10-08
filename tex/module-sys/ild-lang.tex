@@ -36,7 +36,7 @@ We define ILD as a homoiconic language where parseable programs (\(\ildsetProg\)
 are a subset of the internal syntax \(\ildsetVal\). Source code is parsed as
 standard S-expressions. Throughout this paper, we use the \(\ildlist{a_1\, a_2\, \dots\, a_n}\)
 syntax to denote S-expression lists, i.e. the nested pairs
-\(\ildpair{a_1}{\ildpair{a_2}{\,\dots\, \ildpair{a_n}{()} \,\dots\,}}\) whose final tail is the empty list \(()\).
+\(\ildpair{a_1}{\ildpair{a_2}{\,\dots\, \ildpair{a_n}{()} \,\dots\,}}\).
 
 In addition, the parser of ILD is augmented with the following syntax sugars:
 \begin{itemize}
@@ -52,7 +52,10 @@ the operational semantics.
 \subsection{Semantics}
 \label{semantics}
 We define the semantics of ILD in terms of a CPS calculus based on
-the \paraphrase[semi-typed?]{untyped} \(\lambda\)-calculus
+standard \(\beta\)-reduction%
+\footnote{
+We omit details related to variable renaming and substitution.
+}%
 over the set of \emph{computations} (\(\ildsetComp\)). Evaluation starts from
 the term \(\interop{eval}{\cpsyield}{E}{v}\) for some value \(v\), the root
 continuation \(\cpsyield\) and a root binding environment \(E\) (\cref{root-env}).
@@ -68,7 +71,7 @@ and library functions (\(\ildsetHost\)). We split the semantics of ILD into:
     for writing nontrivial programs, is discussed in \cref{root-env}.
 \end{itemize}
 
-\subsubsection{Notes of small-step semantics}
+\subsubsection{Notes on small-step semantics}
 \label{stepped-semantics}
 \begin{cfig}{Figure}{Small-step semantics of ILD}
 \label{stepped-semantics-fig}
@@ -112,7 +115,7 @@ on selected cases:
     such as the lambda macro (\cref{lambda-macro}).
   \item The head of a combination is always evaluated. If the result of that is a special
     form, the special form is applied on the \textbf{unevaluated} remaining elements of the combination.
-    If the head is a host function, the operands are then \emph{evaluated} and then the head is applied
+    If the head is a host function, the operands are then \textbf{evaluated} and then the head is applied
     to the resulting arguments.
   \item \(\ildlist{\ildsf{macroexpand}\, \phi\, \alpha_1\, \alpha_2\, \dots\, \alpha_n}\) evaluates just \(f\) and then passes the
     \textbf{unevaluated} arguments to it. The result is then in turn evaluated. This mechanism
