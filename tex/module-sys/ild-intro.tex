@@ -79,15 +79,17 @@ ILD tries to \paraphrase{fill the spot} for a LISP-like language that supports
 first-class continuations and macros with a minimal core.
 
 \begin{cfig}{Table}{Feature comparison of similar languages}
-\begin{tabular}{clcccll}
+\begin{tabular}{clccccll}
 \toprule
-Language & Immutable & Continuations & Special forms & Macros & Expansion semantics & Trigger \\
+\multicolumn{4}{c}{} & \multicolumn{4}{c}{Macros} \\
+\cmidrule(lr){5-8}
+Language & Immutable? & Continuations? & Special forms & Kind & First-class? & Expansion & Trigger \\
 \midrule
-LISP & no & yes & many & unhygienic & separate pass & bind time \\
-Scheme & no & yes & few & hygienic & separate pass & bind time \\
-LFE & yes & no & many & limited & separate pass & bind time \\
-Kraken \cite{fexpr-pe} & yes & no & one & fexprs & runtime & bind time \\
-ILD & yes & yes & three & unhygienic & runtime & callsite \\
+LISP & no & yes & many & unhygienic & no & separate pass & bind time \\
+Scheme & no & yes & few & hygienic & no & separate pass & bind time \\
+LFE & yes & no & many & limited & no & separate pass & bind time \\
+Kraken \cite{fexpr-pe} & yes & no & one & fexprs & yes & runtime & bind time \\
+ILD & yes & yes & three & unhygienic & yes & runtime & callsite \\
 \bottomrule
 \end{tabular}
 \end{cfig}
