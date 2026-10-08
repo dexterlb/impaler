@@ -79,7 +79,12 @@ and then evaluating the body in the resulting environment:
   \\
   \text{where } e' = e\, \subst{p_1}{a_1}\, \subst{p_2}{a_2}\, \dots\, \subst{p_n}{a_n}
 \end{gather*}
-To let programs build these objects, we provide a data constructor:
+Variadic functions with \(P = \ildpair{\ildlist{p_1\, p_2\, \dots\, p_m}}{r}\)
+for an \(m < n\), or\footnote{Both representations of \(m = 0\) are valid} \(P = {r}\) for \(m = 0\), require a similar rule where:
+\begin{gather*}
+  e' = e \subst{p_1}{a_1} \subst{p_2}{a_2} \dots \subst{p_m}{a_m} \subst{r}{\ildlist{a_{m+1}, \dots, a_{n}}}
+\end{gather*}
+To let programs build such \(\ildsetAbstr\)-objects, we provide a data constructor:
 \[ \defas{\ildapp{mk-lambda}{e\, P\, B}}{E}{\cpsapp{\cpsret,\, \ildabstr{e, P, B}}} \]
 
 \subsubsection{A recursion operator}

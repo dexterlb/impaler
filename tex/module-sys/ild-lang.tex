@@ -8,7 +8,7 @@
 \(\ildsetSym\) & \(\in\) & \emph{symbols} & \\
 \(\ildsetSexp\) & \(:=\) & \(() \mid \ildpair{\ildsetVal}{\ildsetVal}\) & S-expressions \\
 \(\ildsetSF\) & \(:=\) & \(\ildsf{free-vars} \mid \ildsf{quote} \mid \ildsf{macroexpand}\) & Special forms \\
-\(\ildsetFail\) & \(:=\) & \(\ildfail{\ildsetVal}\) & Failure objects, carrying a context value \\
+\(\ildsetFail\) & \(:=\) & \(\ildfail{\ildsetVal}\) & Failure objects, each carrying a context value \\
 \(\ildsetHost\) & \(:=\) & \(\ildsetNum \mid \ildsetBool \mid \ildsetStr \mid \ildsetHostFunc \mid \dots\) & Host values and \\
 \(\ildsetHostFunc\) & \(:=\) & \(\ildsetAbstr \mid \ildsetVCont \mid \ildhost{+} \mid \ildhost{cons} \mid\) & host functions, opaque \\
  & & \(\ildhost{apply} \mid \ildhost{call/cc} \mid \dots\) & to the base language (\cref{embedding}) \\
@@ -20,7 +20,7 @@
 \(\ildsetList\) & \(:=\) & \(() \mid \ildpair{\ildsetVal}{\ildsetList}\) & S-expression \emph{lists} \\
 \(\ildsetEnv\) & \(:=\) & \(() \mid \ildpair{\ildpair{\ildsetSym}{\ildsetVal}}{\ildsetEnv}\) & Binding environments\footnote{We assume keys are restricted to be unique (\cref{stepped-semantics}). Furthermore, performant implementations will use other representations of binding environments.} (K/V lists) \\
 \(\ildsetAbstr\) & \(:=\) & \(\ildabstr{\ildsetEnv, \ildsetParList, \ildsetVal}\) & Abstraction terms, \cref{abstraction} \\
-\(\ildsetParList\) & \(:=\) & \(() \mid \ildpair{\ildsetSym}{\ildsetParList}\) & Param lists (lists of symbols) \\
+\(\ildsetParList\) & \(:=\) & \(() \mid \ildsetSym \mid \ildpair{\ildsetSym}{\ildsetParList}\) & Param lists (lists of symbols with optional catch-all tail) \\
 \(\ildsetVCont\) & \(:=\) & \(\ildcont{\ildsetCont}\) & Reified continuations, \cref{first-class-continuations} \\
 \(\ildsetComp\) & \(:=\) & \(\interop{eval}{\ildsetCont}{\ildsetEnv}{\ildsetCVal} \mid\) & CPS calculus computation terms \\
  & & \(\interop{apply}{\ildsetCont}{\ildsetHostFunc}{\ildsetCVal^*} \mid\) & \\
