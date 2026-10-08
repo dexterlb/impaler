@@ -19,7 +19,9 @@ enacted by \ild{map}:
     (return (map
       (!lambda (x)
         (!if (fail? (f x))
-          (return (make-fail (list 'fail-in-element x (f x))))
+          (return
+            (make-fail
+            (list 'fail-in-element x (f x))))
           (f x))) l)))))
 \end{ildcode}
 \lstcaption{Early return from \ild{map}}

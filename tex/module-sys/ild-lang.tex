@@ -22,9 +22,9 @@
 \(\ildsetAbstr\) & \(:=\) & \(\ildabstr{\ildsetEnv, \ildsetParList, \ildsetVal}\) & Abstraction terms, \cref{abstraction} \\
 \(\ildsetParList\) & \(:=\) & \(() \mid \ildpair{\ildsetSym}{\ildsetParList}\) & Param lists (lists of symbols) \\
 \(\ildsetVCont\) & \(:=\) & \(\ildcont{\ildsetCont}\) & Reified continuations, \cref{first-class-continuations} \\
-\(\ildsetComp\) & \(:=\) & \(\interop{eval}{\ildsetCont, \ildsetEnv, \ildsetCVal} \mid\) & CPS calculus computation terms \\
- & & \(\interop{apply}{\ildsetCont, \ildsetHostFunc, \ildsetCVal^*} \mid\) & \\
- & & \(\interop{comb}{\ildsetCont, \ildsetEnv, \ildsetCVal, \ildsetCVal^*} \mid\) & \\
+\(\ildsetComp\) & \(:=\) & \(\interop{eval}{\ildsetCont}{\ildsetEnv}{\ildsetCVal} \mid\) & CPS calculus computation terms \\
+ & & \(\interop{apply}{\ildsetCont}{\ildsetHostFunc}{\ildsetCVal^*} \mid\) & \\
+ & & \(\interop{comb}{\ildsetCont}{\ildsetEnv}{\ildsetCVal}{\ildsetCVal^*} \mid\) & \\
  & & \(\cpsapp{\ildsetCont, \ildsetCVal}\) & \\
 \(\ildsetCont\) & \(:=\) & \(\cpsyield \mid \cpsabstr{\ildsetVV}{\ildsetComp}\) & CPS calculus continuations \\
 \(\ildsetCVal\) & \(:=\) & \(\ildsetVV \mid \ildsetVal\) & CPS calculus value terms \\
@@ -54,7 +54,7 @@ the operational semantics.
 We define the semantics of ILD in terms of a CPS calculus based on
 the \paraphrase[semi-typed?]{untyped} \(\lambda\)-calculus
 over the set of \emph{computations} (\(\ildsetComp\)). Evaluation starts from
-the term \(\interop{eval}{\cpsyield,\, E,\, v}\) for some value \(v\), the root
+the term \(\interop{eval}{\cpsyield}{E}{v}\) for some value \(v\), the root
 continuation \(\cpsyield\) and a root binding environment \(E\) (\cref{root-env}).
 
 \subsubsection{Embedding}
@@ -74,29 +74,29 @@ and library functions (\(\ildsetHost\)). We split the semantics of ILD into:
 \label{stepped-semantics-fig}
 \begin{semgroup}{Simple cases:}
 \semrow{%
-  \step{s \in \ildsetSym \text{ and } e = \ildlist{\dots\, \ildpair{s}{v}\, \dots}}{\interop{eval}{C,\, e,\, s}}{\cpsapp{C,\, v}}
+  \step{s \in \ildsetSym \text{ and } e = \ildlist{\dots\, \ildpair{s}{v}\, \dots}}{\interop{eval}{C}{e}{s}}{\cpsapp{C,\, v}}
   \qquad
-  \step{v \in \ildsetSF \cup \ildsetHost \cup \ildsetFail}{\interop{eval}{C,\, e,\, v}}{\cpsapp{C,\, v}}
+  \step{v \in \ildsetSF \cup \ildsetHost \cup \ildsetFail}{\interop{eval}{C}{e}{v}}{\cpsapp{C,\, v}}
 }%
 \end{semgroup}
 
 \begin{semgroup}{Combinations:}
 \semrow{%
-  \evalsto{\interop{eval}{C,\, e,\, \ildlist{\phi\, \alpha_1\, \dots\, \alpha_n}}}{\interop{eval}{\cpsabstr{f}{\interop{comb}{C,\, e,\, f,\, \alpha_1,\, \dots,\, \alpha_n}},\, e,\, \phi}}
+  \evalsto{\interop{eval}{C}{e}{\ildlist{\phi\, \alpha_1\, \dots\, \alpha_n}}}{\interop{eval}{\cpsabstr{f}{\interop{comb}{C}{e}{f}{\alpha_1}{\dots}{\alpha_n}}}{e}{\phi}}
 }%
 \semrow{%
-  \step{f \in \ildsetHostFunc}{\interop{comb}{C,\, e,\, f,\, \alpha_1,\, \dots,\, \alpha_n}}{\interop{eval}{\cpsabstr{x_1}{\cdots \interop{eval}{\cpsabstr{x_n}{\interop{apply}{C,\, f,\, x_1,\, \dots,\, x_n}},\, e,\, \alpha_n} \cdots},\, e,\, \alpha_1}}
+  \step{f \in \ildsetHostFunc}{\interop{comb}{C}{e}{f}{\alpha_1}{\dots}{\alpha_n}}{\interop{eval}{\cpsabstr{x_1}{\cdots \interop{eval}{\cpsabstr{x_n}{\interop{apply}{C}{f}{x_1}{\dots}{x_n}}}{e}{\alpha_n} \cdots}}{e}{\alpha_1}}
 }%
 \end{semgroup}
 
 \begin{semgroup}{Special forms:}
 \semrow{%
-  \evalsto{\interop{comb}{C,\, e,\, \ildsf{quote},\, \alpha}}{\cpsapp{C,\, \alpha}}
+  \evalsto{\interop{comb}{C}{e}{\ildsf{quote}}{\alpha}}{\cpsapp{C,\, \alpha}}
   \qquad
-  \evalsto{\interop{comb}{C,\, e,\, \ildsf{free-vars}}}{\cpsapp{C,\, e}}
+  \evalsto{\interop{comb}{C}{e}{\ildsf{free-vars}}}{\cpsapp{C,\, e}}
 }%
 \semrow{%
-  \evalsto{\interop{comb}{C,\, e,\, \ildsf{macroexpand},\, \phi,\, \vec{\alpha}}}{\interop{eval}{\cpsabstr{f}{\interop{apply}{\cpsabstr{x}{\interop{eval}{C,\, e,\, x}},\, f,\, \vec{\alpha}}},\, e,\, \phi}}
+  \evalsto{\interop{comb}{C}{e}{\ildsf{macroexpand}}{\phi}{\vec{\alpha}}}{\interop{eval}{\cpsabstr{f}{\interop{apply}{\cpsabstr{x}{\interop{eval}{C}{e}{x}}}{f}{\vec{\alpha}}}}{e}{\phi}}
 }%
 \end{semgroup}
 

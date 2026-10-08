@@ -15,7 +15,7 @@ Within \(\omega\)-terms, we use the marker \(\cpsret\) to denote the \emph{curre
 Formally, the aforementioned definition of \ildsym{foo} stands for:
 \begin{itemize}
   \item \(\ildhost{foo} \in \ildsetHostFunc\)
-  \item \(\evalsto{\interop{apply}{C,\, \ildhost{foo},\, v_1,\, v_2,\, \dots,\, v_n}}{\omega\subst{\cpsret}{C}}\)
+  \item \(\evalsto{\interop{apply}{C}{\ildhost{foo}}{v_1}{v_2}{\dots}{v_n}}{\omega\subst{\cpsret}{C}}\)
   \item \(E = \ildlist{\dots\, \ildpair{\ildsym{foo}}{\ildhost{foo}}\, \dots}\)
 \end{itemize}
 
@@ -75,7 +75,7 @@ of simplicity.} \(\beta\)
 is applied by substituting (\cref{env-substitution}) the formal parameters by the actual parameters
 in the local binding environment, and then evaluating the body in the resulting environment:
 \begin{gather*}
-  \evalstobr{\interop{apply}{C,\, \ildabstr{e,\, P = \ildlist{p_1\, p_2\, \dots\, p_n},\, \beta},\, a_1,\, a_2,\, \dots,\, a_n}}{\interop{eval}{C,\, e',\, \beta}\text{,}}
+  \evalstobr{\interop{apply}{C}{\ildabstr{e,\, P = \ildlist{p_1\, p_2\, \dots\, p_n},\, \beta}}{a_1}{a_2}{\dots}{a_n}}{\interop{eval}{C}{e'}{\beta}\text{,}}
   \\
   \text{where } e' = e\, \subst{p_1}{a_1}\, \subst{p_2}{a_2}\, \dots\, \subst{p_n}{a_n}
 \end{gather*}
@@ -89,17 +89,13 @@ mutually-recursive functions
 of \(\ildsym{poly-fix}\) is optional, since we can just implement the Y-combinator in ILD itself. For this exercise, see \cref{poly-fix-Y}.}:
 \[ \defas{\ildapp{poly-fix}{\Gamma_1\, \Gamma_2\, \dots\, \Gamma_n}}{E}{\cpsapp{\cpsret,\, \ildlist{\ildconst{f}{1}\, \ildconst{f}{2}\, \dots\, \ildconst{f}{n}}}} \]
 where \(\ildconst{f}{1}, \dots, \ildconst{f}{n}\) are such that:
-\[
+\begin{gather*}
   \evalstobr
-    {\interop{apply}{C,\, \ildconst{f}{i},\, a_1,\, \dots,\, a_n}}
-    {\interop
-      {apply}
-      {\cpsabstr
-        {{f_i}'}
-        {\interop{apply}{C,\, {f_i}',\, a_1,\, \dots,\, a_n}}
-        ,\, \Gamma_i,\, \ildconst{f}{1},\, \ildconst{f}{2},\, \dots,\, \ildconst{f}{n}}
-    }
-\]
+    {\interop{apply}{C}{\ildconst{f}{i}}{a_1}{\dots}{a_n}}
+    {\interop{apply}{C'}{\Gamma_i}{\ildconst{f}{1}}{\ildconst{f}{2}}{\dots}{\ildconst{f}{n}}}
+  \\
+  \text{where } C' = \cpsabstr{{f_i}'}{\interop{apply}{C}{{f_i}'}{a_1}{\dots}{a_n}}
+\end{gather*}
 
 % A stronger definition of \(#f_1, ..., #f_n\) would be \(#f_i = Gamma_i (#f_1, ..., #f_n)\),
 % but this leads to divergence problems when the language has strict (non-lazy) semantics.
@@ -107,17 +103,15 @@ where \(\ildconst{f}{1}, \dots, \ildconst{f}{n}\) are such that:
 % of the recursion operator: `letrec` in Scheme does not allow non-functional right-hand
 % sides. Lazy languages like Haskell and Nix do not have this problem.
 
-\subsubsection{Interpreter \paraphrase{access}}
+\subsubsection{Interpreter access}
 Even though formally unnecessary (an ILD interpreter can be implemented in ILD),
 it is \paraphrase{useful} to allow programs to call into the interpreter:
 \begin{itemize}
   \item Expose the evaluation terms to programs:
-    \steprow{%
-      \defas{\ildapp{apply}{f\, a_1\, \dots\, a_n}}{E}{\interop{apply}{\cpsret,\, f,\, a_1,\, \dots,\, a_n}},
-      \quad
-      \defas{\ildapp{eval}{e\, v}}{E}{\interop{eval}{\cpsret,\, e,\, v}}
-    }
-    \vspace{0.5em}
+    \begin{gather*}
+      \defas{\ildapp{apply}{f\, a_1\, \dots\, a_n}}{E}{\interop{apply}{\cpsret}{f}{a_1}{\dots}{a_n}}\\
+      \defas{\ildapp{eval}{e\, v}}{E}{\interop{eval}{\cpsret}{e}{v}}
+    \end{gather*}
   \item \(\ildapp{read-source}{p}\) returns the ILD program named
     with the string \(p\)\footnote{in actual implementations \(p\) is a file path and
     \(\ildsym{read-source}\) parses the file and returns the parsed program.}
@@ -137,8 +131,8 @@ To allow ILD programs to implement complex control flow, we define
 a host function \(\ildsym{call/cc}\) that passes the current continuation as a
 first-class value to a given callable, and a rule to consume such reified
 continuations by discarding the current continuation:
-\steprow{%
-  \defas{\ildapp{call/cc}{f}}{E}{\interop{apply}{f,\, \ildcont{\cpsret}}},
-  \qquad
-  \evalsto{\interop{apply}{C,\, \ildcont{C'},\, v}}{\cpsapp{C',\, v}}
-}
+\begin{gather*}
+  \defas{\ildapp{call/cc}{f}}{E}{\interop{apply}{f}{\ildcont{\cpsret}}}
+  \\
+  \evalsto{\interop{apply}{C}{\ildcont{C'}}{v}}{\cpsapp{C',\, v}}
+\end{gather*}

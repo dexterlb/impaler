@@ -11,49 +11,60 @@ maybe here add a note that this power is similar to fexpr stuff but uses a diffe
 
 \subsection{Lambda}
 \label{lambda-macro}
-First, we define a macro called \ild{lambda} that will let us build abstractions (\cref{abstraction})
-easily:
+First, we define a macro called \ild{lambda} that will let us introduce new
+abstraction objects (\cref{abstraction}). We want expansion of the \ild{lambda}
+macro to result in a call to \ild{mk-lambda} given the current binding environment
+(\ild{free-vars}) and the quoted argument names and body:
+\begin{ildcode}
+(!lambda (x y) (+ x y))
+; should become
+(mk-lambda (free-vars) (quote (x y)) (quote (+ x y)))
+\end{ildcode}
+The outer call to \ild{mk-lambda} introduces a new \(\ildsetAbstr\)-object
+with the current binding environment%
 \footnote{The \ild{(free-vars)} closure given to the host \ild{mk-lambda} can be replaced
-by a closure that contains only \ild{cons}, \ild{mk-lambda}, \ild{quote} and \ild{free-vars}.}
-
+by a closure that contains only \ild{cons}, \ild{mk-lambda}, \ild{quote} and \ild{free-vars},
+since those are the only bindings used by the body of the macro.}
+and a body that embeds the \emph{value} of \ild{mk-lambda}, to in turn
+expand to a \ild{mk-lambda}-expression when called:
 \begin{ildcode}
 (mk-lambda
   (free-vars)
   '(arg-names body)
   '(cons mk-lambda
-    (cons (cons free-vars '())      ; closure, equal to the call site's env
-      (cons (cons quote (cons arg-names '()))        ; quoted arg-names
-        (cons (cons quote (cons body '()))           ; quoted body
+    (cons (cons free-vars '()
+      (cons (cons quote (cons arg-names '()))
+        (cons (cons quote (cons body '()))
           '())))))
 \end{ildcode}
 \lstcaption{Implementation of the lambda macro}
+Embedding the values of \ild{mk-lambda}, \ild{free-vars} and \ild{quote}
+avoids name shadowing problems traditionally encountered with unhygienic
+macro systems (\cref{values-in-macroexpand}).
 
-Expansions of the \ild{lambda} macro such as
-\ild{(!lambda (x y) (+ x y))}
-will be substituted by calls to \ild{mk-lambda} such as
-\ild{(mk-lambda (free-vars) (quote (x y)) (quote (+ x y)))}.
-
-We can then wrap this definition in another call of \ild{mk-lambda} in order to expose
-it under a \ild{lambda} name usable from the body of the host abstraction. Supposing that
+This definition can then be wrapped in another call of \ild{mk-lambda} in order to expose
+it under a \ild{lambda} name usable from the scoped body -- supposing that
 this definition is stored as an ILD program called \texttt{core/bootstrap/lambda-macro.ild},
 we recall it twice (once to define \ild{lambda}, and once to pass itself as the
 value of \ild{lambda}):
 
 \begin{ildcode}
-((!(eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")) (lambda)
+((!(eval (free-vars)
+    (read-source
+      "core/bootstrap/lambda-macro.ild"))
+ (lambda)
 
-  <body that may use the lambda macro>
+  ; <body that may use the lambda macro>
 
   ; definition of 'lambda'
-  (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")))
+  (eval (free-vars)
+    (read-source
+      "core/bootstrap/lambda-macro.ild")))
 \end{ildcode}
 \lstcaption{Outermost usage of the lambda macro}
 
 \subsection{Basic utilities}
 We define helper utilities in a scope where the \ild{lambda} macro is present.
-
-\begin{center}
-\begin{minipage}[t]{0.47\linewidth}
 \begin{ildcode}
 ; definition of 'list'
 (!lambda args args)
@@ -65,8 +76,6 @@ We define helper utilities in a scope where the \ild{lambda} macro is present.
 (!lambda (f) (car (poly-fix f)))
 \end{ildcode}
 \lstcaption{Definitions of basic helper primitives}
-\end{minipage}\hfill
-\begin{minipage}[t]{0.47\linewidth}
 \begin{ildcode}
 (Y (!lambda (map)
   (!lambda (f l)
@@ -79,8 +88,6 @@ We define helper utilities in a scope where the \ild{lambda} macro is present.
           (list 'not-a-list l)))))))))
 \end{ildcode}
 \lstcaption{Definition of the \ild{map} function}
-\end{minipage}
-\end{center}
 
 \subsubsection{Let}
 The binding construct \ild{let} is simply a more ergonomic way
@@ -89,10 +96,7 @@ we first define a helper that lets our macros generate expressions
 of the form \ild{(!lambda <args> <body>)}, and then use it to
 define \ild{let} itself:
 
-\begin{center}
-\begin{minipage}[t]{0.47\linewidth}
 \begin{ildcode}
-
 (!lambda (args body)
   (cons macroexpand
     (cons lambda
@@ -100,8 +104,6 @@ define \ild{let} itself:
         (cons body '())))))
 \end{ildcode}
 \lstcaption{Definition of \ild{expand-lambda}}
-\end{minipage}\hfill
-\begin{minipage}[t]{0.47\linewidth}
 \begin{ildcode}
 (!lambda (letlist body)
   (cons
@@ -111,12 +113,8 @@ define \ild{let} itself:
     (map cadr letlist)))))
 \end{ildcode}
 \lstcaption{Definition of \ild{let}}
-\end{minipage}
-\end{center}
 
 Now we can bind locally-scoped values ergonomically:
-\begin{center}
-\begin{minipage}[t]{0.4\linewidth}
 \begin{ildcode}
 ((!lambda (add1 fourty-two)
     (add1 fourty-two))
@@ -126,11 +124,7 @@ Now we can bind locally-scoped values ergonomically:
     42)          ; definition of fourty-two
 ; produces 43
 \end{ildcode}
-\end{minipage}\hfill
-\begin{minipage}[t]{0.15\linewidth}
-\centering\(\Longrightarrow\)
-\end{minipage}\hfill
-\begin{minipage}[t]{0.4\linewidth}
+becomes
 \begin{ildcode}
 (!let (
     (add1 (!lambda (x)
@@ -139,8 +133,6 @@ Now we can bind locally-scoped values ergonomically:
 
   (add1 fourty-two))
 \end{ildcode}
-\end{minipage}
-\end{center}
 \lstcaption{Rewriting a \ild{lambda}-based scope binding to use \ild{let}}
 
 \subsection{Letrec}

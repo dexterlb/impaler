@@ -7,6 +7,11 @@ quite elegantly define it as such:
 (!lambda l
   ((!lambda (x) (x x))
     (!lambda (p)
-      (map (!lambda (li) (!lambda args (apply (apply li (p p)) args))) l)))))))
+      (map (!lambda (li)
+        (!lambda args
+          (apply
+            (apply li (p p))
+            args)))
+        l)))))))
 \end{ildcode}
 \lstcaption{Polyvariadic Y-combinator}\label{poly-fix-y}
