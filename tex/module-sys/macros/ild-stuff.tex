@@ -51,11 +51,11 @@
 \newcommand{\ildapp}[2]{\ildlist{\ildsym{#1}\ #2}}
 
 % --- Host interop brackets --------------------------------------------------
-% \interop{word}{a1}{a2}... : variadic; separates the arguments with ",".
+% \interop{word}{a1}{a2}... : variadic; separates the arguments with a space.
 \makeatletter
 \newcommand{\interop}[1]{\left[\,\textcolor{cinterop}{\texttt{#1}}\ \interop@list}
 \newcommand{\interop@list}{\@ifnextchar\bgroup{\interop@item}{\,\right]}}
-\newcommand{\interop@item}[1]{,\,#1\interop@list}
+\newcommand{\interop@item}[1]{\ #1\interop@list}
 \makeatother
 
 % --- CPS calculus terms -----------------------------------------------------
