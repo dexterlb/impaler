@@ -1,4 +1,4 @@
-\subsection{Environment substitution}
+\section{Environment substitution}
 \label{env-substitution}
 
 Formally, substituting a symbol/value pair in a binding environment
@@ -12,7 +12,7 @@ can be defined as:
   \end{cases}
 \]
 
-In particular, evaluating the body $\beta$ of an \cref{abstraction} in the resulting
-environment $e' = e [ p_1 / a_1 ] \dots [ p_n / a_n]$ resolves each formal
-parameter $p_i$ to the corresponding actual parameter $a_i$ via the symbol
+In particular, evaluating the body \(\beta\) of an \cref{abstraction} in the resulting
+environment \(e' = e [ p_1 / a_1 ] \dots [ p_n / a_n]\) resolves each formal
+parameter \(p_i\) to the corresponding actual parameter \(a_i\) via the symbol
 lookup rule (\cref{stepped-semantics}).

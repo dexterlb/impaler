@@ -27,6 +27,10 @@
 \input{meat.tex}
 
 \appendix
+\makeatletter
+\crefalias{section}{appendix}
+\renewcommand{\@seccntformat}[1]{Appendix \csname the#1\endcsname\quad}
+\makeatother
 \input{poly-fix-y.tex}
 \input{env-substitution.tex}
 

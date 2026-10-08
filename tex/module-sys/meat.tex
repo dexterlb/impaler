@@ -3,11 +3,11 @@
 
 \subsection{Macro expansion}
 \label{macroexpand-mechanism}
-The $\ildsf{macroexpand}$ special form allows metaprogramming by treating a certain function
-as a \emph{macro}. A regular function evaluation $\ildlist{f\, a_1\, a_2\, \dots\, a_n}$ evaluates f and all
+The \(\ildsf{macroexpand}\) special form allows metaprogramming by treating a certain function
+as a \emph{macro}. A regular function evaluation \(\ildlist{f\, a_1\, a_2\, \dots\, a_n}\) evaluates f and all
 arguments and then passes the evaluated arguments to the evaluated f. In contrast,
-$\ildlist{\ildsf{macroexpand},\, f,\, a_1,\, a_2,\, \dots,\, a_n}$ evaluates just $f$ and then passes the
-\textbf{unevaluated} arguments to it. The result is then in turn evaluated. This allows $f$
+\(\ildlist{\ildsf{macroexpand}\, f\, a_1\, a_2\, \dots\, a_n}\) evaluates just \(f\) and then passes the
+\textbf{unevaluated} arguments to it. The result is then in turn evaluated. This allows \(f\)
 to treat the program passed to it as data and to transform it arbitrarily before it
 gets evaluated. This is similar to unhygienic macro systems like the one in LISP.
 As in traditional LISP macro systems \cite{kohlbecker1986syntactic}, ILD macros

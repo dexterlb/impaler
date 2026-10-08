@@ -59,12 +59,13 @@
 
 % --- Semantic relations -----------------------------------------------------
 \newcommand{\evalsto}[2]{#1 \to #2}
+\newcommand{\evalstobr}[2]{\begin{array}{@{}>{\displaystyle}l@{}}#1 \\ \to #2\end{array}}
 \newcommand{\defas}[3]{#1 \mathrel{\underset{#2}{\rightsquigarrow}} #3}
 \newcommand{\step}[3]{\dfrac{#1}{#2 \to #3}}
 
 % --- Layout helpers ---------------------------------------------------------
-\newcommand{\steprow}[1]{\par\medskip\centerline{$\displaystyle #1$}\par\medskip}
-\newcommand{\semrow}[1]{\centerline{$\displaystyle #1$}\par\medskip}
+\newcommand{\steprow}[1]{\par\medskip\centerline{\(\displaystyle #1\)}\par\medskip}
+\newcommand{\semrow}[1]{\centerline{\(\displaystyle #1\)}\par\medskip}
 \newlength{\semlabelwidth}
 \newenvironment{semgroup}[1]{%
   \par\medskip\noindent

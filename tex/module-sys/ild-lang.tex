@@ -4,67 +4,67 @@
 \label{syntax}
 \begin{cfig}{Grammar}{Syntax of ILD}
 \begin{tabular}{r@{\;}c@{\;}l@{\qquad}l}
-$\ildsetVal$ & $:=$ & $\ildsetSym \mid \ildsetSexp \mid \ildsetSF \mid \ildsetFail \mid \ildsetHost$ & \paraphrase{Tangible} values \\
-$\ildsetSym$ & $\in$ & \emph{symbols} & \\
-$\ildsetSexp$ & $:=$ & $() \mid \ildpair{\ildsetVal}{\ildsetVal}$ & S-expressions \\
-$\ildsetSF$ & $:=$ & $\ildsf{free-vars} \mid \ildsf{quote} \mid \ildsf{macroexpand}$ & Special forms \\
-$\ildsetFail$ & $:=$ & $\ildfail{\ildsetVal}$ & Failure objects, carrying a context value \\
-$\ildsetHost$ & $:=$ & $\ildsetNum \mid \ildsetBool \mid \ildsetStr \mid \ildsetHostFunc \mid \dots$ & Host values and \\
-$\ildsetHostFunc$ & $:=$ & $\ildsetAbstr \mid \ildsetVCont \mid \ildhost{+} \mid \ildhost{cons} \mid$ & host functions, opaque \\
- & & $\ildhost{apply} \mid \ildhost{call/cc} \mid \dots$ & to the base language (\cref{embedding}) \\
-$\ildsetNum$ & $\in$ & \emph{numbers} & \\
-$\ildsetBool$ & $:=$ & $\ildhost{t} \mid \ildhost{f}$ & \\
-$\ildsetStr$ & $\in$ & \emph{strings} & \\
-$\ildsetProg$ & $:=$ & $\ildsetSym \mid () \mid \ildpair{\ildsetProg}{\ildsetProg} \mid$ & Surface syntax (programs) \\
- & & $\ildsetStr \mid \ildsetNum \mid \ildsetBool$ & \\
-$\ildsetList$ & $:=$ & $() \mid \ildpair{\ildsetVal}{\ildsetList}$ & S-expression \emph{lists} \\
-$\ildsetEnv$ & $:=$ & $() \mid \ildpair{\ildpair{\ildsetSym}{\ildsetVal}}{\ildsetEnv}$ & Binding environments\footnote{We assume keys are restricted to be unique (\cref{stepped-semantics}). Furthermore, performant implementations will use other representations of binding environments.} (K/V lists) \\
-$\ildsetAbstr$ & $:=$ & $\ildabstr{\ildsetEnv, \ildsetParList, \ildsetVal}$ & Abstraction terms, \cref{abstraction} \\
-$\ildsetParList$ & $:=$ & $() \mid \ildpair{\ildsetSym}{\ildsetParList}$ & Param lists (lists of symbols) \\
-$\ildsetVCont$ & $:=$ & $\ildcont{\ildsetCont}$ & Reified continuations, \cref{first-class-continuations} \\
-$\ildsetComp$ & $:=$ & $\interop{eval}{\ildsetCont, \ildsetEnv, \ildsetCVal} \mid$ & CPS calculus computation terms \\
- & & $\interop{apply}{\ildsetCont, \ildsetHostFunc, \ildsetCVal^*} \mid$ & \\
- & & $\interop{comb}{\ildsetCont, \ildsetEnv, \ildsetCVal, \ildsetCVal^*} \mid$ & \\
- & & $\cpsapp{\ildsetCont, \ildsetCVal}$ & \\
-$\ildsetCont$ & $:=$ & $\cpsyield \mid \cpsabstr{\ildsetVV}{\ildsetComp}$ & CPS calculus continuations \\
-$\ildsetCVal$ & $:=$ & $\ildsetVV \mid \ildsetVal$ & CPS calculus value terms \\
-$\ildsetVV$ & $\in$ & $\{x_1, x_2, \dots\}$ & CPS calculus value variables \\
+\(\ildsetVal\) & \(:=\) & \(\ildsetSym \mid \ildsetSexp \mid \ildsetSF \mid \ildsetFail \mid \ildsetHost\) & \paraphrase{Tangible} values \\
+\(\ildsetSym\) & \(\in\) & \emph{symbols} & \\
+\(\ildsetSexp\) & \(:=\) & \(() \mid \ildpair{\ildsetVal}{\ildsetVal}\) & S-expressions \\
+\(\ildsetSF\) & \(:=\) & \(\ildsf{free-vars} \mid \ildsf{quote} \mid \ildsf{macroexpand}\) & Special forms \\
+\(\ildsetFail\) & \(:=\) & \(\ildfail{\ildsetVal}\) & Failure objects, carrying a context value \\
+\(\ildsetHost\) & \(:=\) & \(\ildsetNum \mid \ildsetBool \mid \ildsetStr \mid \ildsetHostFunc \mid \dots\) & Host values and \\
+\(\ildsetHostFunc\) & \(:=\) & \(\ildsetAbstr \mid \ildsetVCont \mid \ildhost{+} \mid \ildhost{cons} \mid\) & host functions, opaque \\
+ & & \(\ildhost{apply} \mid \ildhost{call/cc} \mid \dots\) & to the base language (\cref{embedding}) \\
+\(\ildsetNum\) & \(\in\) & \emph{numbers} & \\
+\(\ildsetBool\) & \(:=\) & \(\ildhost{t} \mid \ildhost{f}\) & \\
+\(\ildsetStr\) & \(\in\) & \emph{strings} & \\
+\(\ildsetProg\) & \(:=\) & \(\ildsetSym \mid () \mid \ildpair{\ildsetProg}{\ildsetProg} \mid\) & Surface syntax (programs) \\
+ & & \(\ildsetStr \mid \ildsetNum \mid \ildsetBool\) & \\
+\(\ildsetList\) & \(:=\) & \(() \mid \ildpair{\ildsetVal}{\ildsetList}\) & S-expression \emph{lists} \\
+\(\ildsetEnv\) & \(:=\) & \(() \mid \ildpair{\ildpair{\ildsetSym}{\ildsetVal}}{\ildsetEnv}\) & Binding environments\footnote{We assume keys are restricted to be unique (\cref{stepped-semantics}). Furthermore, performant implementations will use other representations of binding environments.} (K/V lists) \\
+\(\ildsetAbstr\) & \(:=\) & \(\ildabstr{\ildsetEnv, \ildsetParList, \ildsetVal}\) & Abstraction terms, \cref{abstraction} \\
+\(\ildsetParList\) & \(:=\) & \(() \mid \ildpair{\ildsetSym}{\ildsetParList}\) & Param lists (lists of symbols) \\
+\(\ildsetVCont\) & \(:=\) & \(\ildcont{\ildsetCont}\) & Reified continuations, \cref{first-class-continuations} \\
+\(\ildsetComp\) & \(:=\) & \(\interop{eval}{\ildsetCont, \ildsetEnv, \ildsetCVal} \mid\) & CPS calculus computation terms \\
+ & & \(\interop{apply}{\ildsetCont, \ildsetHostFunc, \ildsetCVal^*} \mid\) & \\
+ & & \(\interop{comb}{\ildsetCont, \ildsetEnv, \ildsetCVal, \ildsetCVal^*} \mid\) & \\
+ & & \(\cpsapp{\ildsetCont, \ildsetCVal}\) & \\
+\(\ildsetCont\) & \(:=\) & \(\cpsyield \mid \cpsabstr{\ildsetVV}{\ildsetComp}\) & CPS calculus continuations \\
+\(\ildsetCVal\) & \(:=\) & \(\ildsetVV \mid \ildsetVal\) & CPS calculus value terms \\
+\(\ildsetVV\) & \(\in\) & \(\{x_1, x_2, \dots\}\) & CPS calculus value variables \\
 \end{tabular}
 \end{cfig}
 
-We define ILD as a homoiconic language where parseable programs ($\ildsetProg$)
-are a subset of the internal syntax $\ildsetVal$. Source code is parsed as
-standard S-expressions. Throughout this paper, we use the $\ildlist{a_1\, a_2\, \dots\, a_n}$
+We define ILD as a homoiconic language where parseable programs (\(\ildsetProg\))
+are a subset of the internal syntax \(\ildsetVal\). Source code is parsed as
+standard S-expressions. Throughout this paper, we use the \(\ildlist{a_1\, a_2\, \dots\, a_n}\)
 syntax to denote S-expression lists, i.e. the nested pairs
-$\ildpair{a_1}{\ildpair{a_2}{\,\dots\, \ildpair{a_n}{()} \,\dots\,}}$ whose final tail is the empty list $()$.
+\(\ildpair{a_1}{\ildpair{a_2}{\,\dots\, \ildpair{a_n}{()} \,\dots\,}}\) whose final tail is the empty list \(()\).
 
 In addition, the parser of ILD is augmented with the following syntax sugars:
 \begin{itemize}
-  \item Quote: \ild{'<expr>} $\Mapsto$ \ild{(quote <expr>)}
+  \item Quote: \ild{'<expr>} \(\Mapsto\) \ild{(quote <expr>)}
   \item Macroexpand: \\
-    \ild{(!<expr1> ... <exprN>)} $\Mapsto$ \\
+    \ild{(!<expr1> ... <exprN>)} \(\Mapsto\) \\
     \ild{(macroexpand <expr1> ... <exprN>)}
 \end{itemize}
 
-We also introduce a set of computation terms ($\ildsetComp$) that facillitate
+We also introduce a set of computation terms (\(\ildsetComp\)) that facillitate
 the operational semantics.
 
 \subsection{Semantics}
 \label{semantics}
 We define the semantics of ILD in terms of a CPS calculus based on
-the \paraphrase[semi-typed?]{untyped} $\lambda$-calculus
-over the set of \emph{computations} ($\ildsetComp$). Evaluation starts from
-the term $\interop{eval}{\cpsyield,\, E,\, v}$ for some value $v$, the root
-continuation $\cpsyield$ and a root binding environment $E$ (\cref{root-env}).
+the \paraphrase[semi-typed?]{untyped} \(\lambda\)-calculus
+over the set of \emph{computations} (\(\ildsetComp\)). Evaluation starts from
+the term \(\interop{eval}{\cpsyield,\, E,\, v}\) for some value \(v\), the root
+continuation \(\cpsyield\) and a root binding environment \(E\) (\cref{root-env}).
 
 \subsubsection{Embedding}
 \label{embedding}
 ILD is designed to be embedded in a host environment that provides a set of datastructures
-and library functions ($\ildsetHost$). We split the semantics of ILD into:
+and library functions (\(\ildsetHost\)). We split the semantics of ILD into:
 \begin{itemize}
   \item Base language, whose semantics are shown in this section
-  \item FFI semantics of the host environment ($\ildsetHostFunc$) via
-    the term $\interopword{apply}$. A small host environment, sufficient
+  \item FFI semantics of the host environment (\(\ildsetHostFunc\)) via
+    the term \(\interopword{apply}\). A small host environment, sufficient
     for writing nontrivial programs, is discussed in \cref{root-env}.
 \end{itemize}
 
@@ -100,7 +100,7 @@ and library functions ($\ildsetHost$). We split the semantics of ILD into:
 }%
 \end{semgroup}
 
-\begin{semgroup}{CPS calculus $\beta$-reduction:}
+\begin{semgroup}{CPS calculus \(\beta\)-reduction:}
 \semrow{\evalsto{\cpsapp{\cpsabstr{x}{M},\, v}}{M[x/v]}}%
 \end{semgroup}
 \end{cfig}
@@ -108,16 +108,16 @@ and library functions ($\ildsetHost$). We split the semantics of ILD into:
 Small-step semantics is outlined in \cref{stepped-semantics-fig}. A few notes
 on selected cases:
 \begin{itemize}
-  \item $\ildsf{free-vars}$ captures the current binding environment and is used by higher-level constructs
+  \item \(\ildsf{free-vars}\) captures the current binding environment and is used by higher-level constructs
     such as the lambda macro (\cref{lambda-macro}).
   \item The head of a combination is always evaluated. If the result of that is a special
     form, the special form is applied on the \textbf{unevaluated} remaining elements of the combination.
     If the head is a host function, the operands are then \emph{evaluated} and then the head is applied
     to the resulting arguments.
-  \item $\ildlist{\ildsf{macroexpand},\, \phi,\, \alpha_1,\, \alpha_2,\, \dots,\, \alpha_n}$ evaluates just $f$ and then passes the
+  \item \(\ildlist{\ildsf{macroexpand}\, \phi\, \alpha_1\, \alpha_2\, \dots\, \alpha_n}\) evaluates just \(f\) and then passes the
     \textbf{unevaluated} arguments to it. The result is then in turn evaluated. This mechanism
     is discussed in \cref{macroexpand-mechanism}.
-  \item Congruence rules are omitted for brevity. Any $\ildsetCont$ or $\ildsetComp$ subterm
+  \item Congruence rules are omitted for brevity. Any \(\ildsetCont\) or \(\ildsetComp\) subterm
     is considered to be a reduction hole.
-  \item All unlisted cases result in a $\ildfailbare$.
+  \item All unlisted cases result in a \(\ildfailbare\).
 \end{itemize}
