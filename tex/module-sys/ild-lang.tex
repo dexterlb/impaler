@@ -85,7 +85,7 @@ and library functions (\(\ildsetHost\)). We split the semantics of ILD into:
 
 \begin{semgroup}{Combinations:}
 \semrow{%
-  \evalsto{\interop{eval}{C}{e}{\ildlist{\phi\, \alpha_1\, \dots\, \alpha_n}}}{\interop{eval}{\cpsabstr{f}{\interop{comb}{C}{e}{f}{\alpha_1}{\dots}{\alpha_n}}}{e}{\phi}}
+  \evalsto{\interop{eval}{C}{e}{\ildlist{\varphi\, \alpha_1\, \dots\, \alpha_n}}}{\interop{eval}{\cpsabstr{f}{\interop{comb}{C}{e}{f}{\alpha_1}{\dots}{\alpha_n}}}{e}{\varphi}}
 }%
 \semrow{%
   \step{f \in \ildsetHostFunc}{\interop{comb}{C}{e}{f}{\alpha_1}{\dots}{\alpha_n}}{\interop{eval}{\cpsabstr{x_1}{\cdots \interop{eval}{\cpsabstr{x_n}{\interop{apply}{C}{f}{x_1}{\dots}{x_n}}}{e}{\alpha_n} \cdots}}{e}{\alpha_1}}
@@ -99,7 +99,7 @@ and library functions (\(\ildsetHost\)). We split the semantics of ILD into:
   \evalsto{\interop{comb}{C}{e}{\ildsf{free-vars}}}{\cpsapp{C,\, e}}
 }%
 \semrow{%
-  \evalsto{\interop{comb}{C}{e}{\ildsf{macroexpand}}{\phi}{\vec{\alpha}}}{\interop{eval}{\cpsabstr{f}{\interop{apply}{\cpsabstr{x}{\interop{eval}{C}{e}{x}}}{f}{\vec{\alpha}}}}{e}{\phi}}
+  \evalsto{\interop{comb}{C}{e}{\ildsf{macroexpand}}{\varphi}{\vec{\alpha}}}{\interop{eval}{\cpsabstr{f}{\interop{apply}{\cpsabstr{x}{\interop{eval}{C}{e}{x}}}{f}{\vec{\alpha}}}}{e}{\varphi}}
 }%
 \end{semgroup}
 
@@ -117,7 +117,7 @@ on selected cases:
     form, the special form is applied on the \textbf{unevaluated} remaining elements of the combination.
     If the head is a host function, the operands are then \textbf{evaluated} and then the head is applied
     to the resulting arguments.
-  \item \(\ildlist{\ildsf{macroexpand}\, \phi\, \alpha_1\, \alpha_2\, \dots\, \alpha_n}\) evaluates just \(f\) and then passes the
+  \item \(\ildlist{\ildsf{macroexpand}\, \varphi\, \alpha_1\, \alpha_2\, \dots\, \alpha_n}\) evaluates just \(f\) and then passes the
     \textbf{unevaluated} arguments to it. The result is then in turn evaluated. This mechanism
     is discussed in \cref{macroexpand-mechanism}.
   \item Congruence rules are omitted for brevity. Any \(\ildsetCont\) or \(\ildsetComp\) subterm
