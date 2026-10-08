@@ -13,13 +13,11 @@ means that the symbol \ildsym{foo} stands for the host value \ildhost{foo},
 which in turn, when applied to arguments $\vec{v}$, results in the term $\omega$.
 Within $\omega$-terms, we use the marker $\cpsret$ to denote the \emph{current continuation}.
 Formally, the aforementioned definition of \ildsym{foo} stands for:
-\steprow{%
-  \ildhost{foo} \in \ildsetHostFunc,
-  \quad
-  \evalsto{\interop{apply}{C,\, \ildhost{foo},\, v_1,\, v_2,\, \dots,\, v_n}}{\omega[\cpsret/C]},
-  \quad
-  E = \ildlist{\dots\, \ildpair{\ildsym{foo}}{\ildhost{foo}}\, \dots}
-}
+\begin{itemize}
+  \item $\ildhost{foo} \in \ildsetHostFunc$
+  \item $\evalsto{\interop{apply}{C,\, \ildhost{foo},\, v_1,\, v_2,\, \dots,\, v_n}}{\omega[\cpsret/C]}$
+  \item $E = \ildlist{\dots\, \ildpair{\ildsym{foo}}{\ildhost{foo}}\, \dots}$
+\end{itemize}
 
 \subsubsection{\paraphrase{Boring} values}
 Let $\ildsetNum, \ildsetBool, \ildsetStr \subset \ildsetHost$ for the host numbers, booleans

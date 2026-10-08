@@ -40,8 +40,9 @@ $\ildpair{a_1}{\ildpair{a_2}{\,\dots\, \ildpair{a_n}{()} \,\dots\,}}$ whose fina
 
 In addition, the parser of ILD is augmented with the following syntax sugars:
 \begin{itemize}
-  \item Quote: \ild{'<expr>} $\twoheadrightarrow$ \ild{(quote <expr>)}
-  \item Macroexpand: \ild{(!<expr1> ... <exprN>)} $\twoheadrightarrow$
+  \item Quote: \ild{'<expr>} $\Mapsto$ \ild{(quote <expr>)}
+  \item Macroexpand: \\
+    \ild{(!<expr1> ... <exprN>)} $\Mapsto$ \\
     \ild{(macroexpand <expr1> ... <exprN>)}
 \end{itemize}
 
