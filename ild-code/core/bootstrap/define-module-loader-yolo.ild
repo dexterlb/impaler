@@ -19,20 +19,16 @@
     (or (!lambda items
       (!if (null? items)
         #f
-        (!if (pair? items)
-          (if (car items)
-            #t
-            (apply or (cdr items)))
-          (make-fail (list 'unexpected-arg-to-or items))))))
+        (if (car items)
+          #t
+          (apply or (cdr items))))))
 
     (and (!lambda items
       (!if (null? items)
         #t
-        (!if (pair? items)
-          (if (car items)
-            (apply and (cdr items))
-            #f)
-          (make-fail (list 'unexpected-arg-to-and items))))))
+        (if (car items)
+          (apply and (cdr items))
+          #f))))
 
     (cadr (!lambda (p) (car (cdr p))))
     (caar (!lambda (p) (car (car p))))
@@ -56,13 +52,9 @@
     (kv-find (!lambda (k kvl empty f)
       (!if (null? kvl)
         empty
-        (!if (pair? kvl)
-          (!if (is-kv? (car kvl))
-            (!if (sym-eq? (car (car kvl)) k)
-              (f (car kvl))
-              (kv-find k (cdr kvl) empty f))
-            (make-fail (list 'not-a-kv-pair (car kvl))))
-          (make-fail (list 'not-a-list kvl))))))
+        (!if (sym-eq? (car (car kvl)) k)
+          (f (car kvl))
+          (kv-find k (cdr kvl) empty f)))))
 
     (kv-fetch (!lambda (k dflt kvl)
       (kv-find k kvl dflt cdr)))
@@ -109,22 +101,12 @@
       (concat (map process-import import-list))))
 
     (process-import (!lambda (import-spec)
-      (!if (not (pair? import-spec))
-        (make-fail (list 'import-spec-must-be-list import-spec))
-        (!if (!and (symbol? (car import-spec)) (sym-eq? (car import-spec) 'builtin))
-          (process-import-items builtins (cdr import-spec))
-          (!if (string? (car import-spec))
-            (process-import-items (load-module (car import-spec)) (cdr import-spec))
-            (make-fail (list 'import-spec-invalid import-spec)))))))
+      (!if (!and (symbol? (car import-spec)) (sym-eq? (car import-spec) 'builtin))
+        (process-import-items builtins (cdr import-spec))
+        (process-import-items (load-module (car import-spec)) (cdr import-spec)))))
 
     (process-import-items (!lambda (items spec-tail)
-      (!if (!and
-        (pair? spec-tail)
-        (null? (cdr spec-tail))
-        (pair? (car spec-tail)))
-
-        (concat (map (!lambda (picker) (execute-picker picker items)) (car spec-tail)))
-        (make-fail (list 'expected-picker-list spec-tail)))))
+      (concat (map (!lambda (picker) (execute-picker picker items)) (car spec-tail)))))
 
     (execute-picker (!lambda (picker items)
       (!if (symbol? picker)
@@ -143,22 +125,15 @@
     (concat (!lambda (l)
       (!if (null? l)
         l
-        (!if (not (pair? l))
-          (make-fail (list 'expected-list-of-lists l))
-          (!if (null? (car l))
-            (concat (cdr l))
-            (!if (not (pair? (car l)))
-              (make-fail (list 'expected-list (car l)))
-              (cons (car (car l)) (concat (cons (cdr (car l)) (cdr l))))))))))
+        (!if (null? (car l))
+          (concat (cdr l))
+          (cons (car (car l)) (concat (cons (cdr (car l)) (cdr l))))))))
 
     (map (!lambda (f l)
       (!if (null? l)
         l
-        (!if (pair? l)
-          (cons (f (car l)) (map f (cdr l)))
-          (make-fail (list 'not-a-list l))))))
+        (cons (f (car l)) (map f (cdr l))))))
     )
-
 
     ;finally, return the module loader
     module-loader))

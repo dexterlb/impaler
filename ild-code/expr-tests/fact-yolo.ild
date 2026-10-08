@@ -1,0 +1,7 @@
+(case "fact-calculates-factorial-of-5-with-yolo-module-loader"
+  (expr
+    ((eval (free-vars) (read-source "core/bootstrap/module-loader-yolo.ild"))
+      "demos/fact.ild"
+      'main))
+
+  (expected 120))
