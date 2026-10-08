@@ -15,7 +15,7 @@ Within \(\omega\)-terms, we use the marker \(\cpsret\) to denote the \emph{curre
 Formally, the aforementioned definition of \ildsym{foo} stands for:
 \begin{itemize}
   \item \(\ildhost{foo} \in \ildsetHostFunc\)
-  \item \(\evalsto{\interop{apply}{C,\, \ildhost{foo},\, v_1,\, v_2,\, \dots,\, v_n}}{\omega[\cpsret/C]}\)
+  \item \(\evalsto{\interop{apply}{C,\, \ildhost{foo},\, v_1,\, v_2,\, \dots,\, v_n}}{\omega\subst{\cpsret}{C}}\)
   \item \(E = \ildlist{\dots\, \ildpair{\ildsym{foo}}{\ildhost{foo}}\, \dots}\)
 \end{itemize}
 
@@ -77,7 +77,7 @@ in the local binding environment, and then evaluating the body in the resulting 
 \begin{gather*}
   \evalstobr{\interop{apply}{C,\, \ildabstr{e,\, P = \ildlist{p_1\, p_2\, \dots\, p_n},\, \beta},\, a_1,\, a_2,\, \dots,\, a_n}}{\interop{eval}{C,\, e',\, \beta}\text{,}}
   \\
-  \text{where } e' = e\, [p_1/a_1]\, [p_2/a_2]\, \dots\, [p_n/a_n]
+  \text{where } e' = e\, \subst{p_1}{a_1}\, \subst{p_2}{a_2}\, \dots\, \subst{p_n}{a_n}
 \end{gather*}
 
 To let programs build such abstractions, we provide a data constructor:

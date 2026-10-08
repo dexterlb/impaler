@@ -101,7 +101,7 @@ and library functions (\(\ildsetHost\)). We split the semantics of ILD into:
 \end{semgroup}
 
 \begin{semgroup}{CPS calculus \(\beta\)-reduction:}
-\semrow{\evalsto{\cpsapp{\cpsabstr{x}{M},\, v}}{M[x/v]}}%
+\semrow{\evalsto{\cpsapp{\cpsabstr{x}{M},\, v}}{M\subst{x}{v}}}%
 \end{semgroup}
 \end{cfig}
 

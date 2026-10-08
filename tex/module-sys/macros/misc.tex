@@ -7,6 +7,10 @@
 % \paraphrase[replacement]{body}: a marked draft phrase.
 \newcommand{\paraphrase}[2][]{#2\ifx\relax#1\relax\else\ \textcolor{orange}{(#1)}\fi}
 
+% --- Notation ---------------------------------------------------------------
+% \subst{x}{v}: the substitution "[x/v]", stacked (typst-style) instead of slashed.
+\newcommand{\subst}[2]{\left[\frac{#1}{#2}\right]}
+
 % --- Editorial boxes --------------------------------------------------------
 \newmdenv[
   backgroundcolor=notebg, linecolor=boxborder, linewidth=2pt,

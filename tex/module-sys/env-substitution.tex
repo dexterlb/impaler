@@ -4,15 +4,15 @@
 Formally, substituting a symbol/value pair in a binding environment
 can be defined as:
 \[
-  e [ x / v ] =
+  e \subst{x}{v} =
   \begin{cases}
     \ildpair{\ildpair{x}{v}}{()} & \text{if } e = (), \\
     \ildpair{\ildpair{x}{v}}{e_1} & \text{if } e = \ildpair{\ildpair{x}{w}}{e_1}, \\
-    \ildpair{\ildpair{y}{w}}{e_1 [ x / v ]} & \text{if } e = \ildpair{\ildpair{y}{w}}{e_1} \text{ and } y \neq x.
+    \ildpair{\ildpair{y}{w}}{e_1 \subst{x}{v}} & \text{if } e = \ildpair{\ildpair{y}{w}}{e_1} \text{ and } y \neq x.
   \end{cases}
 \]
 
 In particular, evaluating the body \(\beta\) of an \cref{abstraction} in the resulting
-environment \(e' = e [ p_1 / a_1 ] \dots [ p_n / a_n]\) resolves each formal
+environment \(e' = e \subst{p_1}{a_1} \dots \subst{p_n}{a_n}\) resolves each formal
 parameter \(p_i\) to the corresponding actual parameter \(a_i\) via the symbol
 lookup rule (\cref{stepped-semantics}).
