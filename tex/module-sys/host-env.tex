@@ -79,8 +79,7 @@ in the local binding environment, and then evaluating the body in the resulting 
   \\
   \text{where } e' = e\, \subst{p_1}{a_1}\, \subst{p_2}{a_2}\, \dots\, \subst{p_n}{a_n}
 \end{gather*}
-
-To let programs build such abstractions, we provide a data constructor:
+To let programs build these objects, we provide a data constructor:
 \[ \defas{\ildapp{mk-lambda}{e\, P\, B}}{E}{\cpsapp{\cpsret,\, \ildabstr{e, P, B}}} \]
 
 \subsubsection{A recursion operator}
@@ -88,12 +87,19 @@ A meta-operator \(\ildsym{poly-fix}\) shall be provided to allow constructing
 mutually-recursive functions
 \footnote{If we don't care about performance and have infinite memory, the host implementation
 of \(\ildsym{poly-fix}\) is optional, since we can just implement the Y-combinator in ILD itself. For this exercise, see \cref{poly-fix-Y}.}:
-
 \[ \defas{\ildapp{poly-fix}{\Gamma_1\, \Gamma_2\, \dots\, \Gamma_n}}{E}{\cpsapp{\cpsret,\, \ildlist{\ildconst{f}{1}\, \ildconst{f}{2}\, \dots\, \ildconst{f}{n}}}} \]
-
 where \(\ildconst{f}{1}, \dots, \ildconst{f}{n}\) are such that:
-
-\[ \evalsto{\interop{apply}{C,\, \ildconst{f}{i},\, a_1,\, \dots,\, a_n}}{\interop{apply}{\cpsabstr{{f_i}'}{\interop{apply}{C,\, {f_i}',\, a_1,\, \dots,\, a_n}},\, \Gamma_i,\, \ildconst{f}{1},\, \ildconst{f}{2},\, \dots,\, \ildconst{f}{n}}} \]
+\[
+  \evalstobr
+    {\interop{apply}{C,\, \ildconst{f}{i},\, a_1,\, \dots,\, a_n}}
+    {\interop
+      {apply}
+      {\cpsabstr
+        {{f_i}'}
+        {\interop{apply}{C,\, {f_i}',\, a_1,\, \dots,\, a_n}}
+        ,\, \Gamma_i,\, \ildconst{f}{1},\, \ildconst{f}{2},\, \dots,\, \ildconst{f}{n}}
+    }
+\]
 
 % A stronger definition of \(#f_1, ..., #f_n\) would be \(#f_i = Gamma_i (#f_1, ..., #f_n)\),
 % but this leads to divergence problems when the language has strict (non-lazy) semantics.
