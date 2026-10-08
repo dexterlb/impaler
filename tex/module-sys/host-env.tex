@@ -74,11 +74,11 @@ expressions to be evaluated in order is purely a stylistic choise for the sake
 of simplicity.} \(\beta\)
 is applied by substituting (\cref{env-substitution}) the formal parameters by the actual parameters
 in the local binding environment, and then evaluating the body in the resulting environment:
-\[
-  \evalsto{\interop{apply}{C,\, \ildabstr{e,\, P = \ildlist{p_1\, p_2\, \dots\, p_n},\, \beta},\, a_1,\, a_2,\, \dots,\, a_n}}{\interop{eval}{C,\, e',\, \beta}}
-  \quad \text{, where} \quad
-  e' = e\, [p_1/a_1]\, [p_2/a_2]\, \dots\, [p_n/a_n]
-\]
+\begin{gather*}
+  \evalstobr{\interop{apply}{C,\, \ildabstr{e,\, P = \ildlist{p_1\, p_2\, \dots\, p_n},\, \beta},\, a_1,\, a_2,\, \dots,\, a_n}}{\interop{eval}{C,\, e',\, \beta}\text{,}}
+  \\
+  \text{where } e' = e\, [p_1/a_1]\, [p_2/a_2]\, \dots\, [p_n/a_n]
+\end{gather*}
 
 To let programs build such abstractions, we provide a data constructor:
 \[ \defas{\ildapp{mk-lambda}{e\, P\, B}}{E}{\cpsapp{\cpsret,\, \ildabstr{e, P, B}}} \]
