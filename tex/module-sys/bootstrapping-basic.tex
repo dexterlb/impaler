@@ -95,7 +95,6 @@ of writing \ild{lambda} with specifically-named arguments. Thus,
 we first define a helper that lets our macros generate expressions
 of the form \ild{(!lambda <args> <body>)}, and then use it to
 define \ild{let} itself:
-
 \begin{ildcode}
 (!lambda (args body)
   (cons macroexpand
@@ -113,7 +112,6 @@ define \ild{let} itself:
     (map cadr letlist)))))
 \end{ildcode}
 \lstcaption{Definition of \ild{let}}
-
 Now we can bind locally-scoped values ergonomically:
 \begin{ildcode}
 ((!lambda (add1 fourty-two)
@@ -147,9 +145,11 @@ those bindings to \ild{poly-fix}:
     ((args (map car defs))
       (item-bodies (map cadr defs)))
     (!let (
-      (arg-bodies (map
-        (!lambda (def-body) (expand-lambda args def-body))
-        item-bodies))
+      (arg-bodies
+        (map
+          (!lambda (def-body)
+            (expand-lambda args def-body))
+          item-bodies))
       (flist (gensym "flist")))
 
       (!let (
