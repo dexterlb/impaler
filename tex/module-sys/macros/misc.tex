@@ -41,24 +41,34 @@
   sensitive=true,
   morecomment=[l]{;},
   morestring=[b]",
-  morekeywords={macroexpand,quote,free-vars,mk-lambda,cons,car,cdr,
-    lambda,let,letrec,poly-fix,map,gensym,apply,eval,read-source,
-    make-fail,bool-to-k,list,cadr,Y,f,args,body,defs,def-body,item-bodies,
-    arg-bodies,flist,result-body,func},
 }
 \lstdefinestyle{ildstyle}{
   language=ild,
-  basicstyle=\ttfamily\footnotesize,
-  backgroundcolor=\color{listingfill},
+  basicstyle=\ttfamily\normalsize,
+  keywordstyle=,
+  commentstyle=\color{clistingcomment},
+  stringstyle=\color{chost},
   frame=none,
   xleftmargin=6pt, xrightmargin=6pt,
-  aboveskip=6pt, belowskip=2pt,
+  aboveskip=0pt, belowskip=0pt,
   columns=fullflexible,
   keepspaces=true,
   showstringspaces=false,
 }
 \lstnewenvironment{ildcode}[1][]{\lstset{style=ildstyle,#1}}{}
 \lstnewenvironment{schemecode}[1][]{\lstset{style=ildstyle,language=Lisp,#1}}{}
+
+% Listings float on one continuous mdframed rectangle; listings' own per-line
+% fill can leave hairline gaps between lines.
+\mdfdefinestyle{listingframe}{
+  hidealllines=true,
+  backgroundcolor=listingfill,
+  innerleftmargin=0pt, innerrightmargin=0pt,
+  innertopmargin=4pt, innerbottommargin=4pt,
+  skipabove=6pt, skipbelow=2pt,
+}
+\surroundwithmdframed[style=listingframe]{ildcode}
+\surroundwithmdframed[style=listingframe]{schemecode}
 
 \newcounter{listing}
 \newcommand{\lstcaption}[1]{%

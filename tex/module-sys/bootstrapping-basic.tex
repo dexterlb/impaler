@@ -18,7 +18,8 @@ macro to result in a call to \ild{mk-lambda} given the current binding environme
 \begin{ildcode}
 (!lambda (x y) (+ x y))
 ; should become
-(mk-lambda (free-vars) (quote (x y)) (quote (+ x y)))
+(mk-lambda (free-vars) (quote (x y))
+  (quote (+ x y)))
 \end{ildcode}
 The outer call to \ild{mk-lambda} introduces a new \(\ildsetAbstr\)-object
 with the current binding environment%
@@ -155,10 +156,13 @@ those bindings to \ild{poly-fix}:
       (!let (
         (result-body (cons
           (expand-lambda args body)
-          (generate-element-getters flist args))))
+          (generate-element-getters
+            flist args))))
 
         (list
-          (expand-lambda (list flist) result-body)
+          (expand-lambda
+            (list flist)
+            result-body)
           (cons poly-fix arg-bodies))))))
 \end{ildcode}
 \lstcaption{Definition of letrec}
