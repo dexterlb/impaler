@@ -2,8 +2,8 @@
   (doc "this module calculates factorials :)")
   (exports main)
   (imports
-    (builtin (macroexpand <= * + lambda))
-    ("core/prelude.ild" (if))
+    (host (macroexpand <= * +))
+    ("core/prelude.ild" (lambda if))
     ("core/module-utils.ild" (fn)))
   (defs
     (!fn main () (fact 5))

@@ -1,9 +1,13 @@
 (module
   (doc "some core functions")
-  (exports if list expand-lambda)
+  (exports lambda letrec if list expand-lambda)
   (imports
-    (builtin (lambda macroexpand quote bool-to-k)))
+    (host (eval free-vars read-source mk-lambda macroexpand quote bool-to-k car cdr cons null? pair? func? apply poly-fix gensym make-fail)))
   (defs
+    '(lambda (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")))
+
+    '(letrec (eval (free-vars) (read-source "core/bootstrap/define-letrec.ild")))
+
     '(list (!lambda args args))
 
     '(if (!lambda (cond t f)     ; read this definition bottom to top

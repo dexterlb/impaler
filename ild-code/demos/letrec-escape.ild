@@ -2,8 +2,8 @@
   (doc "a value built by letrec stays usable after its defining scope returns")
   (exports main)
   (imports
-    (builtin (macroexpand <= + lambda letrec))
-    ("core/prelude.ild" (if))
+    (host (macroexpand <= +))
+    ("core/prelude.ild" (lambda letrec if))
     ("core/module-utils.ild" (fn)))
   (defs
     (!fn make-summer ()

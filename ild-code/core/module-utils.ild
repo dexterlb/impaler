@@ -2,8 +2,8 @@
   (doc "some helpers for working with modules")
   (exports fn)
   (imports
-    (builtin (car cdr cons lambda macroexpand quote bool-to-k))
-    ("core/prelude.ild" (expand-lambda list))
+    (host (car cdr cons macroexpand quote bool-to-k))
+    ("core/prelude.ild" (lambda expand-lambda list))
   )
   (defs
     '(fn (!lambda (name arg-spec body)
