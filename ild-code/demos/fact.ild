@@ -3,7 +3,7 @@
   (exports main)
   (imports
     (host (macroexpand <= * +))
-    ("core/prelude.ild" (lambda if))
+    ("core/prelude.ild" (if))
     ("core/module-utils.ild" (fn)))
   (defs
     (!fn main () (fact 5))
