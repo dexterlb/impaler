@@ -1,7 +1,7 @@
 \section{Bootstrapping basic constructs}
 \label{bootstrapping-basic}
 The base syntax of ILD is insufficient for writing nontrivial programs
-in a succint way. However, its \(\ildsf{macroexpand}\) facillity allows
+in a succinct way. However, its \(\ildsf{macroexpand}\) facility allows
 extending the syntax with arbitrary metaprogramming constructs, which we
 build incrementally.
 
@@ -33,7 +33,7 @@ expand to a \ild{mk-lambda}-expression when called:
   (free-vars)
   '(arg-names body)
   '(cons mk-lambda
-    (cons (cons free-vars '()
+    (cons (cons free-vars '())
       (cons (cons quote (cons arg-names '()))
         (cons (cons quote (cons body '()))
           '())))))
@@ -55,9 +55,9 @@ value of \ild{lambda}):
       "core/bootstrap/lambda-macro.ild"))
  (lambda)
 
-  ; <body that may use the lambda macro>
+  ...) ; body that may use the lambda macro
 
-  ; definition of 'lambda'
+  ; definition of lambda
   (eval (free-vars)
     (read-source
       "core/bootstrap/lambda-macro.ild")))
@@ -66,35 +66,45 @@ value of \ild{lambda}):
 
 \subsection{Basic utilities}
 We define helper utilities in a scope where the \ild{lambda} macro is present.
-To keep the code succint, we store these definitions in separate bootstrap
+To keep the code succinct, we store these definitions in separate bootstrap
 source files and introduce them in scope with the same technique as the
 \ild{lambda} macro.
 \begin{ildcode}
-; definition of 'list'
+; definition of list
 (!lambda args args)
 
-; definition of 'cadr'
+; definition of cadr
 (!lambda (p) (car (cdr p)))
 
-; 'Y' is special case of poly-fix
+; Y is special case of poly-fix
 (!lambda (f) (car (poly-fix f)))
 \end{ildcode}
 \lstcaption{Definitions of basic helper primitives}
-Branching in ILD requires is done via the \ildhost{bool-to-k} host
+To more easily write macros that generate expressions
+of the form \ild{(!lambda <args> <body>)}, we define a helper:
+\begin{ildcode}
+(!lambda (args body)
+  (cons macroexpand
+    (cons lambda
+      (cons args
+        (cons body '())))))
+\end{ildcode}
+\lstcaption{Definition of \ild{expand-lambda}}
+Branching in ILD is done via the \ildhost{bool-to-k} host
 function. In order to only evaluate the selected branch, we delay
 evaluation to after the condition is known by wrapping in a 0-argument
 function, and force it afterwards:
 \begin{ildcode}
-    (!lambda (cond t f)
-      ; generate an expression that
-      (list     ; forces the result
-        (list   ; applies the selector,
-                ; obtaining a delayed value
-          (list bool-to-k cond) ; selector
+(!lambda (cond t f)
+  ; generate an expression that
+  (list     ; forces the result
+    (list   ; applies the selector,
+            ; obtaining a delayed value
+      (list bool-to-k cond) ; selector
 
-          ; delayed #t and #f branches
-          (expand-lambda '() t)
-          (expand-lambda '() f)))))
+      ; delayed #t and #f branches
+      (expand-lambda '() t)
+      (expand-lambda '() f))))
 \end{ildcode}
 \lstcaption{Definition of the \ild{if} macro}
 
@@ -107,31 +117,20 @@ function, and force it afterwards:
         (cons
           (f (car l)) (map f (cdr l)))
         (make-fail
-          (list 'not-a-list l)))))))))
+          (list 'not-a-list l)))))))
 \end{ildcode}
 \lstcaption{Definition of the \ild{map} function}
 
 \subsubsection{Let}
 The binding construct \ild{let} is simply a more ergonomic way
-of writing \ild{lambda} with specifically-named arguments. Thus,
-we first define a helper that lets our macros generate expressions
-of the form \ild{(!lambda <args> <body>)}, and then use it to
-define \ild{let} itself:
-\begin{ildcode}
-(!lambda (args body)
-  (cons macroexpand
-    (cons lambda
-      (cons args
-        (cons body '())))))
-\end{ildcode}
-\lstcaption{Definition of \ild{expand-lambda}}
+of writing \ild{lambda} with specifically-named arguments:
 \begin{ildcode}
 (!lambda (letlist body)
   (cons
     (expand-lambda
       (map car letlist)
       body)
-    (map cadr letlist)))))
+    (map cadr letlist)))
 \end{ildcode}
 \lstcaption{Definition of \ild{let}}
 Now we can bind locally-scoped values ergonomically:

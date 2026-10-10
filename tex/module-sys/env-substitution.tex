@@ -7,6 +7,6 @@ Formally, parameter substitution in a binding environment $e\subst{x}{v}$ can be
   \begin{cases}
     \ildpair{\ildpair{x}{v}}{()} & e = () \\
     \ildpair{\ildpair{x}{v}}{e'} & e = \ildpair{\ildpair{x}{w}}{e'} \\
-    \ildpair{\ildpair{y}{w}}{e' \subst{x}{v}} & e = \ildpair{\ildpair{y}{w}}{} \'eland y \neq x
+    \ildpair{\ildpair{y}{w}}{e' \subst{x}{v}} & e = \ildpair{\ildpair{y}{w}}{} \land y \neq x
   \end{cases}
 \]
