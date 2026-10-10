@@ -11,6 +11,99 @@ in \cref{example-module-fact}. We will present it in a top-down manner
 while omitting technical details such as \ild{kv-*} functions for
 operating on key-value lists.
 
+\begin{ildcode}
+(!(eval (free-vars) (read-source
+    "core/bootstrap/let.ild"))
+  ( (host-bindings (free-vars))
+    (lambda (eval (free-vars) (read-source
+      "core/bootstrap/lambda-macro.ild")))
+    (letrec (eval (free-vars) (read-source
+      "core/bootstrap/letrec.ild")))
+    (if (eval (free-vars) (read-source
+      "core/bootstrap/if.ild")))
+    (map (eval (free-vars) (read-source
+      "core/bootstrap/map.ild"))))
+
+  (!letrec (
+    ; <definitions of helpers>
+    ; <definition of module-loader>
+    )
+
+    module-loader))
+\end{ildcode}
+\lstcaption{Outer scope bindings of the module loader}
+The core of the module loader is a function called \ild{eval-module} that:
+\begin{enumerate}
+\item Recursively processes imported modules and builds a binding environment \ild{env}
+that contains all imports
+\item Builds a list of name-body pairs from the definitions \paraphrase{defined} in the module
+\item Calls \ild{letrec} with these definition pairs and a body that generates a list
+of key-value pairs for the module exports. Note that unlike other places, where letrec
+is used as a macro, here it is used as a function (\cref{macro-function-duality}).
+\item Evaluates the resulting program under \ild{env}
+\end{enumerate}
+\begin{ildcode}
+; ---- inside letrec block ----
+(load-module (!lambda (module-name)
+  (eval-module (read-source module-name))))
+
+(eval-module (!lambda (mod-expr)
+  (!let* (
+    (items (cdr mod-expr))
+
+    (imports (kv-fetch 'imports (list) items))
+    (defs    (kv-fetch 'defs    (list) items))
+    (exports (kv-fetch 'exports (list) items))
+
+    (env (process-imports imports))
+    (eval-def (!lambda (def)
+      (eval env def)))
+    (def-items (map eval-def defs)))
+
+    (eval env
+      (letrec
+        def-items
+        (cons list
+          (map sym-item-pair exports)))))))
+\end{ildcode}
+The \ild{process-imports} helper calls \ild{load-module} recursively on
+imported modules and then merges the resulting export lists. For the special
+case when the \ild{host} keyword is used in place of a module name,
+the host bindings (obtained via an outermost call to \ild{free-vars}) are
+provided:
+\begin{ildcode}
+; ---- inside letrec block ----
+(process-imports (!lambda (import-list)
+  (concat (map process-import import-list))))
+
+(process-import (!lambda (import-spec)
+  (!if (!and (symbol? (car import-spec))
+             (sym-eq? (car import-spec) 'host))
+    (process-import-items
+      host-bindings
+      (cdr import-spec))
+    (process-import-items
+      (load-module (car import-spec))
+      (cdr import-spec)))))
+\end{ildcode}
+We omit the implementation of \ild{process-import-items}, which merely
+picks the requested key-value pairs from the export lists.
+
+Finally, we implement the function \ild{module-loader} which, given a module name,
+entrypoint function name and arguments, loads that module, picks the entrypoint function
+from its export list and applies it to the given arguments. Running a program
+such as the one in \cref{example-module-fact} simpy becomes:
+\begin{ildcode}
+((eval (free-vars) (read-source
+  "core/bootstrap/module-loader.ild"))
+
+  "demos/fact.ild"
+  'main)
+\end{ildcode}
+The ILD interpreter and/or build system need not be concerned of any details
+about loading and importing modules and can be kept simple: all of the logic
+is implemented in ILD itself.
+
 \subsection{Complex control flow on top of CPS}
 
 \begin{note}
