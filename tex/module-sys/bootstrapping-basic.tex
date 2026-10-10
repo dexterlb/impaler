@@ -66,6 +66,9 @@ value of \ild{lambda}):
 
 \subsection{Basic utilities}
 We define helper utilities in a scope where the \ild{lambda} macro is present.
+To keep the code succint, we store these definitions in separate bootstrap
+source files and introduce them in scope with the same technique as the
+\ild{lambda} macro.
 \begin{ildcode}
 ; definition of 'list'
 (!lambda args args)
@@ -77,6 +80,24 @@ We define helper utilities in a scope where the \ild{lambda} macro is present.
 (!lambda (f) (car (poly-fix f)))
 \end{ildcode}
 \lstcaption{Definitions of basic helper primitives}
+Branching in ILD requires is done via the \ildhost{bool-to-k} host
+function. In order to only evaluate the selected branch, we delay
+evaluation to after the condition is known by wrapping in a 0-argument
+function, and force it afterwards:
+\begin{ildcode}
+    (!lambda (cond t f)
+      ; generate an expression that
+      (list     ; forces the result
+        (list   ; applies the selector,
+                ; obtaining a delayed value
+          (list bool-to-k cond) ; selector
+
+          ; delayed #t and #f branches
+          (expand-lambda '() t)
+          (expand-lambda '() f)))))
+\end{ildcode}
+\lstcaption{Definition of the \ild{if} macro}
+
 \begin{ildcode}
 (Y (!lambda (map)
   (!lambda (f l)
