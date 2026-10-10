@@ -104,7 +104,7 @@ decomposed into \emph{modules} such as the following example:
   (doc "this module calculates 5!")
   (exports main)
   (imports
-    (builtin (macroexpand <= * + lambda))
+    (builtin (macroexpand <= * +))
     ("core/prelude.ild" (if))
     ("core/module-utils.ild" (fn)))
   (defs
