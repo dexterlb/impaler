@@ -6,7 +6,7 @@
   (defs
     '(lambda (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")))
 
-    '(letrec (eval (free-vars) (read-source "core/bootstrap/define-letrec.ild")))
+    '(letrec (eval (free-vars) (read-source "core/bootstrap/letrec.ild")))
 
     '(list (!lambda args args))
 

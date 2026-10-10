@@ -1,0 +1,21 @@
+((!(eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")) (lambda)
+  ((!lambda (list expand-lambda)
+
+    ; (if cond foo bar) should expand to
+    ; (((bool-to-k cond) (!lambda () foo) (!lambda () bar)))
+    (!lambda (cond t f)     ; read this definition bottom to top
+      (list                          ; force the result
+        (list                        ; eval the branch selector getting one of the delayed vals
+          (list bool-to-k cond)      ; obtain branch selector from cond
+          (expand-lambda '() t)      ; delay t branch
+          (expand-lambda '() f)))))  ; delay f branch
+
+
+    ; definition of list
+    (!lambda args args)
+
+    ; definition of expand-lambda
+    (!lambda (args body) (cons macroexpand (cons lambda (cons args (cons body '())))))))
+
+  ; definition of lambda
+  (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")))

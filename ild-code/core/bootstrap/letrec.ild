@@ -1,10 +1,10 @@
 (!(eval (free-vars) (read-source "core/bootstrap/let.ild")) (
   (lambda (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")))
-  (if (eval (free-vars) (read-source "core/bootstrap/define-if.ild")))
+  (if (eval (free-vars) (read-source "core/bootstrap/if.ild")))
   (let (eval (free-vars) (read-source "core/bootstrap/let.ild")))
-  (Y (eval (free-vars) (read-source "core/bootstrap/define-y.ild")))
-  (map (eval (free-vars) (read-source "core/bootstrap/define-map.ild")))
-  (poly-Y (eval (free-vars) (read-source "core/bootstrap/define-poly-y.ild"))))
+  (Y (eval (free-vars) (read-source "core/bootstrap/y.ild")))
+  (map (eval (free-vars) (read-source "core/bootstrap/map.ild")))
+  (poly-Y (eval (free-vars) (read-source "core/bootstrap/poly-y.ild"))))
 
   (!let (
     (expand-lambda (!lambda (args body) (cons macroexpand (cons lambda (cons args (cons body '()))))))

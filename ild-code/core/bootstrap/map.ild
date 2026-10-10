@@ -1,5 +1,5 @@
 ((!(eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")) (lambda if)
-  ((eval (free-vars) (read-source "core/bootstrap/define-y.ild"))
+  ((eval (free-vars) (read-source "core/bootstrap/y.ild"))
     (!lambda (map)
       (!lambda (f l)
         (!if (null? l)
@@ -12,4 +12,4 @@
   (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild"))
 
   ; definition of if
-  (eval (free-vars) (read-source "core/bootstrap/define-if.ild")))
+  (eval (free-vars) (read-source "core/bootstrap/if.ild")))

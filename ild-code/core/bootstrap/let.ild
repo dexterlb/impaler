@@ -9,7 +9,7 @@
     (!lambda (args body) (cons macroexpand (cons lambda (cons args (cons body '())))))
 
     ; definition of map
-    (eval (free-vars) (read-source "core/bootstrap/define-map.ild"))
+    (eval (free-vars) (read-source "core/bootstrap/map.ild"))
 
     ; definition of cadr
     (!lambda (p) (car (cdr p)))))

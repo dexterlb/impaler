@@ -1,18 +1,13 @@
 (!(eval (free-vars) (read-source "core/bootstrap/let.ild")) (
   (lambda (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")))
   (host-bindings (free-vars))
-  (letrec (eval (free-vars) (read-source "core/bootstrap/define-letrec.ild"))))
+  (letrec (eval (free-vars) (read-source "core/bootstrap/letrec.ild")))
+  (if (eval (free-vars) (read-source "core/bootstrap/if.ild")))
+  (map (eval (free-vars) (read-source "core/bootstrap/map.ild"))))
   (!letrec (
     (list (!lambda args args))
 
     (expand-lambda (!lambda (args body) (list macroexpand lambda args body)))
-
-    (if (!lambda (cond t f)     ; read this definition bottom to top
-      (list                          ; eval the result with no arguments to force the lazy value
-        (list                        ; eval the K or K*, getting one of the two lazy values
-          (list bool-to-k cond)      ; convert the boolean condition to K or K* to do the selection
-          (expand-lambda '() t)      ; lazy value that evals the "true" branch
-          (expand-lambda '() f)))))  ; lazy value that evals the "false" branch
 
     (not (!lambda (b)
       (!if b
@@ -126,11 +121,6 @@
         (!if (null? (car l))
           (concat (cdr l))
           (cons (car (car l)) (concat (cons (cdr (car l)) (cdr l))))))))
-
-    (map (!lambda (f l)
-      (!if (null? l)
-        l
-        (cons (f (car l)) (map f (cdr l))))))
   )
 
     ;finally, return the module loader

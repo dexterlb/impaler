@@ -11,5 +11,8 @@
         (!lambda (x)
           (f (!lambda args (apply (x x) args))))))))
 
+  ; definition of lambda
   (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild"))
-  (eval (free-vars) (read-source "core/bootstrap/define-if.ild")))
+
+  ; definition of if
+  (eval (free-vars) (read-source "core/bootstrap/if.ild")))
