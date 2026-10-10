@@ -1,0 +1,15 @@
+((!(eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")) (lambda if)
+  (!if (func? poly-fix)
+    ; if poly-fix is available, define Y through it
+    (!lambda (f)
+      (car (poly-fix f)))
+
+    ; otherwise, define Y without relying on recursion
+    (!lambda (f)
+      ((!lambda (x)
+        (f (!lambda args (apply (x x) args))))
+        (!lambda (x)
+          (f (!lambda args (apply (x x) args))))))))
+
+  (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild"))
+  (eval (free-vars) (read-source "core/bootstrap/define-if.ild")))

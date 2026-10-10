@@ -1,4 +1,7 @@
-((!(eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")) (lambda host-bindings letrec)
+(!(eval (free-vars) (read-source "core/bootstrap/let.ild")) (
+  (lambda (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")))
+  (host-bindings (free-vars))
+  (letrec (eval (free-vars) (read-source "core/bootstrap/define-letrec.ild"))))
   (!letrec (
     (list (!lambda args args))
 
@@ -32,11 +35,6 @@
 
     (cadr (!lambda (p) (car (cdr p))))
     (caar (!lambda (p) (car (car p))))
-
-    (let (!lambda (defs body)
-      (cons
-        (expand-lambda (map car defs) body)
-        (map cadr defs))))
 
     (let* (!lambda (defs body)
       (!if (null? defs)
@@ -137,7 +135,3 @@
 
     ;finally, return the module loader
     module-loader))
-
-  (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild"))
-  (free-vars)
-  (eval (free-vars) (read-source "core/bootstrap/define-letrec.ild")))

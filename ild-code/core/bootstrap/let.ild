@@ -1,0 +1,18 @@
+((!(eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")) (lambda)
+  ((!lambda (expand-lambda map cadr)
+    (!lambda (defs body)
+      (cons
+        (expand-lambda (map car defs) body)
+        (map cadr defs))))
+
+    ; definition of expand-lambda
+    (!lambda (args body) (cons macroexpand (cons lambda (cons args (cons body '())))))
+
+    ; definition of map
+    (eval (free-vars) (read-source "core/bootstrap/define-map.ild"))
+
+    ; definition of cadr
+    (!lambda (p) (car (cdr p)))))
+
+  ; definition of lambda
+  (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")))
