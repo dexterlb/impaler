@@ -1,9 +1,8 @@
 \section{Complex control flow on top of CPS}
 
-\begin{note}
-this section is unfinished
-\end{note}
-
+ILD's semantics is built on CPS, similar to Scheme. This allows implementing
+popular non-linear control flow constructs such as try/catch, early return
+and coroutines in the language itself. % MTODO: cite r5rs here
 The following example illustrates early return from the recursive computation
 enacted by \ild{map}:
 \begin{ildcode}
@@ -20,7 +19,3 @@ enacted by \ild{map}:
 \lstcaption{Early return from \ild{map}}
 If \ild{f} returns failure for an item in the list, the subsequent items will not
 be processed.
-
-This technique can also be used to implement mechanisms like scoped try/catch,
-iterative loops and other constructs that are separate features in other
-languages.

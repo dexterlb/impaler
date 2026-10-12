@@ -2,22 +2,10 @@
 \label{discussion}
 
 \subsection{Macro expansion}
-\label{macroexpand-mechanism}
-The \(\ildsf{macroexpand}\) special form allows metaprogramming by treating a certain function
-as a \emph{macro}. A regular function evaluation \(\ildlist{f\, a_1\, a_2\, \dots\, a_n}\) evaluates f and all
-arguments and then passes the evaluated arguments to the evaluated f. In contrast,
-\(\ildlist{\ildsf{macroexpand}\, f\, a_1\, a_2\, \dots\, a_n}\) evaluates just \(f\) and then passes the
-\textbf{unevaluated} arguments to it. The result is then in turn evaluated. This allows \(f\)
-to treat the program passed to it as data and to transform it arbitrarily before it
-gets evaluated. This is similar to unhygienic macro systems like the one in LISP.
-Similar to traditional LISP macro systems \cite{kohlbecker1986syntactic}, ILD macros
-expand from the outside in: the outermost macro call is expanded first, and its
-expansion may itself contain further macro calls.
-
-Unlike LISP, ILD denotes macro expansion at the callsite rather than
-differentiating between \emph{functions} and \emph{macros}. This greatly simplifies the
-semantics and implementation.
-
+\label{macroexpand-discussion}
+\begin{note}
+this section is unfinished
+\end{note}
 Another difference from LISP macros is that ILD does not have a separate macro
 expansion phase: instead, macros are evaluated as encountered. We will call
 this \emph{runtime semantics of macro expansion}. This lack of separate macro expansion
@@ -39,6 +27,10 @@ we should mention somewhere that branching in ild requires no special form (and 
 \subsubsection{Macros are functions}
 \label{macro-function-duality}
 it is really neat that we can call macros as if they were functions from macro bodies
+
+\begin{note}
+maybe here add a note that this power is similar to fexpr stuff but uses a different mechanism?
+\end{note}
 
 \subsubsection{We can emit non-sexp values from macros}
 \label{values-in-macroexpand}

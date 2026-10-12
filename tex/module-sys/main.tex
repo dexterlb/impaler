@@ -1,12 +1,18 @@
 \documentclass[sigplan,nonacm]{acmart}
 
 \input{macros/paper.tex}
+% MTODO: merge the following two files into one, notation.tex
 \input{macros/ild-stuff.tex}
 \input{macros/misc.tex}
 
 \begin{document}
+% MTODO: add some sort of formatter; `nix run fmt` should be a nix app that either runs `nix fmt` on all tex files or runs the formatter directly. the formatter should fix stuff like max line length
+% when testing the formatter, test it in a scratchpad, don't let it modify the actual files
 
-\title{Implementing a module system in a minimal LISP-like language}
+% MTODO: look at warnings produced by the latex builder and make a warning-fix-plan.txt
+% with instructions how to fix it. Don't fix them yet, let me first revise the plan.
+
+\title{Implementing a module system with callsite-triggered macro expansion}
 
 \author{Angel Angelov}
 \affiliation{%
@@ -30,6 +36,7 @@
 
 \appendix
 \makeatletter
+% MTODO: maybe removing the "Appendix A" hack, leaving the appendix heading to be just "A", but adding an "Appendix" title before all apendices would be more in the style of amsart?
 \crefalias{section}{appendix}
 \renewcommand{\@seccntformat}[1]{Appendix \csname the#1\endcsname\quad}
 \makeatother
