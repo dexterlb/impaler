@@ -83,3 +83,94 @@
   \end{minipage}%
   \egroup\par\medskip
 }
+
+\newcommand{\citneeded}{\textcolor{blue}{[citation needed]}}
+\newcommand{\clink}[2]{\hyperref[#1]{\textcolor{blue}{#2}}}
+\newcommand{\optref}[1]{\cref{#1}}
+
+\newcommand{\paraphrase}[2][]{\textcolor{red}{\underline{#2}}\ifx\relax#1\relax\else\ \textcolor{orange}{(#1)}\fi}
+
+\newcommand{\subst}[2]{\left[\frac{#1}{#2}\right]}
+
+% comment boxes
+\newmdenv[
+  backgroundcolor=notebg, linecolor=boxborder, linewidth=2pt,
+  topline=true, bottomline=false, leftline=false, rightline=false,
+  innerleftmargin=6pt, innerrightmargin=6pt,
+  innertopmargin=4pt, innerbottommargin=4pt,
+  skipabove=6pt, skipbelow=6pt,
+]{note}
+
+\newmdenv[
+  backgroundcolor=commentbg, linecolor=boxborder, linewidth=2pt,
+  topline=true, bottomline=false, leftline=false, rightline=false,
+  innerleftmargin=6pt, innerrightmargin=6pt,
+  innertopmargin=4pt, innerbottommargin=4pt,
+  skipabove=6pt, skipbelow=6pt,
+]{commentbox}
+
+\newmdenv[
+  backgroundcolor=reviewbg, linecolor=boxborder, linewidth=2pt,
+  topline=false, bottomline=false, leftline=true, rightline=false,
+  innerleftmargin=6pt, innerrightmargin=6pt,
+  innertopmargin=4pt, innerbottommargin=4pt,
+  skipabove=6pt, skipbelow=6pt,
+]{reviewbox}
+
+% listings
+\lstdefinelanguage{ild}{
+  sensitive=true,
+  morecomment=[l]{;},
+  morestring=[b]",
+}
+\lstdefinestyle{ildstyle}{
+  language=ild,
+  basicstyle=\ttfamily\normalsize,
+  keywordstyle=,
+  commentstyle=\color{clistingcomment},
+  stringstyle=\color{chost},
+  frame=none,
+  numbers=left,
+  numberstyle=\tiny\color{clistingcomment},
+  numbersep=6pt,
+  xleftmargin=6pt, xrightmargin=6pt,
+  aboveskip=0pt, belowskip=0pt,
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+}
+\lstnewenvironment{ildcode}[1][]{\lstset{style=ildstyle,#1}}{}
+\lstnewenvironment{schemecode}[1][]{\lstset{style=ildstyle,language=Lisp,#1}}{}
+
+\numberwithin{figure}{section}
+
+\mdfdefinestyle{listingframe}{
+  hidealllines=true,
+  backgroundcolor=listingfill,
+  innerleftmargin=0pt, innerrightmargin=0pt,
+  innertopmargin=4pt, innerbottommargin=4pt,
+  skipabove=6pt, skipbelow=2pt,
+}
+\surroundwithmdframed[style=listingframe]{ildcode}
+\surroundwithmdframed[style=listingframe]{schemecode}
+
+\newcounter{listing}
+\numberwithin{listing}{section}
+\newcommand{\lstcaption}[1]{%
+  \par\nobreak\smallskip\noindent
+  \refstepcounter{listing}\textbf{Listing \thelisting:} #1\par\medskip
+}
+
+% full-width spans
+\newenvironment{cfig}[2]{%
+  \begin{figure*}[t]
+  \centering
+  \refstepcounter{figure}%
+  \def\cfigname{#1}%
+  \def\cfigcaption{#2}%
+}{%
+  \addtocounter{figure}{-1}%
+  \captionsetup{name={\cfigname},labelsep=colon}%
+  \caption{\cfigcaption}%
+  \end{figure*}%
+}

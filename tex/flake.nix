@@ -107,7 +107,7 @@
           };
         devShell = pkgs.mkShell
           {
-            packages = latexTools.deps;
+            packages = latexTools.deps ++ [ pkgs.tex-fmt ];
             LOCALE_ARCHIVE = "${pkgs.glibcLocales}/lib/locale/locale-archive";
             shellHook = ''
               . ${latexTools.latexShellInit}
@@ -117,7 +117,21 @@
               echo " - 'latex_builder watch foo.tex' to build automatically on file change."
             '';
           };
-        apps = fmiSpringSession2024.apps // fmiSpringSession2026.apps // isesia.apps;
+        apps = fmiSpringSession2024.apps // fmiSpringSession2026.apps // isesia.apps // {
+          fmt = {
+            type = "app";
+            program = "${pkgs.writeShellApplication {
+              name = "fmt";
+              runtimeInputs = [ pkgs.tex-fmt ];
+              text = ''
+                if [ "$#" -eq 0 ]; then
+                  exec tex-fmt --recursive --wraplen 80 .
+                fi
+                exec tex-fmt --wraplen 80 "$@"
+              '';
+            }}/bin/fmt";
+          };
+        };
       }
     );
 }
