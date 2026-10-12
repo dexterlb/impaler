@@ -10,7 +10,7 @@ arguments and then passes the evaluated arguments to the evaluated f. In contras
 \textbf{unevaluated} arguments to it. The result is then in turn evaluated. This allows \(f\)
 to treat the program passed to it as data and to transform it arbitrarily before it
 gets evaluated. This is similar to unhygienic macro systems like the one in LISP.
-As in traditional LISP macro systems \cite{kohlbecker1986syntactic}, ILD macros
+Similar to traditional LISP macro systems \cite{kohlbecker1986syntactic}, ILD macros
 expand from the outside in: the outermost macro call is expanded first, and its
 expansion may itself contain further macro calls.
 
