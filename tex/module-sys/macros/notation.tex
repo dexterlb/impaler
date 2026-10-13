@@ -88,7 +88,7 @@
 \newcommand{\clink}[2]{\hyperref[#1]{\textcolor{blue}{#2}}}
 \newcommand{\optref}[1]{\cref{#1}}
 
-\newcommand{\paraphrase}[2][]{\textcolor{red}{\underline{#2}}\ifx\relax#1\relax\else\ \textcolor{orange}{(#1)}\fi}
+\newcommand{\paraphrase}[2][]{\textcolor{red}{\ul{#2}}\ifx\relax#1\relax\else\ \textcolor{orange}{(#1)}\fi}
 
 \newcommand{\subst}[2]{\left[\frac{#1}{#2}\right]}
 
@@ -144,6 +144,11 @@
 
 \numberwithin{figure}{section}
 
+\makeatletter
+\BeforeBeginEnvironment{ildcode}{\let\@vspace\@vspace@orig\let\@vspacer\@vspacer@orig}
+\BeforeBeginEnvironment{schemecode}{\let\@vspace\@vspace@orig\let\@vspacer\@vspacer@orig}
+\makeatother
+
 \mdfdefinestyle{listingframe}{
   hidealllines=true,
   backgroundcolor=listingfill,
@@ -162,9 +167,10 @@
 }
 
 % full-width spans
-\newenvironment{cfig}[2]{%
+\newenvironment{cfig}[3]{%
   \begin{figure*}[t]
   \centering
+  \Description{#3}%
   \refstepcounter{figure}%
   \def\cfigname{#1}%
   \def\cfigcaption{#2}%
@@ -174,3 +180,13 @@
   \caption{\cfigcaption}%
   \end{figure*}%
 }
+
+% acmart warns whenever the kernel \vspace is used outside a small set of
+% environments; mdframed calls it internally, so restore the original macro
+% inside our mdframed-based environments.
+\makeatletter
+\AtBeginEnvironment{mdframed}{\let\@vspace\@vspace@orig\let\@vspacer\@vspacer@orig}
+\AtBeginEnvironment{note}{\let\@vspace\@vspace@orig\let\@vspacer\@vspacer@orig}
+\AtBeginEnvironment{commentbox}{\let\@vspace\@vspace@orig\let\@vspacer\@vspacer@orig}
+\AtBeginEnvironment{reviewbox}{\let\@vspace\@vspace@orig\let\@vspacer\@vspacer@orig}
+\makeatother

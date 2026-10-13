@@ -67,6 +67,7 @@
           "libertinus-fonts"
           "lm-math"
           "luacode"
+          "soul"
           "microtype"
           "natbib"
           "ncctools"

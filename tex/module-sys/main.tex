@@ -28,7 +28,13 @@
 \input{future-work.tex}
 
 \appendix
-\section*{Appendix}
+\makeatletter
+\begingroup
+\def\@seccntformat#1{}%
+\section{Appendix}%
+\endgroup
+\addtocounter{section}{-1}%
+\makeatother
 \crefalias{section}{appendix}
 \input{poly-fix-y.tex}
 \input{env-substitution.tex}
