@@ -4,9 +4,44 @@
 \subsection{Macro expansion}
 \label{macroexpand-discussion}
 
-The two widely accepted macro expansion paradigms in LISP-like programming languages
-are \emph{unhygienic macros} and different kinds of \emph{hygienic macros}.%
-~\cite{kohlbecker1986syntactic}\cite{r5rs}\cite{racket}
+Functions in languages such as LISP, Scheme or Racket are \emph{first-class}
+objects, meaning that they can be used (placed in data structures, passed as arguments,
+returned as values) as any other value.~\cite{lispmacros}\cite{r5rs}\cite{racket} % MTODO: what to cite for an explanation of how lisp macros work?
+This allows for rich abstractions based
+on \paraphrase{adjective} polymorphism % MTODO: what kind of polymorphism is it when we can pass any function as argument?
+and is a central \paraphrase{pillar} of functional programming. Macros, however,
+are traditionally not first-class objects:
+\begin{itemize}
+\item Macro expansion is done in a separate pass before evaluation of the
+program begins, and the resulting program has no notion of macros.
+\item Macros are defined in their own scope, separate from the scope
+of the program.
+\item The meta-language of macros may have limited facillities for
+introducing new macros within local scopes (e.g. \ild{macrolet} in LISP or
+\ild{letrec-syntax} in Scheme), but these bindings are only visible
+to other macros and not to the rest of the language.
+\end{itemize}
+
+Another often-discussed property of macros is \emph{hygiene}: traditional LISP macros
+are \emph{unhygienic}, which allows for great flexibility but creates problems
+such as accidental capture of identifiers emmitted by macros. Other languages
+such as Scheme and Racket have \emph{hygienic} macro systems with guarantees
+that macro expansion is independant of the surrounding environment, but are much
+more restrictive.
+
+\emph{FExprs} are a different kind of metaprogramming mechanism that
+unifies functions and macros as FExpr-objects, which, depending on the implementation,
+can be first-class objects, flexible enough to \paraphrase{rival} unhygienic macros,
+and can be used in a way that avoids the pitfalls of traditional unhygienic macros.%
+~\cite{kohlbecker1986syntactic}\cite{fexpr-shutt} and can be implemented
+in a performant way~\cite{fexpr-pe}. The core mechanism of FExprs is
+\paraphrase{tag the object with evaluation metadata and then use that metadata
+when evaluating the combination to determine whether to eval the arguments}.
+FExpr-objects are first-class regardless of their evaluation semantics.
+
+ILD's macro expansion facillity is similar in expressive power and semantics
+to unhygienic LISP macros but...
+
 
 
 \begin{note}
