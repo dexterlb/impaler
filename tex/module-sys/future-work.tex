@@ -3,6 +3,17 @@
 
 \subsection{Optimisations}
 \subsection{Partial evaluation}
+\begin{note}
+this section is unfinished
+\end{note}
+Nevertheless, performance can be greatly improved by evaluating macros ahead of time.
+We argue that placing the boundary between code evaluated ahead of time and code
+evaluated at runtime should not be at the distinction between ``macro expansion'' and
+``code execution'', but rather between ``code dependant on data known ahead of time''
+(which includes most, but not all, macros) and ``code dependant on runtime data''.
+We aim to explore this topic in further research by applying partial evaluation
+as an optimisation pass in ILD, similar to how this has been done in languages
+like Kraken \cite{fexpr-pe}.
 \subsection{Interpreter}
 \begin{itemize}
 \item TCO
