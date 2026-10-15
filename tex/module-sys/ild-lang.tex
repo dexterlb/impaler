@@ -55,7 +55,7 @@ We define the semantics of ILD in terms of a CPS calculus based on
 standard \(\beta\)-reduction%
 \footnote{
 We omit details related to variable renaming and substitution.
-}%
+}
 over the set of \emph{computations} (\(\ildsetComp\)). Evaluation starts from
 the term \(\interop{eval}{\cpsyield}{E}{v}\) for some value \(v\), the root
 continuation \(\cpsyield\) and a root binding environment \(E\) (\cref{root-env}).
@@ -63,7 +63,7 @@ Well-formed, terminating programs will reach a term of the form \(\ildapp{\cpsyi
 
 \subsubsection{Embedding}
 \label{embedding}
-ILD is designed to be embedded in a host environment that provides a set of datastructures
+ILD is designed to be embedded in a host environment that provides a set of data structures
 and library functions (\(\ildsetHost\)). We split the semantics of ILD into:
 \begin{itemize}
   \item Base language, whose semantics are shown in this section
