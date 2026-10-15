@@ -109,8 +109,8 @@ and library functions (\(\ildsetHost\)). We split the semantics of ILD into:
 \end{semgroup}
 \end{cfig}
 
-Small-step semantics is outlined in \cref{stepped-semantics-fig}. A few notes
-on selected cases:
+Small-step semantics is outlined in \cref{stepped-semantics-fig}. The following
+cases are worth noting:
 \begin{itemize}
   \item \(\ildsf{free-vars}\) captures the current binding environment and is used by higher-level constructs
     such as the lambda macro (\cref{lambda-macro}).
@@ -129,11 +129,11 @@ Macros in ILD are plain functions that assume their arguments
 are code. To invoke a function as a macro, the special form
 \ildsf{macroexpand} is used at the callsite: an expression
 \(\ildlist{\ildsf{macroexpand}\, \varphi\, \alpha_1\, \alpha_2\, \dots\, \alpha_n}\)
-evaluates just \(f\) and then passes the
-\textbf{unevaluated} arguments to it. This allows \(f\) to treat the sub-program
+evaluates just \(phi\) and then passes the
+\textbf{unevaluated} arguments to it. This allows the macro function to treat the sub-program
 passed to it as data and transform it arbitrarily, and the resulting new program
-is then in turn evaluated. Macro expansion, being a regular \interopword{comb}-step, proceeds from the outermost call
+is then in turn evaluated. Macro expansion, being a regular evaluation step, proceeds from the outermost call
 inward, similarly to macro semantics in other unhygienic macro
 systems such as the one in LISP\cite{kohlbecker1986syntactic}.
-The advantages and disadvantages of callsite-annotated macros is further
+The advantages and disadvantages of callsite-triggered macros are further
 discussed in \cref{macroexpand-discussion}.
