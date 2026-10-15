@@ -36,6 +36,7 @@ expand to a \ild{mk-lambda}-expression when called:
         (cons (cons quote (cons body '()))
           '())))))
 \end{ildcode}
+\label{lambda-macro}
 \lstcaption{Implementation of the lambda macro}
 Embedding the values of \ild{mk-lambda}, \ild{free-vars} and \ild{quote}
 avoids name shadowing problems traditionally encountered with unhygienic
