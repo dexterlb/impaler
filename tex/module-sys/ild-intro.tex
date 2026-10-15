@@ -3,7 +3,7 @@
 
 \begin{note}
 We should focus on the fact that a similar thing has been done before
-(\cite{fexpr-shutt}\cite{fexpr-pe}), and that the novel thing we're trying
+(\cite{fexpr-shutt,fexpr-pe}), and that the novel thing we're trying
 here is \textbf{callsite-annotated macro expansion}.
 Parts of this section should be moved to \cref{discussion}.
 \end{note}
@@ -77,7 +77,7 @@ demonstrate expressiveness by implementing increasingly-complex constructs in
 ILD, including a way to define mutually-recursive functions (\cref{letrec}).
 
 The techniques applied in this paper are similar to research regarding
-F-expressions \cite{fexpr-shutt}\cite{fexpr-pe}. However, instead of declaring
+F-expressions~\cite{fexpr-shutt,fexpr-pe}. However, instead of declaring
 whether an object is a function or macro upon construction, ILD differentiates
 between function and macro calls at the callsite (\cref{macroexpand-mechanism}).
 
@@ -127,5 +127,5 @@ decomposed into \emph{modules} such as the following example:
 In further research, we aim to also meet the
 \clink{c-performance}{performance} constraint by employing partial evaluation
 as an optimisation step, which is a technique
-known\cite{hudak}\cite{anydsl} to give good results for reducing the
+known~\cite{hudak,anydsl} to give good results for reducing the
 overhead incurred by metaprogramming.

@@ -28,14 +28,7 @@
 \input{future-work.tex}
 
 \appendix
-\makeatletter
-\begingroup
-\def\@seccntformat#1{}%
-% MTODO: the "Appendix" heading is smaller than the individual appendix headers, fix
-\section{Appendix}%
-\endgroup
-\addtocounter{section}{-1}%
-\makeatother
+\section*{Appendix}
 \crefalias{section}{appendix}
 \input{poly-fix-y.tex}
 \input{env-substitution.tex}

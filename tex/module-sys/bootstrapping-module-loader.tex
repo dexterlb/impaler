@@ -62,8 +62,8 @@ is used as a macro, here it is used as a function (\cref{macro-function-duality}
         (cons list
           (map sym-item-pair exports)))))))
 \end{ildcode}
-\label{def-eval-module}
 \lstcaption{Definitions of \ild{load-module} and \ild{eval-module}}
+\label{def-eval-module}
 The \ild{process-imports} helper calls \ild{load-module} recursively on
 imported modules and then merges the resulting export lists. For the special
 case when the \ild{host} keyword is used in place of a module name,

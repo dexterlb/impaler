@@ -25,7 +25,7 @@
 \(\ildsetComp\) & \(:=\) & \(\interop{eval}{\ildsetCont}{\ildsetEnv}{\ildsetCVal} \mid\) & CPS calculus computation terms \\
  & & \(\interop{apply}{\ildsetCont}{\ildsetHostFunc}{\ildsetCVal^*} \mid\) & \\
  & & \(\interop{comb}{\ildsetCont}{\ildsetEnv}{\ildsetCVal}{\ildsetCVal^*} \mid\) & \\
- & & \(\cpsapp{\ildsetCont, \ildsetCVal}\) & \\
+ & & \(\cpsapp{\ildsetCont}{\ildsetCVal}\) & \\
 \(\ildsetCont\) & \(:=\) & \(\cpsyield \mid \cpsabstr{\ildsetVV}{\ildsetComp}\) & CPS calculus continuations \\
 \(\ildsetCVal\) & \(:=\) & \(\ildsetVV \mid \ildsetVal\) & CPS calculus value terms \\
 \(\ildsetVV\) & \(\in\) & \(\{x_1, x_2, \dots\}\) & CPS calculus value variables \\
@@ -78,9 +78,9 @@ and library functions (\(\ildsetHost\)). We split the semantics of ILD into:
 \label{stepped-semantics-fig}
 \begin{semgroup}{Simple cases:}
 \semrow{%
-  \step{s \in \ildsetSym \text{ and } e = \ildlist{\dots\, \ildpair{s}{v}\, \dots}}{\interop{eval}{C}{e}{s}}{\cpsapp{C,\, v}}
+  \step{s \in \ildsetSym \text{ and } e = \ildlist{\dots\, \ildpair{s}{v}\, \dots}}{\interop{eval}{C}{e}{s}}{\cpsapp{C}{v}}
   \qquad
-  \step{v \in \ildsetSF \cup \ildsetHost \cup \ildsetFail}{\interop{eval}{C}{e}{v}}{\cpsapp{C,\, v}}
+  \step{v \in \ildsetSF \cup \ildsetHost \cup \ildsetFail}{\interop{eval}{C}{e}{v}}{\cpsapp{C}{v}}
 }%
 \end{semgroup}
 
@@ -95,9 +95,9 @@ and library functions (\(\ildsetHost\)). We split the semantics of ILD into:
 
 \begin{semgroup}{Special forms:}
 \semrow{%
-  \evalsto{\interop{comb}{C}{e}{\ildsf{quote}}{\alpha}}{\cpsapp{C,\, \alpha}}
+  \evalsto{\interop{comb}{C}{e}{\ildsf{quote}}{\alpha}}{\cpsapp{C}{\alpha}}
   \qquad
-  \evalsto{\interop{comb}{C}{e}{\ildsf{free-vars}}}{\cpsapp{C,\, e}}
+  \evalsto{\interop{comb}{C}{e}{\ildsf{free-vars}}}{\cpsapp{C}{e}}
 }%
 \semrow{%
   \evalsto{\interop{comb}{C}{e}{\ildsf{macroexpand}}{\varphi}{\vec{\alpha}}}{\interop{eval}{\cpsabstr{f}{\interop{apply}{\cpsabstr{x}{\interop{eval}{C}{e}{x}}}{f}{\vec{\alpha}}}}{e}{\varphi}}
@@ -105,7 +105,7 @@ and library functions (\(\ildsetHost\)). We split the semantics of ILD into:
 \end{semgroup}
 
 \begin{semgroup}{CPS calculus \(\beta\)-reduction:}
-\semrow{\evalsto{\cpsapp{\cpsabstr{x}{M},\, v}}{M\subst{x}{v}}}%
+\semrow{\evalsto{\cpsapp{\cpsabstr{x}{M}}{v}}{M\subst{x}{v}}}%
 \end{semgroup}
 \end{cfig}
 
