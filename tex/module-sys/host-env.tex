@@ -20,7 +20,7 @@ Formally, the aforementioned notation introducing \ildsym{foo} is shorthand for:
 \end{itemize}
 For example, to introduce the function \ildhost{cons} under the symbol \ildsym{cons}
 in the root environment, we would write:
-\[ \defas{\ildapp{cons}{a\, d}}{E}{\cpsapp{\cpsret,\, \ildpair{a}{d}}} \]
+\[ \defas{\ildapp{cons}{a\, d}}{E}{\cpsapp{\cpsret}{\ildpair{a}{d}}} \]
 
 \subsubsection{Basic data structures}
 ILD's FFI semantics allows externally providing any data structure to ILD programs.
@@ -38,7 +38,7 @@ operations on S-expressions, are also provided through the FFI (\(\ildsetHostFun
     \(\ildsym{symbol?}\), \(\ildsym{string?}\), \(\ildsym{func?}\),
     \(\ildsym{fail?}\)
   \item Equality --- \(\ildapp{sym-eq?}{s_1\, s_2}\), \(\ildapp{str-eq?}{s_1\, s_2}\)
-  \item Failure --- \(\defas{\ildapp{make-fail}{v}}{E}{\cpsapp{\cpsret,\, \ildfail{v}}}\)
+  \item Failure --- \(\defas{\ildapp{make-fail}{v}}{E}{\cpsapp{\cpsret}{\ildfail{v}}}\)
 \end{itemize}
 Unlike Scheme or LISP, ILD's immutable nature does not allow building cyclic
 objects easily, which can be remedied by externally providing data structures,
