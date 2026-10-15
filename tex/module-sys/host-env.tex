@@ -10,14 +10,17 @@ to define the semantics of the host functions:
 
 \[ \defas{\ildapp{foo}{v_1\, v_2\, \dots\, v_n}}{E}{\omega} \]
 means that the symbol \ildsym{foo} stands for the host value \ildhost{foo},
-which in turn, when applied to arguments \(\vec{v}\), results in the term \(\omega\).
+which, when applied to arguments \(\vec{v}\), results in the term \(\omega\).
 Within \(\omega\)-terms, we use the marker \(\cpsret\) to denote the \emph{current continuation}.
-Formally, the aforementioned definition of \ildsym{foo} stands for:
+Formally, the aforementioned notation introducing \ildsym{foo} is shorthand for:
 \begin{itemize}
   \item \(\ildhost{foo} \in \ildsetHostFunc\)
   \item \(\evalsto{\interop{apply}{C}{\ildhost{foo}}{v_1}{v_2}{\dots}{v_n}}{\omega\subst{\cpsret}{C}}\)
   \item \(E = \ildlist{\dots\, \ildpair{\ildsym{foo}}{\ildhost{foo}}\, \dots}\)
 \end{itemize}
+For example, to introduce the function \ildhost{cons} under the symbol \ildsym{cons}
+in the root environment, we would write:
+\[ \defas{\ildapp{cons}{a\, d}}{E}{\cpsapp{\cpsret,\, \ildpair{a}{d}}} \]
 
 \subsubsection{Basic data structures}
 ILD's FFI semantics allows externally providing any data structure to ILD programs.
@@ -26,21 +29,17 @@ The base environment presented here provides numbers, booleans and strings (
 for demonstrating expressivity. Standard functions on such values, as well as
 operations on S-expressions, are also provided through the FFI (\(\ildsetHostFunc\)):
 \begin{itemize}
-  \item Arithmetic on \(\ildsetNum\) --- \(\ildapp{+}{x_1\, \dots\, x_n}\), \(\ildapp{*}{x_1\, \dots\, x_n}\),
+  \item Arithmetic --- \(\ildapp{+}{x_1\, \dots\, x_n}\), \(\ildapp{*}{x_1\, \dots\, x_n}\),
     \(\ildapp{-}{x\, y}\), \(\ildapp{/}{x\, y}\)
-  \item Comparison --- \(\ildsetNum \times \ildsetNum \to \ildsetBool\) --- \(\ildsym{=}\), \(\ildsym{<}\),
+  \item Comparison --- \(\ildsym{=}\), \(\ildsym{<}\),
     \(\ildsym{>}\), \(\ildsym{<=}\), \(\ildsym{>=}\)
-  \item Pairs --- \(\defas{\ildapp{cons}{a\, d}}{E}{\cpsapp{\cpsret,\, \ildpair{a}{d}}}\), \(\defas{\ildapp{car}{\ildpair{a}{d}}}{E}{\cpsapp{\cpsret,\, a}}\),
-    \(\defas{\ildapp{cdr}{\ildpair{a}{d}}}{E}{\cpsapp{\cpsret,\, d}}\)
-  \item Predicates --- \(\ildsym{null?}\), \(\ildsym{pair?}\),
+  \item Pairs --- \(\ildsym{cons}\) \(\ildsym{car}\) \(\ildsym{cdr}\)
+  \item Value type predicates --- \(\ildsym{null?}\), \(\ildsym{pair?}\),
     \(\ildsym{symbol?}\), \(\ildsym{string?}\), \(\ildsym{func?}\),
     \(\ildsym{fail?}\)
   \item Equality --- \(\ildapp{sym-eq?}{s_1\, s_2}\), \(\ildapp{str-eq?}{s_1\, s_2}\)
   \item Failure --- \(\defas{\ildapp{make-fail}{v}}{E}{\cpsapp{\cpsret,\, \ildfail{v}}}\)
-  \item Branching --- \(\ildapp{bool-to-k}{b}\) returns a function on two arguments that
-    returns its first argument if \(b\) is true and the second otherwise.
 \end{itemize}
-
 Unlike Scheme or LISP, ILD's immutable nature does not allow building cyclic
 objects easily, which can be remedied by externally providing data structures,
 either higher level (like graphs) or lower level (like indexed arrays).
@@ -64,8 +63,8 @@ property of ILD.
 
 \subsubsection{\(\lambda\)-abstractions}
 \label{abstraction}
-The most essential element of a functional programming language is the abillity to
-create functions\footnote{Citation needed.}. Functional objects in ILD are
+\paraphrase{The most essential element of a functional programming language is the abillity to
+create functions\footnote{Citation needed.}.} Functional objects in ILD are
 formally defined as \(\ildsetAbstr\)-terms. Each such term carries a binding environment \(e\),
 a list of formal parameters \(P\) and a body%
 \footnote{The body being a single expression instead of a list of body
@@ -86,6 +85,19 @@ for an \(m < n\), or\footnote{Both representations of \(m = 0\) are valid} \(P =
 \end{gather*}
 To let programs build such \(\ildsetAbstr\)-objects, we provide a data constructor:
 \[ \defas{\ildapp{mk-lambda}{e\, P\, B}}{E}{\cpsapp{\cpsret,\, \ildabstr{e, P, B}}} \]
+
+\subsubsection{Branching}
+Every host data type is associated with a set of functions that operate on its values.
+The function that operates on boolean values is:
+\[
+  % \defas{\ildapp{bool-to-k}{b} =
+  \begin{cases}
+    foo
+  \end{cases}
+\]
+\begin{note}
+fixme
+\end{note}
 
 \subsubsection{A recursion operator}
 A meta-operator \(\ildsym{poly-fix}\) shall be provided to allow constructing
