@@ -90,10 +90,12 @@ To let programs build such \(\ildsetAbstr\)-objects, we provide a data construct
 Every host data type is associated with a set of functions that operate on its values.
 The function that operates on boolean values is:
 \[
-  % \defas{\ildapp{bool-to-k}{b} =
-  \begin{cases}
-    foo
-  \end{cases}
+  \defas{\ildapp{bool-to-k}{b}}{E}{
+    \begin{cases}
+      foo \\
+      bar
+    \end{cases}
+  }
 \]
 \begin{note}
 fixme
