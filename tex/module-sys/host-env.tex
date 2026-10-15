@@ -92,14 +92,15 @@ The function that operates on boolean values is:
 \[
   \defas{\ildapp{bool-to-k}{b}}{E}{
     \begin{cases}
-      foo \\
-      bar
+      \ildabstr{()}{\ildlist{x}{y}}{x} & b = \ildhost{t} \\
+      \ildabstr{()}{\ildlist{x}{y}}{y} & b = \ildhost{f} \\
     \end{cases}
   }
 \]
-\begin{note}
-fixme
-\end{note}
+This allows the base language to \paraphrase{not care about branching}:
+branching is merely a feature of the boolean host datatype. The \ildsym{bool-to-k}
+function can then be used to build higher-level branching primitives
+(e.g. \cref{if}).
 
 \subsubsection{A recursion operator}
 A meta-operator \(\ildsym{poly-fix}\) shall be provided to allow constructing
