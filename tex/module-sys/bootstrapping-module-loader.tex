@@ -89,7 +89,8 @@ picks the requested key-value pairs from the export lists.
 
 Finally, we implement the function \ild{module-loader} which, given a module name,
 entrypoint function name and arguments, loads that module, picks the entrypoint function
-from its export list and applies it to the given arguments. Running a program
+from its export list and applies it to the given arguments (implementation omitted
+for \paraphrase{brevity}). Running a program
 such as the one in \cref{example-module-fact} simpy becomes:
 \begin{ildcode}
 ((eval (free-vars) (read-source

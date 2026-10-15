@@ -48,7 +48,7 @@ either higher level (like graphs) or lower level (like indexed arrays).
 To keep the parser minimal, ILD special forms are not keywords, and are instead
 provided as bindings in the root environment. This also allows
 operating on special forms as data and strengthens the homoiconic character of ILD.
-\paraphrase{See also} \cref{values-in-macroexpand}.
+\paraphrase{See also} \cref{hygiene-discussion}.
 \[
   \begin{array}{@{}l@{}}
     E = ( \\
@@ -95,10 +95,12 @@ Every host data type is associated with a set of functions that operate on its v
 The function that operates on boolean values is:
 \[
   \defas{\ildapp{bool-to-k}{b}}{E}{
-    \begin{cases}
-      \ildabstr{()}{\ildlist{x}{y}}{x} & b = \ildhost{t} \\
-      \ildabstr{()}{\ildlist{x}{y}}{y} & b = \ildhost{f} \\
-    \end{cases}
+    \cpsapp{\cpsret}{
+      \begin{cases}
+        \ildabstr{()}{\ildlist{x}{y}}{x} & b = \ildhost{t} \\
+        \ildabstr{()}{\ildlist{x}{y}}{y} & b = \ildhost{f} \\
+      \end{cases}
+    }
   }
 \]
 This allows the base language to \paraphrase{not care about branching}:

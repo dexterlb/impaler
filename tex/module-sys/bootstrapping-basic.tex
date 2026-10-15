@@ -2,10 +2,12 @@
 \label{bootstrapping-basic}
 The base syntax of ILD is insufficient for writing nontrivial programs
 in a succinct way. However, its \(\ildsf{macroexpand}\) facility allows
-extending the syntax with arbitrary metaprogramming constructs, which we
-build incrementally and distribute as a reference standard library.
-This allows keeping the core language simple and portable to different
-host environments.
+extending the syntax with arbitrary metaprogramming constructs, which can
+be built incrementally.
+In this section, we present a reference standard library
+of such constructs, \paraphrase{culminating} in \ild{letrec}.
+Keeping that complexity out of the core language makes it simple and portable
+to different host environments.
 
 \subsection{Lambda}
 \label{lambda-macro}
@@ -19,12 +21,13 @@ macro to result in a call to \ild{mk-lambda} given the current binding environme
 (mk-lambda (free-vars) (quote (x y))
   (quote (+ x y)))
 \end{ildcode}
+A possible implementation of the \ild{lambda} macro is provided in \cref{lambda-macro-def}:
 The outer call to \ild{mk-lambda} introduces a new \(\ildsetAbstr\)-object
-with the current binding environment%
+carrying the current binding environment%
 \footnote{The \ild{(free-vars)} closure given to the host \ild{mk-lambda} can be replaced
 by a closure that contains only \ild{cons}, \ild{mk-lambda}, \ild{quote} and \ild{free-vars},
 since those are the only bindings used by the body of the macro.}
-and a body that embeds the \emph{value} of \ild{mk-lambda}, to in turn
+and a body that embeds \ildhost{mk-lambda} in an \paraphrase{expression} that in turn
 expand to a \ild{mk-lambda}-expression when called:
 \begin{ildcode}
 (mk-lambda
@@ -36,11 +39,11 @@ expand to a \ild{mk-lambda}-expression when called:
         (cons (cons quote (cons body '()))
           '())))))
 \end{ildcode}
-\label{lambda-macro-def}
+\label{lambda-macro-def} % MTODO: this now refers to the section and not to the listing, fix it. Also, are there other wrongly-placed listing labels?
 \lstcaption{Implementation of the lambda macro}
 Embedding the values of \ild{mk-lambda}, \ild{free-vars} and \ild{quote}
 avoids name shadowing problems traditionally encountered with unhygienic
-macro systems (\cref{values-in-macroexpand}).
+macro systems (\cref{hygiene-discussion}).
 
 This definition can then be wrapped in another call of \ild{mk-lambda} in order to expose
 it under a \ild{lambda} name usable from the scoped body -- supposing that
@@ -56,7 +59,7 @@ value of \ild{lambda}):
 
   ...) ; body that may use the lambda macro
 
-  ; definition of lambda
+  ; body of 'lambda'
   (eval (free-vars)
     (read-source
       "core/bootstrap/lambda-macro.ild")))
@@ -69,19 +72,20 @@ To keep the code succinct, we store these definitions in separate bootstrap
 source files and introduce them in scope with the same technique as the
 \ild{lambda} macro.
 \begin{ildcode}
-; definition of list
+; body of 'list'
 (!lambda args args)
 
-; definition of cadr
+; body of 'cadr'
 (!lambda (p) (car (cdr p)))
 
-; Y is special case of poly-fix
+; 'Y' is special case of poly-fix
 (!lambda (f) (car (poly-fix f)))
 \end{ildcode}
 \lstcaption{Definitions of basic helper primitives}
 To more easily write macros that generate expressions
 of the form \ild{(!lambda <args> <body>)}, we define a helper:
 \begin{ildcode}
+; body of 'expand-lambda'
 (!lambda (args body)
   (cons macroexpand
     (cons lambda
@@ -94,6 +98,7 @@ function. In order to only evaluate the selected branch, we delay
 evaluation to after the condition is known by wrapping in a 0-argument
 function, and force it afterwards:
 \begin{ildcode}
+; body of 'if'
 (!lambda (cond t f)
   ; generate an expression that
   (list     ; forces the result
@@ -111,6 +116,7 @@ function, and force it afterwards:
 Since \ild{letrec} is not available at this point of the bootstrap process,
 we define \ild{map} via \ild{Y}:
 \begin{ildcode}
+; body of 'map'
 (Y (!lambda (map)
   (!lambda (f l)
     (!if (null? l)
@@ -127,6 +133,7 @@ we define \ild{map} via \ild{Y}:
 The binding construct \ild{let} is simply a more ergonomic way
 of writing \ild{lambda} with specifically-named arguments:
 \begin{ildcode}
+; body of 'let'
 (!lambda (letlist body)
   (cons
     (expand-lambda
@@ -135,24 +142,23 @@ of writing \ild{lambda} with specifically-named arguments:
     (map cadr letlist)))
 \end{ildcode}
 \lstcaption{Definition of \ild{let}}
-Now we can bind locally-scoped values ergonomically:
+Now we can bind locally-scoped values ergonomically: % MTODO: this appears as a new paragraph, even though there is no blank line - can it be fixed? This also applies to other text between listings.
 \begin{ildcode}
-((!lambda (add1 fourty-two)
+; this program
+  ((!lambda (add1 fourty-two)
+      (add1 fourty-two))
+
+      (!lambda (x)
+        (add x 1)) ; definition of add1
+      42)          ; definition of fourty-two
+
+; can now be written as
+  (!let (
+      (add1 (!lambda (x)
+              (add x 1)))
+      (fourty-two  42))
+
     (add1 fourty-two))
-
-    (!lambda (x)
-      (add x 1)) ; definition of add1
-    42)          ; definition of fourty-two
-; produces 43
-\end{ildcode}
-becomes
-\begin{ildcode}
-(!let (
-    (add1 (!lambda (x)
-            (add x 1)))
-    (fourty-two  42))
-
-  (add1 fourty-two))
 \end{ildcode}
 \lstcaption{Rewriting a \ild{lambda}-based scope binding to use \ild{let}}
 
@@ -163,6 +169,7 @@ that in turn takes all bindings as arguments, and passes the list of
 those bindings to \ild{poly-fix}:
 
 \begin{ildcode}
+; body of 'letrec'
 (!lambda (defs body)
   (!let
     ((args (map car defs))
