@@ -41,22 +41,29 @@
 \newcommand{\ildfailbare}{\textcolor{chost}{\texttt{\#fail}}}
 \newcommand{\ildfail}[1]{\ildfailbare\langle#1\rangle}
 \newcommand{\ildabstrbare}{\textcolor{chost}{\texttt{\#}\ensuremath{\Lambda}}}
-\newcommand{\ildabstr}[1]{\ildabstrbare\langle#1\rangle}
+\newcommand{\ildabstr}[3]{\ildabstrbare\langle #1, #2, #3\rangle}
 \newcommand{\ildcontbare}{\textcolor{chost}{\texttt{\#cont}}}
 \newcommand{\ildcont}[1]{\ildcontbare\langle#1\rangle}
 
 % --- Lists, pairs and applications -----------------------------------------
-\newcommand{\ildlist}[1]{\left(#1\right)}
+\makeatletter
+% \spacedlist[<tail>]{<item>}{<item>}... : variadic; separates the items with a
+% space, then expands <tail> once no further brace group follows.
+\newcommand{\spacedlist}{\@ifnextchar[{\spacedlist@tail}{\spacedlist@tail[]}}
+\def\spacedlist@tail[#1]{\spacedlist@go{#1}}
+\def\spacedlist@go#1#2{#2\spacedlist@loop{#1}}
+\def\spacedlist@loop#1{\@ifnextchar\bgroup{\spacedlist@item{#1}}{#1}}
+\def\spacedlist@item#1#2{\ #2\spacedlist@loop{#1}}
+\makeatother
+
+\newcommand{\ildlist}[1]{\left(\spacedlist[\right)]{#1}}
 \newcommand{\ildpair}[2]{\ildlist{#1 \,.\, #2}}
-\newcommand{\ildapp}[2]{\ildlist{\ildsym{#1}\ #2}}
+\newcommand{\ildapp}[1]{\ildlist{\ildsym{#1}}}
 
 % --- Host interop brackets --------------------------------------------------
 % \interop{word}{a1}{a2}... : variadic; separates the arguments with a space.
-\makeatletter
-\newcommand{\interop}[1]{\left[\,\textcolor{cinterop}{\texttt{#1}}\ \interop@list}
-\newcommand{\interop@list}{\@ifnextchar\bgroup{\interop@item}{\,\right]}}
-\newcommand{\interop@item}[1]{\ #1\interop@list}
-\makeatother
+\newcommand{\interopclose}{\,\right]}
+\newcommand{\interop}[1]{\left[\,\spacedlist[\interopclose]{\textcolor{cinterop}{\texttt{#1}}}}
 
 % --- CPS calculus terms -----------------------------------------------------
 \newcommand{\cpsabstr}[2]{\ildlist{\lambda\,#1\,.\, #2}}

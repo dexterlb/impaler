@@ -19,7 +19,7 @@
  & & \(\ildsetStr \mid \ildsetNum \mid \ildsetBool\) & \\
 \(\ildsetList\) & \(:=\) & \(() \mid \ildpair{\ildsetVal}{\ildsetList}\) & S-expression \emph{lists} \\
 \(\ildsetEnv\) & \(:=\) & \(() \mid \ildpair{\ildpair{\ildsetSym}{\ildsetVal}}{\ildsetEnv}\) & Binding environments\footnote{We assume keys are restricted to be unique (\cref{stepped-semantics}). Furthermore, performant implementations will use other representations of binding environments.} (K/V lists) \\
-\(\ildsetAbstr\) & \(:=\) & \(\ildabstr{\ildsetEnv, \ildsetParList, \ildsetVal}\) & Abstraction terms, \cref{abstraction} \\
+\(\ildsetAbstr\) & \(:=\) & \(\ildabstr{\ildsetEnv}{\ildsetParList}{\ildsetVal}\) & Abstraction terms, \cref{abstraction} \\
 \(\ildsetParList\) & \(:=\) & \(() \mid \ildsetSym \mid \ildpair{\ildsetSym}{\ildsetParList}\) & Param lists (lists of symbols with optional catch-all tail) \\
 \(\ildsetVCont\) & \(:=\) & \(\ildcont{\ildsetCont}\) & Reified continuations, \cref{first-class-continuations} \\
 \(\ildsetComp\) & \(:=\) & \(\interop{eval}{\ildsetCont}{\ildsetEnv}{\ildsetCVal} \mid\) & CPS calculus computation terms \\
@@ -34,9 +34,9 @@
 
 We define ILD as a homoiconic language where parseable programs (\(\ildsetProg\))
 are a subset of the internal syntax \(\ildsetVal\). Source code is parsed as
-standard S-expressions. Throughout this paper, we use the \(\ildlist{a_1\, a_2\, \dots\, a_n}\)
+standard S-expressions. Throughout this paper, we use the \(\ildlist{a_1}{a_2}{\dots}{a_n}\)
 syntax to denote S-expression lists, i.e. the nested pairs
-\(\ildpair{a_1}{\ildpair{a_2}{\,\dots\, \ildpair{a_n}{()} \,\dots\,}}\).
+\(\ildpair{a_1}{\ildpair{a_2}{\dots \ildpair{a_n}{()} \dots}}\).
 
 In addition, the parser of ILD is augmented with the following syntax sugars:
 \begin{itemize}
@@ -78,7 +78,7 @@ and library functions (\(\ildsetHost\)). We split the semantics of ILD into:
 \label{stepped-semantics-fig}
 \begin{semgroup}{Simple cases:}
 \semrow{%
-  \step{s \in \ildsetSym \text{ and } e = \ildlist{\dots\, \ildpair{s}{v}\, \dots}}{\interop{eval}{C}{e}{s}}{\cpsapp{C}{v}}
+  \step{s \in \ildsetSym \text{ and } e = \ildlist{\dots}{\ildpair{s}{v}}{\dots}}{\interop{eval}{C}{e}{s}}{\cpsapp{C}{v}}
   \qquad
   \step{v \in \ildsetSF \cup \ildsetHost \cup \ildsetFail}{\interop{eval}{C}{e}{v}}{\cpsapp{C}{v}}
 }%
@@ -86,7 +86,7 @@ and library functions (\(\ildsetHost\)). We split the semantics of ILD into:
 
 \begin{semgroup}{Combinations:}
 \semrow{%
-  \evalsto{\interop{eval}{C}{e}{\ildlist{\varphi\, \alpha_1\, \dots\, \alpha_n}}}{\interop{eval}{\cpsabstr{f}{\interop{comb}{C}{e}{f}{\alpha_1}{\dots}{\alpha_n}}}{e}{\varphi}}
+  \evalsto{\interop{eval}{C}{e}{\ildlist{\varphi}{\alpha_1}{\dots}{\alpha_n}}}{\interop{eval}{\cpsabstr{f}{\interop{comb}{C}{e}{f}{\alpha_1}{\dots}{\alpha_n}}}{e}{\varphi}}
 }%
 \semrow{%
   \step{f \in \ildsetHostFunc}{\interop{comb}{C}{e}{f}{\alpha_1}{\dots}{\alpha_n}}{\interop{eval}{\cpsabstr{x_1}{\cdots \interop{eval}{\cpsabstr{x_n}{\interop{apply}{C}{f}{x_1}{\dots}{x_n}}}{e}{\alpha_n} \cdots}}{e}{\alpha_1}}
@@ -128,7 +128,7 @@ cases are worth noting:
 Macros in ILD are plain functions that assume their arguments
 are code. To invoke a function as a macro, the special form
 \ildsf{macroexpand} is used at the callsite: an expression
-\(\ildlist{\ildsf{macroexpand}\, \varphi\, \alpha_1\, \alpha_2\, \dots\, \alpha_n}\)
+\(\ildlist{\ildsf{macroexpand}}{\varphi}{\alpha_1}{\alpha_2}{\dots}{\alpha_n}\)
 evaluates just \(phi\) and then passes the
 \textbf{unevaluated} arguments to it. This allows the macro function to treat the sub-program
 passed to it as data and transform it arbitrarily, and the resulting new program
