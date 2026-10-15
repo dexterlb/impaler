@@ -1,12 +1,17 @@
 \section{Future work}
 \label{future-work}
 \subsection{Features}
-\begin{itemize}
-\item quasiquote
-\end{itemize}
-\begin{note}
-about quasiquote: can we implement it in ILD itself?
-\end{note}
+\subsubsection{Data structures}
+\subsubsection{Quasiquote}
+ILD's \ildsf{quote} special form yields the given program without
+evaluating it. One use for \ildsf{quote} is for a macro function to
+return a literal \paraphrase{chunk} of code as its result. However,
+plain \ildsf{quote} does not allow dynamic values to be easily inserted
+inside the returned expression. To remedy this, many LISP-like languages
+employ a \emph{quasiquote} form that looks for special \emph{unquote} markers
+inside the given expression and evaluates the unquoted subexpressions before
+splicing them into the result. A similar mechanism can be implemented
+in ILD using the metaprogramming techniques shown in this paper.
 \subsection{Optimisations}
 \subsection{Partial evaluation}
 \begin{note}
