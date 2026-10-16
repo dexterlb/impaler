@@ -1,7 +1,30 @@
 \section{Future work}
 \label{future-work}
 \subsection{Features}
-\subsubsection{Data structures}
+\subsubsection{State management}
+
+The host environment presented in this paper makes ILD mostly (e.g.
+\paraphrase{not counting} \ild{gensym}) purely-functional and \paraphrase{makes
+no effort} to allow the user to manage \paraphrase{state}. However, for
+general-purpose applications, ILD must be embedded in an impure environment
+that allows state management and IO.
+
+Other functional languages that feature fully-immutable data employ different
+methods of handling state, IO and other side effects:
+\begin{itemize}
+    \item Clojure fetures immutable core data structures but allows mutable
+    state management via object handles such as \code{atom}/\code{ref}:
+    the handle itself is immutable, but operations associated with the handle
+    may mutate/replace its underlying value~\citneeded. IO operations in clojure
+    also work via similar references. Haskell has a similar
+    facillity (e.g. \code{IORef}, \code{MVar})~\citneeded
+    \item Erlang, LFE and other languages on the BEAM virtual machine employ
+    processes and message passing as primitives and manage state via an
+    actor pattern~\citneeded
+    \item \paraphrase{FRP?}
+\end{itemize}
+Embedding ILD in environments with similar practical features is worth exploring.
+
 \subsubsection{Quasiquote}
 ILD's \ildsf{quote} special form yields the given program without
 evaluating it. One use for \ildsf{quote} is for a macro function to
@@ -10,26 +33,35 @@ plain \ildsf{quote} does not allow dynamic values to be easily inserted
 inside the returned expression. To remedy this, many LISP-like languages
 employ a \emph{quasiquote} form that looks for special \emph{unquote} markers
 inside the given expression and evaluates the unquoted subexpressions before
-splicing them into the result. A similar mechanism can be implemented
+splicing them into the result.~\citneeded A similar mechanism can be implemented
 in ILD using the metaprogramming techniques shown in this paper.
 \subsection{Optimisations}
-\subsection{Partial evaluation}
-\begin{note}
-this section is unfinished
-\end{note}
+\subsubsection{Partial evaluation}
+In a naïve implementation of ILD's interpreter, macros are expanded runtime, as encountered.
+This strategy incurs a significant cost, possibly exponential in the depth
+of encountered nested macro invocations, since the body of each macro call
+is re-evaluated each time the surrounding expression is evaluated. The naïve
+ILD interpreter takes a whole second to evaluate the program from \cref{example-module-fact}
+on a modern machine due to exponential macro call reevaluation.
 Nevertheless, performance can be greatly improved by evaluating macros ahead of time.
 We argue that placing the boundary between code evaluated ahead of time and code
 evaluated at runtime should not be at the distinction between ``macro expansion'' and
-``code execution'', but rather between ``code dependant on data known ahead of time''
+``code execution'', like LISP does, but rather between ``code dependant on data known ahead of time''
 (which includes most, but not all, macros) and ``code dependant on runtime data''.
 We aim to explore this topic in further research by applying partial evaluation
-as an optimisation pass in ILD, similar to how this has been done in languages
-like Kraken \cite{fexpr-pe}.
-\subsection{Interpreter}
-\begin{itemize}
-\item TCO
-\end{itemize}
-\subsection{Module loader}
-\begin{itemize}
-\item module caching
-\end{itemize}
+as an optimisation pass in ILD, similar to how this has been done in FExpr-based languages
+like Kraken \cite{fexpr-pe}. In addition to eliminating the overhead
+of runtime macro semantics, PE would also optimise other, non-macro code that does not
+depend on user input.
+\subsubsection{Tail call optimisation}
+Languages such as Scheme, Lisp or Racket support expressing efficient iterative
+algorithms as tail-recursive functions, which get optimised into \paraphrase{trampolined}
+tail calls by the interpreter.~\citneeded A TCO-enabled ILD interpreter is worth
+exploring \paraphrase{for similar reasons.}
+\subsubsection{Module caching}
+The simple module loader program as presented in this paper evaluates a module every
+time it appears in the dependency graph of the root module being loaded.
+Due to lack of mutable module state, this is only an efficiency problem. A less
+naïve module loader could traverse the dependency graph ahead of time and
+resolve module imports without duplicates
+

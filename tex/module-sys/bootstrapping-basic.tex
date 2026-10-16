@@ -93,7 +93,7 @@ of the form \ild{(!lambda <args> <body>)}, we define a helper:
         (cons body '())))))
 \end{ildcode}
 \lstcaption{Definition of \ild{expand-lambda}}
-Branching in ILD is done via the \ildhost{bool-to-k} host
+We can implement branching via the \ildhost{bool-to-k} host
 function. In order to only evaluate the selected branch, we delay
 evaluation to after the condition is known by wrapping in a 0-argument
 function, and force it afterwards:
