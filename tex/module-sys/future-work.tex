@@ -1,8 +1,11 @@
 \section{Future work}
 \label{future-work}
+\paraphrase{It feels wrong to not have a sentence here but I don't know what to say}
 \subsection{Features}
+The \emph{base language} presented in this paper is considered feature-complete. However,
+much can be gained by extending the \emph{host environment} and libraries with
+more features.
 \subsubsection{State management}
-
 The host environment presented in this paper makes ILD mostly (e.g.
 \paraphrase{not counting} \ild{gensym}) purely-functional and \paraphrase{makes
 no effort} to allow the user to manage \paraphrase{state}. However, for
@@ -36,6 +39,9 @@ inside the given expression and evaluates the unquoted subexpressions before
 splicing them into the result.~\citneeded A similar mechanism can be implemented
 in ILD using the metaprogramming techniques shown in this paper.
 \subsection{Optimisations}
+This paper focuses on the semantics and expressiveness of ILD and \paraphrase{makes no effort}
+to address performance. To make ILD practical to use, optimisations need to be
+put in place.
 \subsubsection{Partial evaluation}
 In a naïve implementation of ILD's interpreter, macros are expanded runtime, as encountered.
 This strategy incurs a significant cost, possibly exponential in the depth
