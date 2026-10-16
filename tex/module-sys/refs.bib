@@ -120,11 +120,128 @@
     publisher = {Kluwer Academic Publishers}
 }
 
-@techreport{racket,
-  title       = {Reference: Racket},
-  author      = {Matthew Flatt and PLT},
-  number      = {PLT-TR-2010-1},
-  institution = {PLT Design Inc.},
-  year        = {2010},
-  note        = {\url{https://racket-lang.org/tr1/}}
+@inbook{steele-gabriel-evolution,
+    author = {Steele, Guy L. and Gabriel, Richard P.},
+    title = {The evolution of Lisp},
+    year = {1996},
+    isbn = {0201895021},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/234286.1057818},
+    abstract = {Lisp is the world's greatest programming language---or so its proponents think. The structure of Lisp makes it easy to extend the language or even to implement entirely new dialects without starting from scratch. Overall, the evolution of Lisp has been guided more by institutional rivalry, one-upsmanship, and the glee born of technical cleverness that is characteristic of the "hacker culture" than by sober assessments of technical requirements. Nevertheless, this process has eventually produced both an industrial-strength programming languages, messy but powerful, and a technically pure dialect, small but powerful, that is suitable for use by programming-language theoreticians.We pick up where McCarthy's paper in the first HOPL conference left off. We trace the development chronologically from the era of the PDP-6, through the heyday of Interlisp and MacLisp, past the ascension and decline of special purpose Lisp machines, to the present era of standardization activities. We then examine the technical evolution of a few representative language features, including some notable successes and failures that illuminate design issues that distinguish Lisp from other programming languages. We also discuss the use of Lisp as a laboratory for designing other programming languages. We conclude with some reflections on the forces that have driven the evolution of Lisp.},
+    booktitle = {History of Programming Languages---II},
+    pages = {233–330},
+    numpages = {98}
+}
+
+@misc{lfe-reference,
+    author = {Virding, Robert},
+    title = {{LFE}: Lisp Flavoured Erlang documentation},
+    url = {https://lfe.io/}
+}
+
+@inbook{tackling-awkward-squad,
+    author = {Peyton Jones, Simon},
+    title = {Tackling the awkward squad: monadic input/output, concurrency, exceptions, and foreign-language calls in Haskell},
+    booktitle = {Engineering theories of software construction},
+    year = {2001},
+    month = {January},
+    publisher = {IOS Press},
+    url = {https://www.microsoft.com/en-us/research/publication/tackling-awkward-squad-monadic-inputoutput-concurrency-exceptions-foreign-language-calls-haskell/},
+    pages = {47-96},
+    isbn = {ISBN 1 58603 1724},
+}
+
+@article{erlang
+    author = {Armstrong, Joe},
+    title = {Erlang},
+    year = {2010},
+    issue_date = {September 2010},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    volume = {53},
+    number = {9},
+    issn = {0001-0782},
+    url = {https://doi.org/10.1145/1810891.1810910},
+    doi = {10.1145/1810891.1810910},
+    abstract = {The same component isolation that made it effective for large distributed telecom systems makes it effective for multicore CPUs and networked applications.},
+    journal = {Commun. ACM},
+    month = sep,
+    pages = {68–75},
+    numpages = {8}
+}
+
+@inproceedings{hewitt-actors,
+    author = {Hewitt, Carl and Bishop, Peter and Steiger, Richard},
+    title = {A universal modular ACTOR formalism for artificial intelligence},
+    year = {1973},
+    publisher = {Morgan Kaufmann Publishers Inc.},
+    address = {San Francisco, CA, USA},
+    abstract = {This paper proposes a modular ACTOR architecture and definitional method for artificial intelligence that is conceptually based on a single kind of object: actors [or, if you will, virtual processors, activation frames, or streams]. The formalism makes no presuppositions about the representation of primitive data structures and control structures. Such structures can be programmed, micro-coded, or hard wired in a uniform modular fashion. In fact it is impossible to determine whether a given object is "really" represented as a list, a vector, a hash table, a function, or a process. The architecture will efficiently run the coming generation of PLANNER-like artificial intelligence languages including those requiring a high degree of parallelism. The efficiency is gained without loss of programming generality because it only makes certain actors more efficient; it does not change their behavioral characteristics. The architecture is general with respect to control structure and does not have or need goto, interrupt, or semaphore primitives. The formalism achieves the goals that the disallowed constructs are intended to achieve by other more structured methods.},
+    booktitle = {Proceedings of the 3rd International Joint Conference on Artificial Intelligence},
+    pages = {235–245},
+    numpages = {11},
+    location = {Stanford, USA},
+    series = {IJCAI'73}
+}
+
+@inproceedings{bawden-quasiquote,
+    title={Quasiquotation in Lisp},
+    author={Alan Bawden},
+    booktitle={ACM SIGPLAN Workshop on Partial Evaluation and Program Manipulation},
+    year={1999},
+    url={https://api.semanticscholar.org/CorpusID:5254823}
+}
+
+@inproceedings{clinger-tail-recursion,
+    author = {Clinger, William D.},
+    title = {Proper tail recursion and space efficiency},
+    year = {1998},
+    isbn = {0897919874},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/277650.277719},
+    doi = {10.1145/277650.277719},
+    abstract = {The IEEE/ANSI standard for Scheme requires implementations to be properly tail recursive. This ensures that portable code can rely upon the space efficiency of continuation-passing style and other idioms. On its face, proper tail recursion concerns the efficiency of procedure calls that occur within a tail context. When examined closely, proper tail recursion also depends upon the fact that garbage collection can be asymptotically more space-efficient than Algol-like stack allocation.Proper tail recursion is not the same as ad hoc tail call optimization in stack-based languages. Proper tail recursion often precludes stack allocation of variables, but yields a well-defined asymptotic space complexity that can be relied upon by portable programs.This paper offers a formal and implementation-independent definition of proper tail recursion for Scheme. It also shows how an entire family of reference implementations can be used to characterize related safe-for-space properties, and proves the asymptotic inequalities that hold between them.},
+    booktitle = {Proceedings of the ACM SIGPLAN 1998 Conference on Programming Language Design and Implementation},
+    pages = {174–185},
+    numpages = {12},
+    location = {Montreal, Quebec, Canada},
+    series = {PLDI '98}
+}
+
+@inproceedings{bawden-rees-syntactic-closures,
+    author = {Bawden, Alan and Rees, Jonathan},
+    title = {Syntactic closures},
+    year = {1988},
+    isbn = {089791273X},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/62678.62687},
+    doi = {10.1145/62678.62687},
+    abstract = {In this paper we describe syntactic closures. Syntactic closures address the scoping problems that arise when writing macros. We discuss some issues raised by introducing syntactic closures into the macro expansion interface, and we compare syntactic closures with other approaches. Included is a complete implementation.},
+    booktitle = {Proceedings of the 1988 ACM Conference on LISP and Functional Programming},
+    pages = {86–95},
+    numpages = {10},
+    location = {Snowbird, Utah, USA},
+    series = {LFP '88}
+}
+
+@article{clinger-explicit-renaming,
+    author = {Clinger, William},
+    title = {Hygienic macros through explicit renaming},
+    year = {1991},
+    issue_date = {October-December 1991},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    volume = {IV},
+    number = {4},
+    issn = {1045-3563},
+    url = {https://doi.org/10.1145/1317265.1317269},
+    doi = {10.1145/1317265.1317269},
+    abstract = {This paper describes an alternative to the low-level macro facility described in the Revised4 Report on the Algorithmic Language Scheme [1]. The facility described here is based on explicit renaming of identifiers, and was developed for the first implementation of the hygienic macro expansion algorithm described in [2]. It was the first low-level macro facility to be designed for compatibility with a high-level hygienic macro system, and it remains one of the easiest to understand.},
+    journal = {SIGPLAN Lisp Pointers},
+    month = oct,
+    pages = {25–28},
+    numpages = {4}
 }

@@ -20,10 +20,10 @@ methods of handling state, IO and other side effects:
     the handle itself is immutable, but operations associated with the handle
     may mutate/replace its underlying value~\citneeded. IO operations in clojure
     also work via similar references. Haskell has a similar
-    facillity (e.g. \code{IORef}, \code{MVar})~\citneeded
+    facillity (e.g. \code{IORef}, \code{MVar})~\cite{tackling-awkward-squad}
     \item Erlang, LFE and other languages on the BEAM virtual machine employ
     processes and message passing as primitives and manage state via an
-    actor pattern~\citneeded
+    actor pattern~\cite{erlang,hewitt-actors}
     \item \paraphrase{FRP?}
 \end{itemize}
 Embedding ILD in environments with similar practical features is worth exploring.
@@ -36,7 +36,7 @@ plain \ildsf{quote} does not allow dynamic values to be easily inserted
 inside the returned expression. To remedy this, many LISP-like languages
 employ a \emph{quasiquote} form that looks for special \emph{unquote} markers
 inside the given expression and evaluates the unquoted subexpressions before
-splicing them into the result.~\citneeded A similar mechanism can be implemented
+splicing them into the result~\cite{bawden-quasiquote}. A similar mechanism can be implemented
 in ILD using the metaprogramming techniques shown in this paper.
 \subsection{Optimisations}
 This paper focuses on the semantics and expressiveness of ILD and \paraphrase{makes no effort}
@@ -62,7 +62,7 @@ depend on user input well.~\cite{anydsl}
 \subsubsection{Tail call optimisation}
 Languages such as Scheme, Lisp or Racket support expressing efficient iterative
 algorithms as tail-recursive functions, which get optimised into \paraphrase{trampolined}
-tail calls by the interpreter.~\citneeded A TCO-enabled ILD interpreter is worth
+tail calls by the interpreter~\cite{clinger-tail-recursion}. A TCO-enabled ILD interpreter is worth
 exploring \paraphrase{for similar reasons.}
 \subsubsection{Module caching}
 The simple module loader program as presented in this paper evaluates a module every
