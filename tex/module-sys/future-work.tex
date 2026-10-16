@@ -18,7 +18,7 @@ methods of handling state, IO and other side effects:
     \item Clojure fetures immutable core data structures but allows mutable
     state management via object handles such as \code{atom}/\code{ref}:
     the handle itself is immutable, but operations associated with the handle
-    may mutate/replace its underlying value~\citneeded. IO operations in clojure
+    may mutate/replace its underlying value~\cite{clojure-atoms}. IO operations in clojure
     also work via similar references. Haskell has a similar
     facillity (e.g. \code{IORef}, \code{MVar})~\cite{tackling-awkward-squad}
     \item Erlang, LFE and other languages on the BEAM virtual machine employ
