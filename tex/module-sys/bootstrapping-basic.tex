@@ -39,8 +39,7 @@ expand to a \ild{mk-lambda}-expression when called:
         (cons (cons quote (cons body '()))
           '())))))
 \end{ildcode}
-\label{lambda-macro-def} % MTODO: this now refers to the section and not to the listing, fix it. Also, are there other wrongly-placed listing labels?
-\lstcaption{Implementation of the lambda macro}
+\lstcaption{Implementation of the lambda macro}\label{lambda-macro-def}
 Embedding the values of \ild{mk-lambda}, \ild{free-vars} and \ild{quote}
 avoids name shadowing problems traditionally encountered with unhygienic
 macro systems (\cref{hygiene-discussion}).
@@ -110,8 +109,7 @@ function, and force it afterwards:
       (expand-lambda '() t)
       (expand-lambda '() f))))
 \end{ildcode}
-\label{if}
-\lstcaption{Definition of the \ild{if} macro}
+\lstcaption{Definition of the \ild{if} macro}\label{if}
 
 Since \ild{letrec} is not available at this point of the bootstrap process,
 we define \ild{map} via \ild{Y}:
@@ -142,7 +140,7 @@ of writing \ild{lambda} with specifically-named arguments:
     (map cadr letlist)))
 \end{ildcode}
 \lstcaption{Definition of \ild{let}}
-Now we can bind locally-scoped values ergonomically: % MTODO: this appears as a new paragraph, even though there is no blank line - can it be fixed? This also applies to other text between listings.
+Now we can bind locally-scoped values ergonomically:
 \begin{ildcode}
 ; this program
   ((!lambda (add1 fourty-two)

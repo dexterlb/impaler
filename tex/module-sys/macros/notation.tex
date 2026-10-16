@@ -172,6 +172,7 @@
 \newcommand{\lstcaption}[1]{%
   \par\nobreak\smallskip\noindent
   \refstepcounter{listing}\textbf{Listing \thelisting:} #1\par\medskip
+  \everypar{\noindent\everypar{}}%
 }
 
 % full-width spans
