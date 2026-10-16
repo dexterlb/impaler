@@ -51,8 +51,8 @@ evaluated at runtime should not be at the distinction between ``macro expansion'
 We aim to explore this topic in further research by applying partial evaluation
 as an optimisation pass in ILD, similar to how this has been done in FExpr-based languages
 like Kraken \cite{fexpr-pe}. In addition to eliminating the overhead
-of runtime macro semantics, PE would also optimise other, non-macro code that does not
-depend on user input.
+of runtime macro semantics, PE is known to be useful for optimising other, non-macro code that does not
+depend on user input well.~\cite{anydsl}
 \subsubsection{Tail call optimisation}
 Languages such as Scheme, Lisp or Racket support expressing efficient iterative
 algorithms as tail-recursive functions, which get optimised into \paraphrase{trampolined}

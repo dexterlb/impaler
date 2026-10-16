@@ -8,103 +8,43 @@ here is \textbf{callsite-annotated macro expansion}.
 Parts of this section should be moved to \cref{discussion}.
 \end{note}
 
-\begin{note}
-\textbf{actually}, we can remove the quote special form and point out
-that ILD is actually simpler than FExpr langs like kraken because
-vau is both free-vars and macroexpand in a trench coat
-\end{note}
+Traditionally, LISP and similar programming languages have been designed with a
+REPL in mind: the program lives as data in the memory of the machine and parts
+of the program (functions, named values) are available under a global namespace
+(\emph{environment}). The user interacts with the program by entering
+expressions (which may refer to objects in the global environment) in a
+terminal, which are then Read, Evaluated, and \paraphrase{then} the result is
+Printed. To extend the program, the user may enter expressions
+(\emph{statements}) that \emph{mutate} the objects reachable through
+the environment. Programs can then be optionally persisted to storage
+and recalled upon request.\citneeded
 
-We present a programming language that is as minimal as possible
-while being expressive enough for general-purpose use. \paraphrase{We are aiming towards} the
-following properties:
-\begin{enumerate}
-  \item Minimality \label{c-minimality}
-  \begin{enumerate}
-    \item Homoiconicity, provided by LISP-like syntax
-    \item Immutability
-    \item Few (and simple) special forms
-  \end{enumerate}
-  \item Expressiveness
-  \begin{enumerate}
-    \item Mutual recursion
-    \item Metaprogramming (allow implementing \paraphrase{syntactic conveniences} as
-      libraries written in the language rather than compiler/interpreter
-      features)
-  \end{enumerate}
-  \item Performance \label{c-performance}
-\end{enumerate}
+Modern programming languages deviate from that paradigm by storing the program
+as code ahead of time, and then evaluating the code once. However, languages
+like LISP, Scheme or Racket are still centered around the model of a mutable
+global environment, which complicates the evaluator and makes the language
+difficult to reason about and optimise.\citneeded Mutual recursion in LISP is
+achieved by explicit mutation\cite[Chapter 4.1.5]{sicp}, and even programming
+languages like Clojure or LFE, whose core data structures are immutable,
+organise nontrivial programs as sequences of environment-mutating
+statements.\citneeded A core mechanic of such programming languages is
+\emph{macro expansion} – extending syntax via custom transformations called
+\emph{macros}. Although these languages support \paraphrase{writing
+turing-complete programs} as a single expression, the metalanguage of macros
+has limited facillities for local scope definitions. For these reasons,
+programs written without mutation are difficult to modularise and extend.
 
-Some of these properties are at odds at each other: in particular, it is
-difficult to provide mutual recursion and immutability while at the same time
-keeping special forms few and simple. For example, Scheme, LISP and other
-similar languages forgo the ``immutability'' constraint, which makes it easy to
-implement cyclic data structures like mutually-recursive function definitions
-\cite[Chapter 4.1.5]{sicp}. The toplevel expressions in such
-languages are usually \emph{statements} like \ildmono{define} that \emph{mutate} a global
-\emph{environment}.
-
-\begin{schemecode}
-(define (even? x)
-    (if (= x 0)
-        #t
-        (odd? (- 1 x))))
-
-(define (odd? x)
-    (if (= x 0)
-        #t
-        (even? (- 1 x))))
-
-(display (even? 42))
-\end{schemecode}
-\lstcaption{Function definition in Scheme mutates the global environment}
-
-Other LISP-like languages, such as LFE, guarantee immutability of all
-data, but handle a lot of the complexity in the interpreter itself: the
-language features are written in the host language that implements the
-interpreter, and not in the language itself\citneeded. For example, functions defined in
-the global namespace are distinct from locally defined lambda objects, and the
-interpreter takes special care to support recursion and mutual
-recursion without allowing programs to mutate data. In fact, in LFE it is not
-even possible to create a cyclic data structure altogether! The price that is
-paid to achieve this is that the global namespace of defined functions is not
-manipulable by the program (which violates homoiconicity to some
-extent) and that \ildmono{define} and similar constructs are special forms.
-
-It is therefore interesting to see if we can design a language that meets all
-these goals at the same time. We define a language (which we will call ILD)
-which adheres to the \clink{c-minimality}{minimality} constraints, and then
-demonstrate expressiveness by implementing increasingly-complex constructs in
-ILD, including a way to define mutually-recursive functions (\cref{letrec}).
-
-The techniques applied in this paper are similar to research regarding
-F-expressions~\cite{fexpr-shutt,fexpr-pe}. However, instead of declaring
-whether an object is a function or macro upon construction, ILD differentiates
-between function and macro calls at the callsite (\cref{macroexpand-mechanism}).
-
-ILD tries to \paraphrase{fill the spot} for a LISP-like language that supports
-first-class continuations and macros with a minimal core.
-
-\begin{cfig}{Table}{Feature comparison of similar languages}{Table comparing features}
-\begin{tabular}{clccccll}
-\toprule
-\multicolumn{4}{c}{} & \multicolumn{4}{c}{Macros} \\
-\cmidrule(lr){5-8}
-Language & Immutable? & Continuations? & Special forms & Kind & First-class? & Expansion & Trigger \\
-\midrule
-LISP & no & yes & many & unhygienic & no & separate pass & bind time \\
-Scheme & no & yes & few & hygienic & no & separate pass & bind time \\
-LFE & yes & no & many & limited & no & separate pass & bind time \\
-Kraken \cite{fexpr-pe} & yes & no & one & fexprs & yes & runtime & bind time \\
-ILD & yes & yes & three & unhygienic & yes & runtime & callsite \\
-\bottomrule
-\end{tabular}
-\end{cfig}
-
-To demonstrate expressiveness, we \paraphrase{present} a program called a
-\emph{module loader} (\cref{module-loader}), written in ILD and making use of
-callsite-triggered macros, that is in turn able to execute programs that are
-decomposed into \emph{modules} such as the following example:
-
+As an alternative, we design a LISP-like programming language, called ILD, that
+has minimal core syntax and requires no mutation in order to express
+nontrivial, modular programs. To this end, we \paraphrase{employ} a
+\paraphrase{novel} metaprogramming system based on \emph{callsite-triggered}
+macro expansion, allowing us to build arbitrarily-complex domain-specific or
+general purpose syntax \paraphrase{on top}. We demonstrate expressiveness of
+this system by building a \paraphrase{library function} called a \emph{module
+loader}, which allows user programs to be structured in modular subprograms
+while retaining the property that the whole program is a single expression.
+An example program that can be loaded by the module loader is shown in
+\cref{example-module-fact}.
 \begin{ildcode}
 (module
   (doc "this module calculates 5!")
@@ -124,8 +64,22 @@ decomposed into \emph{modules} such as the following example:
 \label{example-module-fact}
 \lstcaption{Example module}
 
-In further research, we aim to also meet the
-\clink{c-performance}{performance} constraint by employing partial evaluation
-as an optimisation step, which is a technique
-known~\cite{hudak,anydsl} to give good results for reducing the
-overhead incurred by metaprogramming.
+A feature comparison of similar languages is shown in \cref{lang-comparison}. %MTODO: this says "section 1" instead of "listing 1.1"
+
+\begin{cfig}{Table}{Feature comparison of similar languages}{Table comparing features}
+\label{lang-comparison}
+\begin{tabular}{clccccll}
+\toprule
+\multicolumn{4}{c}{} & \multicolumn{4}{c}{Macros} \\
+\cmidrule(lr){5-8}
+Language & Immutable? & Continuations? & Special forms & Kind & First-class? & Expansion & Trigger \\
+\midrule
+LISP & no & yes & many & unhygienic & no & separate pass & bind time \\
+Scheme & no & yes & few & hygienic & no & separate pass & bind time \\
+LFE & yes & no & many & limited & no & separate pass & bind time \\
+Kraken \cite{fexpr-pe} & yes & no & one & fexprs & yes & runtime & bind time \\
+ILD & yes & yes & three & unhygienic & yes & runtime & callsite \\
+% MTODO: add line for clojure
+\bottomrule
+\end{tabular}
+\end{cfig}

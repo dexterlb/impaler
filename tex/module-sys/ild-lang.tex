@@ -129,7 +129,7 @@ Macros in ILD are plain functions that assume their arguments
 are code. To invoke a function as a macro, the special form
 \ildsf{macroexpand} is used at the callsite: an expression
 \(\ildlist{\ildsf{macroexpand}}{\varphi}{\alpha_1}{\alpha_2}{\dots}{\alpha_n}\)
-evaluates just \(phi\) and then passes the
+evaluates just \(\varphi\) and then passes the
 \textbf{unevaluated} arguments to it. This allows the macro function to treat the sub-program
 passed to it as data and transform it arbitrarily, and the resulting new program
 is then in turn evaluated. Macro expansion, being a regular evaluation step, proceeds from the outermost call
