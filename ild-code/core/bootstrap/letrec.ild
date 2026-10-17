@@ -2,7 +2,6 @@
   (lambda (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")))
   (if (eval (free-vars) (read-source "core/bootstrap/if.ild")))
   (let (eval (free-vars) (read-source "core/bootstrap/let.ild")))
-  (Y (eval (free-vars) (read-source "core/bootstrap/y.ild")))
   (map (eval (free-vars) (read-source "core/bootstrap/map.ild")))
   (poly-Y (eval (free-vars) (read-source "core/bootstrap/poly-y.ild"))))
 
@@ -11,29 +10,19 @@
     (list (!lambda args args))
     (cadr (!lambda (p) (car (cdr p)))))
 
-    (!let
-      ; helpers that we'll need to define letrec
-      ((generate-element-getters (Y (!lambda (rec) (!lambda (list-name l)
-        (!if (null? l)
-          l
-          (!if (pair? l)
-            (cons (list car list-name)
-              (map (!lambda (subl) (list (car subl) (cons cdr (cdr subl))))
-                (rec list-name (cdr l))))
-            (make-fail (list 'list-of-letrec-elements-not-a-list l)))))))))
+    ; definition of "letrec"
+    (!lambda (defs body)
+      (!let
+        ((args (map car defs)))
 
-      ; definition of "letrec"
-      (!lambda (defs body)
-        (!let
-          ((args (map car defs))
-            (item-bodies (map cadr defs)))
           (!let (
-            (arg-bodies (map (!lambda (def-body) (expand-lambda args def-body)) item-bodies))
-            (flist (gensym "flist")))
+            (arg-bodies
+              (map
+                (!lambda (def)
+                  (expand-lambda args (cadr def)))
+                defs)))
 
-            (!let (
-              (result-body (cons
-                (expand-lambda args body)
-                (generate-element-getters flist args))))
-
-              (list (expand-lambda (list flist) result-body) (cons poly-Y arg-bodies)))))))))
+            (list
+              apply
+              (expand-lambda args body)
+              (cons poly-Y arg-bodies)))))))
