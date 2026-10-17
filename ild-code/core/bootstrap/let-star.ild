@@ -1,0 +1,22 @@
+(!(eval (free-vars) (read-source "core/bootstrap/let.ild")) (
+  (lambda (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")))
+  (if (eval (free-vars) (read-source "core/bootstrap/if.ild")))
+  (let (eval (free-vars) (read-source "core/bootstrap/let.ild")))
+  (Y (eval (free-vars) (read-source "core/bootstrap/y.ild"))))
+
+  (!let (
+    (expand-lambda (!lambda (args body) (cons macroexpand (cons lambda (cons args (cons body '()))))))
+    (list (!lambda args args))
+    (caar (!lambda (p) (car (car p))))
+    (cadr (!lambda (p) (car (cdr p)))))
+
+    ; definition of "let*"
+    (Y (!lambda (let*)
+      (!lambda (defs body)
+        (!if (null? defs)
+          body
+          (list
+            (expand-lambda
+              (list (caar defs))
+              (let* (cdr defs) body))
+            (cadr (car defs)))))))))

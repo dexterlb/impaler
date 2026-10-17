@@ -79,6 +79,9 @@ source files and introduce them in scope with the same technique as the
 ; body of 'cadr'
 (!lambda (p) (car (cdr p)))
 
+; body of 'caar'
+(!lambda (p) (car (car p)))
+
 ; 'Y' is special case of poly-fix
 (!lambda (f) (car (poly-fix f)))
 \end{ildcode}
@@ -162,9 +165,22 @@ Now we can bind locally-scoped values ergonomically:
 \end{ildcode}
 \lstcaption{Rewriting a \ild{lambda}-based scope binding to use \ild{let}}
 
-\begin{note}
-MTODO: need to put the let* definition here
-\end{note}
+To bind several names in sequence, where each binding may refer to the
+preceding ones, we define \ild{let*} as a recursive macro function.
+As \ild{letrec} is not available yet, we define it via \ild{Y}:
+\begin{ildcode}
+; body of 'let*'
+(Y (!lambda (let*)
+  (!lambda (defs body)
+    (!if (null? defs)
+      body
+      (list
+        (expand-lambda
+          (list (caar defs))
+          (let* (cdr defs) body))
+        (cadr (car defs)))))))
+\end{ildcode}
+\lstcaption{Definition of \ild{let*}}
 
 \subsection{Letrec}
 \label{letrec}
