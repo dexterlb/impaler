@@ -2,8 +2,9 @@
   (lambda (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")))
   (if (eval (free-vars) (read-source "core/bootstrap/if.ild")))
   (let (eval (free-vars) (read-source "core/bootstrap/let.ild")))
+  (let* (eval (free-vars) (read-source "core/bootstrap/let-star.ild")))
   (map (eval (free-vars) (read-source "core/bootstrap/map.ild")))
-  (poly-Y (eval (free-vars) (read-source "core/bootstrap/poly-y.ild"))))
+  (poly-fix (eval (free-vars) (read-source "core/bootstrap/poly-y.ild"))))
 
   (!let (
     (expand-lambda (!lambda (args body) (cons macroexpand (cons lambda (cons args (cons body '()))))))
@@ -12,17 +13,17 @@
 
     ; definition of "letrec"
     (!lambda (defs body)
-      (!let
-        ((args (map car defs)))
+      (!let* (
+        (names (map car defs))
+        (bind-operators
+          (map
+            (!lambda (def)
+              (expand-lambda names (cadr def)))
+            defs))
+        (body-operator
+          (expand-lambda names body)))
 
-          (!let (
-            (arg-bodies
-              (map
-                (!lambda (def)
-                  (expand-lambda args (cadr def)))
-                defs)))
-
-            (list
-              apply
-              (expand-lambda args body)
-              (cons poly-Y arg-bodies)))))))
+        (list
+          apply
+          body-operator
+          (cons poly-fix bind-operators))))))

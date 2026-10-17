@@ -2,6 +2,7 @@
   ( (host-bindings (free-vars))
     (lambda (eval (free-vars) (read-source "core/bootstrap/lambda-macro.ild")))
     (letrec (eval (free-vars) (read-source "core/bootstrap/letrec.ild")))
+    (let* (eval (free-vars) (read-source "core/bootstrap/let-star.ild")))
     (if (eval (free-vars) (read-source "core/bootstrap/if.ild")))
     (map (eval (free-vars) (read-source "core/bootstrap/map.ild"))))
 
@@ -35,15 +36,6 @@
 
     (cadr (!lambda (p) (car (cdr p))))
     (caar (!lambda (p) (car (car p))))
-
-    (let* (!lambda (defs body)
-      (!if (null? defs)
-        body
-        (list
-          (expand-lambda
-            (list (caar defs))
-            (let* (cdr defs) body))
-          (cadr (car defs))))))
 
     ; some functions for dealing with key-value lists
     ; (only supporting symbols as keys)

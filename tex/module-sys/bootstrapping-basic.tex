@@ -162,42 +162,45 @@ Now we can bind locally-scoped values ergonomically:
 \end{ildcode}
 \lstcaption{Rewriting a \ild{lambda}-based scope binding to use \ild{let}}
 
+\begin{note}
+MTODO: need to put the let* definition here
+\end{note}
+
 \subsection{Letrec}
 \label{letrec}
-We define letrec as a macro that builds each binding as a recursive operator
-that in turn takes all bindings as arguments, and passes the list of
-those bindings to \ild{poly-fix}:
+The low-level primitive for building mutually-recursive functions is
+\ildsym{poly-fix}. To provide high-level convenient syntax \paraphrase{for that},
+in \cref{letrec-def} we define \ild{letrec} as a macro that:
+\begin{itemize}
+\item Builds a list of higher-order operators
+from the familiar name/body pair syntax, and one extra
+operator for the letrec body
+\item Generates an expression that:
+  \begin{itemize}
+  \item Obtains a list of resulting recursive functions, one for each definition, via \ildsf{poly-fix}
+  \item Applies the body operator to that list of functions
+  \end{itemize}
+\end{itemize}
 
 \begin{ildcode}
 ; body of 'letrec'
 (!lambda (defs body)
-  (!let
-    ((args (map car defs))
-      (item-bodies (map cadr defs)))
-    (!let (
-      (arg-bodies
-        (map
-          (!lambda (def-body)
-            (expand-lambda args def-body))
-          item-bodies))
-      (flist (gensym "flist")))
+  (!let* (
+    (names (map car defs))
+    (bind-operators
+      (map
+        (!lambda (def)
+          (expand-lambda names (cadr def)))
+        defs))
+    (body-operator
+      (expand-lambda names body)))
 
-      (!let (
-        (result-body (cons
-          (expand-lambda args body)
-          (generate-element-getters
-            flist args))))
-
-        (list
-          (expand-lambda
-            (list flist)
-            result-body)
-          (cons poly-fix arg-bodies))))))
+    (list
+      apply
+      body-operator
+      (cons poly-fix bind-operators))))
 \end{ildcode}
-\lstcaption{Definition of letrec}
-\begin{note}
-Check what this actually expands to. Maybe add it as an example. If this can be
-written without flist, we will have a stronger argument for hygiene.
-\end{note}
-
-We omit the definition of the \ild{generate-element-getters} helper, which is merely technical.
+\lstcaption{Definition of letrec}\label{letrec-def}
+As defined, this version of \ild{letrec} has similar semantics
+to \code{letrec} in Scheme, which also requires that definition bodies
+can be evaluated without referencing the other bindings.~\cite{r5rs}
