@@ -7,7 +7,6 @@ that is used for the outermost eval.
 
 We will use the following notation
 to define the semantics of the host functions:
-
 \[ \defas{\ildapp{foo}{v_1}{v_2}{\dots}{v_n}}{E}{\omega} \]
 means that the symbol \ildsym{foo} stands for the host value \ildhost{foo},
 which, when applied to arguments \(\vec{v}\), results in the term \(\omega\).
@@ -42,7 +41,8 @@ operations on S-expressions, are also provided through the FFI (\(\ildsetHostFun
 \end{itemize}
 Unlike Scheme or LISP, ILD's immutable nature does not allow building cyclic
 objects easily, which can be remedied by externally providing data structures,
-either higher level (like graphs) or lower level (like indexed arrays).
+either higher level (like graphs) or lower level (like indexed arrays). \paraphrase{
+This, however, is out of this paper's scope}.
 
 \subsubsection{First-class special forms}
 To keep the parser minimal, ILD special forms are not keywords, and are instead
@@ -91,8 +91,10 @@ too many footnotes! reduce them!
 \end{note}
 
 \subsubsection{Branching}
-Every host data type is associated with a set of functions that operate on its values.
-The function that operates on boolean values is:
+The boolean datatype is \paraphrase{useless} without a function that
+\paraphrase{discriminates between} its values. Thus, we provide
+the \ildsym{bool-to-k} function that transforms a boolean into
+an argument selector:
 \[
   \defas{\ildapp{bool-to-k}{b}}{E}{
     \cpsapp{\cpsret}{
@@ -109,12 +111,10 @@ function can then be used to build higher-level branching primitives
 (e.g. \cref{if}).
 
 \subsubsection{A recursion operator}
-A meta-operator \(\ildsym{poly-fix}\) shall be provided to allow constructing
-mutually-recursive functions
-\footnote{If we don't care about performance and have infinite memory, the host implementation
-of \(\ildsym{poly-fix}\) is optional, since we can just implement the Y-combinator in ILD itself. For this exercise, see \cref{poly-fix-Y}.}:
+We provide a low-level operator \(\ildsym{poly-fix}\) for constructing
+mutually-recursive functions:
 \[ \defas{\ildapp{poly-fix}{\Gamma_1}{\Gamma_2}{\dots}{\Gamma_n}}{E}{\cpsapp{\cpsret}{\ildlist{\ildconst{f}{1}}{\ildconst{f}{2}}{\dots}{\ildconst{f}{n}}}} \]
-where \(\ildconst{f}{1}, \dots, \ildconst{f}{n}\) are such that:
+whose evaluation introduces the functional objects \(\ildconst{f}{1}, \dots, \ildconst{f}{n}\) whose semantics are:
 \begin{gather*}
   \evalstobr
     {\interop{apply}{C}{\ildconst{f}{i}}{a_1}{\dots}{a_n}}
@@ -122,6 +122,10 @@ where \(\ildconst{f}{1}, \dots, \ildconst{f}{n}\) are such that:
   \\
   \text{where } C' = \cpsabstr{{f_i}'}{\interop{apply}{C}{{f_i}'}{a_1}{\dots}{a_n}}
 \end{gather*}
+Note that \ildsym{poly-fix} is not formally necessary: instead, one may
+opt to use an implementation of the Y-combinator written in ILD itself
+(\cref{poly-fix-Y}). This, however, would be impractical due to exponential
+space and time complexity.
 
 % A stronger definition of \(#f_1, ..., #f_n\) would be \(#f_i = Gamma_i (#f_1, ..., #f_n)\),
 % but this leads to divergence problems when the language has strict (non-lazy) semantics.
@@ -132,16 +136,14 @@ where \(\ildconst{f}{1}, \dots, \ildconst{f}{n}\) are such that:
 \subsubsection{Interpreter access}
 Even though not strictly necessary (an ILD interpreter can be implemented in ILD),
 it is practical to allow programs to call into the interpreter:
-\begin{itemize}
-  \item Expose the evaluation terms to programs:
-    \begin{gather*}
-      \defas{\ildapp{apply}{f}{a_1}{\dots}{a_n}}{E}{\interop{apply}{\cpsret}{f}{a_1}{\dots}{a_n}}\\
-      \defas{\ildapp{eval}{e}{v}}{E}{\interop{eval}{\cpsret}{e}{v}}
-    \end{gather*}
-  \item \(\ildapp{read-source}{p}\) returns the ILD program named
-    with the string \(p\)\footnote{in actual implementations \(p\) is a file path and
-    \(\ildsym{read-source}\) parses the file and returns the parsed program.}
-\end{itemize}
+\begin{gather*}
+  \defas{\ildapp{apply}{f}{a_1}{\dots}{a_n}}{E}{\interop{apply}{\cpsret}{f}{a_1}{\dots}{a_n}}\\
+  \defas{\ildapp{eval}{e}{v}}{E}{\interop{eval}{\cpsret}{e}{v}}
+\end{gather*}
+Furthermore, to allow programs to reference other programs, we provide
+a host function \ildsym{read-source} that retrieves a program by name. In real-life
+implementations, \(\ildapp{read-source}{p}\) will read the file whose path is \(p\),
+parse its contents and return the resulting value.
 
 \subsubsection{First-class continuations}
 \label{first-class-continuations}

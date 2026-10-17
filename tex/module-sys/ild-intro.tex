@@ -8,21 +8,22 @@ of the program (functions, named values) are available under a global namespace
 expressions (which may refer to objects in the global environment) in a
 terminal, which are then Read, Evaluated, and \paraphrase{then} the result is
 Printed. To extend the program, the user may enter expressions
-(\emph{statements}) that \emph{mutate} the objects reachable through
-the environment. Programs can then be optionally persisted to storage
+(\emph{statements}) that \emph{mutate} the environment and the objects reachable
+through it. Programs can then be optionally persisted to storage
 and recalled upon request~\cite{sexp,steele-gabriel-evolution}.
 
-Modern programming languages deviate from that paradigm by storing the program
-as code ahead of time, and then evaluating the code once. However, languages
-like LISP, Scheme or Racket are still centered around the model of a mutable
-global environment, which complicates the evaluator and makes the language
-difficult to reason about and optimise~\cite{steele-gabriel-evolution}. Mutual
-recursion in LISP is achieved by explicit mutation\cite[Chapter 4.1.5]{sicp},
-and even programming languages like Clojure or LFE, whose core data structures
-are immutable, organise nontrivial programs as sequences of
-environment-mutating statements~\cite{clojure-hist,lfe-reference}. A core mechanic
-of such programming languages is \emph{macro expansion} – extending syntax via
-custom transformations called \emph{macros}. Although these languages support
+Modern programming languages deviate from that paradigm by storing the whole
+program as text (code) ahead of time, and then evaluating the entire code
+before running the program. However, languages like LISP, Scheme or Racket are
+still centered around the model of a mutable global environment, which
+complicates the evaluator and makes the language difficult to reason about and
+optimise~\cite{steele-gabriel-evolution}. Mutual recursion in LISP is achieved
+by explicit mutation\cite[Chapter 4.1.5]{sicp}, and even programming languages
+like Clojure or LFE, whose core data structures are immutable, organise
+nontrivial programs as sequences of environment-mutating
+statements~\cite{clojure-hist,lfe-reference}. A core mechanic of such
+programming languages is \emph{macro expansion} – extending syntax via custom
+transformations called \emph{macros}. Although these languages support
 \paraphrase{writing turing-complete programs} as a single expression, the
 metalanguage of macros has limited facillities for local scope definitions. For
 these reasons, programs written without mutation are difficult to modularise
@@ -36,8 +37,9 @@ macro expansion, allowing us to build arbitrarily-complex domain-specific or
 general purpose syntax \paraphrase{on top}. We demonstrate expressiveness of
 this system by building a \paraphrase{library function} called a \emph{module
 loader}, which allows user programs to be structured in modular subprograms
-while retaining the property that the whole program is a single expression.
-An example program that can be loaded by the module loader is shown in
+while retaining the property that the whole program is a single expression,
+rather than a series of mutation statements. An example program that can be
+loaded by the module loader is shown in
 \cref{example-module-fact}.
 \begin{ildcode}
 (module

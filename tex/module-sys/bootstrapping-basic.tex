@@ -23,12 +23,14 @@ macro to result in a call to \ild{mk-lambda} given the current binding environme
 \end{ildcode}
 A possible implementation of the \ild{lambda} macro is provided in \cref{lambda-macro-def}:
 The outer call to \ild{mk-lambda} introduces a new \(\ildsetAbstr\)-object
-carrying the current binding environment%
-\footnote{The \ild{(free-vars)} closure given to the host \ild{mk-lambda} can be replaced
-by a closure that contains only \ild{cons}, \ild{mk-lambda}, \ild{quote} and \ild{free-vars},
-since those are the only bindings used by the body of the macro.}
-and a body that embeds \ildhost{mk-lambda} in an \paraphrase{expression} that in turn
-expand to a \ild{mk-lambda}-expression when called:
+carrying the current binding environment
+% \footnote{
+%   The \ild{(free-vars)} closure given to the host \ild{mk-lambda} can be replaced
+%   by a closure that contains only \ild{cons}, \ild{mk-lambda}, \ild{quote} and \ild{free-vars},
+%   since those are the only bindings used by the body of the macro.
+% }
+and a body. The body then, when called, in turn
+expands to an expression embedding \ildhost{mk-lambda} in its head:
 \begin{ildcode}
 (mk-lambda
   (free-vars)

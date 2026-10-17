@@ -1,0 +1,29 @@
+\section{Related work}
+\label{fexpr-comparison}
+
+The techniques applied in this paper achieve results similar to systems using
+F-expressions~\cite{fexpr-shutt,fexpr-pe}.
+
+F-expressions are a different kind of metaprogramming mechanism that
+unifies functions and macros as \emph{FExpr}-objects%
+\footnote{
+    The exact definition of the term \emph{FExpr} varies throughout
+    literature. Here it is used in the sense of applicative object
+    that may choose whether to have its operands evaluated before
+    application~\cite{fexpr-shutt}.
+}, which, depending on the implementation,
+can be first-class and as flexible as unhygienic macros,%
+~\cite{kohlbecker1986syntactic,fexpr-shutt} and can be implemented
+in a performant way~\cite{fexpr-pe}. The core mechanism of FExprs is
+\paraphrase{to tag the object with evaluation metadata and then use that metadata
+when evaluating the combination to determine whether to eval the arguments}.
+FExpr-objects are first-class regardless of their evaluation semantics.
+
+Similar to modern FExpr-based systems, ILD's macro expansion facillity matches
+unhygienic LISP macros in expressive power and \paraphrase{provides first-class
+status and runtime semantics with no separate expansion phase to macros}.
+
+We argue that callsite-triggered macro expansion is simpler to implement and
+reason about while being as expressive. In addition, \paraphrase{to our
+knowledge} no language with first-class F-expression support also supports
+first-class continuations, which ILD does support.
