@@ -5,8 +5,8 @@ We construct a program called \ild{module-loader} that is able to process
 programs organised in modules like the one defined in
 \cref{example-module-fact}. We will present it in a top-down manner while
 omitting technical details such as \ild{let*} or \ild{kv-*} functions for
-operating on key-value lists.
-
+operating on key-value lists. The outermost expression defining the module
+loader is shown in \cref{module-loader-outer}.
 \begin{ildcode}
 (!(eval (free-vars) (read-source
     "core/bootstrap/let.ild"))
@@ -27,8 +27,9 @@ operating on key-value lists.
 
     module-loader))
 \end{ildcode}
-\lstcaption{Outer scope bindings of the module loader}
-The core of the module loader is a function called \ild{eval-module} that:
+\lstcaption{Outer scope bindings of the module loader}\label{module-loader-outer}
+The core of the module loader is a function called \ild{eval-module} (\cref{def-eval-module})
+that:
 \begin{enumerate}
 \item Recursively processes imported modules and builds a binding environment \ild{env}
 that contains all imports
@@ -62,13 +63,13 @@ is used as a macro, here it is used as a function (\cref{macro-function-duality}
         (cons list
           (map sym-item-pair exports)))))))
 \end{ildcode}
-\lstcaption{Definitions of \ild{load-module} and \ild{eval-module}}
+\lstcaption{Definitions of \ild{load-module} and \ild{eval-module}}\label{def-eval-module}
 \label{def-eval-module}
-The \ild{process-imports} helper calls \ild{load-module} recursively on
+The \ild{process-imports} helper (\cref{def-process-imports}) calls \ild{load-module} recursively on
 imported modules and then merges the resulting export lists. For the special
 case when the \ild{host} keyword is used in place of a module name,
 the host bindings (obtained via an outermost call to \ild{free-vars}) are
-provided:
+used in place of an export list.
 \begin{ildcode}
 ; ---- inside letrec block ----
 (process-imports (!lambda (import-list)
@@ -84,6 +85,7 @@ provided:
       (load-module (car import-spec))
       (cdr import-spec)))))
 \end{ildcode}
+\lstcaption{Definition of \ild{process-imports}}\label{def-process-imports}
 We omit the implementation of \ild{process-import-items}, which merely
 picks the requested key-value pairs from the export lists.
 
@@ -91,7 +93,8 @@ Finally, we implement the function \ild{module-loader} which, given a module nam
 entrypoint function name and arguments, loads that module, picks the entrypoint function
 from its export list and applies it to the given arguments (implementation omitted
 for \paraphrase{brevity}). Running a program
-such as the one in \cref{example-module-fact} simpy becomes:
+such as the one in \cref{example-module-fact} is now a matter of passing its
+name and entrypoint to the module loader (shown in \cref{module-load-example}).
 \begin{ildcode}
 ((eval (free-vars) (read-source
   "core/bootstrap/module-loader.ild"))
@@ -99,6 +102,7 @@ such as the one in \cref{example-module-fact} simpy becomes:
   "demos/fact.ild"
   'main)
 \end{ildcode}
+\lstcaption{Executing the module loader on an user program}\label{module-load-example}
 The ILD interpreter and/or build system need not be concerned of any details
 about loading and importing modules and can be kept simple: all of the logic
 is implemented in ILD itself.

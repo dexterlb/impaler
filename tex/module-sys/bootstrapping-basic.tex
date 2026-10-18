@@ -14,13 +14,14 @@ to different host environments.
 First, we define a macro called \ild{lambda} that will let us introduce new
 abstraction objects (\cref{abstraction}). We want expansion of the \ild{lambda}
 macro to result in a call to \ild{mk-lambda} given the current binding environment
-(\ild{free-vars}) and the quoted argument names and body:
+(\ild{free-vars}) and the quoted argument names and body (\cref{lambda-expansion-example}).
 \begin{ildcode}
 (!lambda (x y) (+ x y))
 ; should become
 (mk-lambda (free-vars) (quote (x y))
   (quote (+ x y)))
 \end{ildcode}
+\lstcaption{Example expansion for \ild{!lambda} expression}\label{lambda-expansion-example}
 A possible implementation of the \ild{lambda} macro is provided in \cref{lambda-macro-def}:
 The outer call to \ild{mk-lambda} introduces a new \(\ildsetAbstr\)-object
 carrying the current binding environment
@@ -30,7 +31,7 @@ carrying the current binding environment
 %   since those are the only bindings used by the body of the macro.
 % }
 and a body. The body then, when called, in turn
-expands to an expression embedding \ildhost{mk-lambda} in its head:
+expands to an expression embedding \ildhost{mk-lambda} in its head.
 \begin{ildcode}
 (mk-lambda
   (free-vars)
@@ -50,8 +51,7 @@ This definition can then be wrapped in another call of \ild{mk-lambda} in order 
 it under a \ild{lambda} name usable from the scoped body -- supposing that
 this definition is stored as an ILD program called \texttt{core/bootstrap/lambda-macro.ild},
 we recall it twice (once to define \ild{lambda}, and once to pass itself as the
-value of \ild{lambda}):
-
+value of \ild{lambda}). Such a wrapper is shown in \cref{lambda-wrap}.
 \begin{ildcode}
 ((!(eval (free-vars)
     (read-source
@@ -65,7 +65,7 @@ value of \ild{lambda}):
     (read-source
       "core/bootstrap/lambda-macro.ild")))
 \end{ildcode}
-\lstcaption{Outermost usage of the lambda macro}
+\lstcaption{Outermost usage of the lambda macro}\label{lambda-wrap}
 
 \subsection{Basic utilities}
 We define helper utilities in a scope where the \ild{lambda} macro is present.
@@ -87,7 +87,8 @@ source files and introduce them in scope with the same technique as the
 \end{ildcode}
 \lstcaption{Definitions of basic helper primitives}
 To more easily write macros that generate expressions
-of the form \ild{(!lambda <args> <body>)}, we define a helper:
+of the form \ild{(!lambda <args> <body>)}, we define a helper
+(\cref{def-expand-lambda}).
 \begin{ildcode}
 ; body of 'expand-lambda'
 (!lambda (args body)
@@ -96,9 +97,9 @@ of the form \ild{(!lambda <args> <body>)}, we define a helper:
       (cons args
         (cons body '())))))
 \end{ildcode}
-\lstcaption{Definition of \ild{expand-lambda}}
+\lstcaption{Definition of \ild{expand-lambda}}\label{def-expand-lambda}
 We can implement branching via the \ildhost{bool-to-k} host
-function. In order to only evaluate the selected branch, we delay
+function (\cref{branching}). In order to only evaluate the selected branch, we delay
 evaluation to after the condition is known by wrapping in a 0-argument
 function, and force it afterwards:
 \begin{ildcode}
@@ -117,7 +118,7 @@ function, and force it afterwards:
 \lstcaption{Definition of the \ild{if} macro}\label{if}
 
 Since \ild{letrec} is not available at this point of the bootstrap process,
-we define \ild{map} via \ild{Y}:
+in \cref{def-map} we define \ild{map} via \ild{Y}.
 \begin{ildcode}
 ; body of 'map'
 (Y (!lambda (map)
@@ -130,11 +131,13 @@ we define \ild{map} via \ild{Y}:
         (make-fail
           (list 'not-a-list l)))))))
 \end{ildcode}
-\lstcaption{Definition of the \ild{map} function}
+\lstcaption{Definition of the \ild{map} function}\label{def-map}
 
 \subsubsection{Let}
 The binding construct \ild{let} is simply a more ergonomic way
-of writing \ild{lambda} with specifically-named arguments:
+of writing a \ild{lambda} expression applied to a list of body expressions
+(example in \cref{let-example}).
+In \cref{def-let} we show how it can be defined via \ild{expand-lambda}.
 \begin{ildcode}
 ; body of 'let'
 (!lambda (letlist body)
@@ -144,8 +147,7 @@ of writing \ild{lambda} with specifically-named arguments:
       body)
     (map cadr letlist)))
 \end{ildcode}
-\lstcaption{Definition of \ild{let}}
-Now we can bind locally-scoped values ergonomically:
+\lstcaption{Definition of \ild{let}}\label{def-let}
 \begin{ildcode}
 ; this program
   ((!lambda (add1 fourty-two)
@@ -163,11 +165,10 @@ Now we can bind locally-scoped values ergonomically:
 
     (add1 fourty-two))
 \end{ildcode}
-\lstcaption{Rewriting a \ild{lambda}-based scope binding to use \ild{let}}
-
+\lstcaption{Rewriting a \ild{lambda}-based scope binding to use \ild{let}}\label{let-example}
 To bind several names in sequence, where each binding may refer to the
-preceding ones, we define \ild{let*} as a recursive macro function.
-As \ild{letrec} is not available yet, we define it via \ild{Y}:
+preceding ones, in \cref{def-letstar} we define \ild{let*} as a recursive
+macro function via \ild{Y}, similarly to \ild{map}.
 \begin{ildcode}
 ; body of 'let*'
 (Y (!lambda (let*)
@@ -180,7 +181,7 @@ As \ild{letrec} is not available yet, we define it via \ild{Y}:
           (let* (cdr defs) body))
         (cadr (car defs)))))))
 \end{ildcode}
-\lstcaption{Definition of \ild{let*}}
+\lstcaption{Definition of \ild{let*}}\label{def-letstar}
 
 \subsection{Letrec}
 \label{letrec}
@@ -217,6 +218,6 @@ operator for the letrec body
       (cons poly-fix bind-operators))))
 \end{ildcode}
 \lstcaption{Definition of letrec}\label{letrec-def}
-As defined, this version of \ild{letrec} has similar semantics
+As defined in \cref{letrec-def}, \ild{letrec} has similar semantics
 to \code{letrec} in Scheme, which also requires that definition bodies
 can be evaluated without referencing the other bindings.~\cite{r5rs}

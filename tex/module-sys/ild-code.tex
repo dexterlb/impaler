@@ -1,0 +1,41 @@
+\section{Example ILD listings}
+\label{ild-code-appendix}
+A \paraphrase{skeleton} of \code{"core/prelude.ild"} is shown in \cref{ild-code-prelude}.
+\begin{ildcode}
+(module
+  (doc "some core functions")
+  (exports lambda letrec if list expand-lambda)
+  (imports
+    (host
+      ( eval free-vars read-source
+        mk-lambda macroexpand quote
+        bool-to-k car cdr cons null?
+        pair? func? apply poly-fix
+        gensym make-fail)))
+  (defs
+    '(lambda ...)
+    '(letrec ...)
+    '(list (!lambda args args))
+    '(if ...)
+    '(expand-lambda ...))
+\end{ildcode}
+\lstcaption{Example module \code{"core/prelude.ild"}}\label{ild-code-prelude}
+The helper \ild{fn}, implemented in \code{"core/module-utils.ild"}, is shown in \cref{ild-code-module-utils}.
+\begin{ildcode}
+(module
+  (doc "some helpers for working with modules")
+  (exports fn)
+  (imports
+    (host
+      (macroexpand quote))
+    ("core/prelude.ild"
+      (lambda expand-lambda list))
+  )
+  (defs
+    '(fn (!lambda (name arg-spec body)
+      (list quote
+        (list
+          name
+          (expand-lambda arg-spec body)))))))
+\end{ildcode}
+\lstcaption{Example module \code{"core/module-utils.ild"}}\label{ild-code-module-utils}
