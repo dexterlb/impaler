@@ -2,7 +2,7 @@
   (doc "some helpers for working with modules")
   (exports fn)
   (imports
-    (host (car cdr cons macroexpand quote bool-to-k))
+    (host (macroexpand quote))
     ("core/prelude.ild" (lambda expand-lambda list))
   )
   (defs

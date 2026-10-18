@@ -156,10 +156,3 @@ continuations by discarding the current continuation:
   \\
   \evalsto{\interop{apply}{C}{\ildcont{C'}}{v}}{\cpsapp{C'}{v}}
 \end{gather*}
-
-\subsubsection{Effectful computations}
-\label{side-effects}
-The CPS calculus can be extended to model any monadic effect system
-\cite[Section 3.3]{wadler}. This includes side effects like IO,
-and functions like \(\ildsym{gensym}\):%
-\[ \defas{\ildapp{gensym}{s}}{E}{\cpsapp{\cpsret}{\text{a fresh symbol whose prefix is } s}} \]

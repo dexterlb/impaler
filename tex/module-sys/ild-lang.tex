@@ -127,7 +127,8 @@ cases are worth noting:
 \subsubsection{Macro expansion}
 \label{macroexpand-mechanism}
 Macros in ILD are plain functions that assume their arguments
-are \paraphrase{code}. To invoke a function as a macro, the special form
+are \paraphrase{code}: we refer to such functions as \emph{macro functions}.
+To invoke a function as a macro, the special form
 \ildsf{macroexpand} is used at the callsite: an expression
 \(\ildlist{\ildsf{macroexpand}}{\varphi}{\alpha_1}{\alpha_2}{\dots}{\alpha_n}\)
 evaluates just \(\varphi\) and then passes the

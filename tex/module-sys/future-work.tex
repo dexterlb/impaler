@@ -6,11 +6,16 @@ The \emph{base language} presented in this paper is considered feature-complete.
 much can be gained by extending the \emph{host environment} and libraries with
 more features.
 \subsubsection{State management}
-The host environment presented in this paper makes ILD mostly (e.g.
-\paraphrase{not counting} \ild{gensym}) purely-functional and \paraphrase{makes
-no effort} to allow the user to manage \paraphrase{state}. However, for
+\label{side-effects}
+The host environment presented in this paper makes ILD purely-functional
+and \paraphrase{makes no effort} to allow the user to manage \paraphrase{state}. 
+However, for
 general-purpose applications, ILD must be embedded in an impure environment
 that allows state management and IO.
+The CPS calculus of ILD can be extended to model any monadic effect system
+\cite[Section 3.3]{wadler}. This includes side effects like IO,
+and functions like \(\ildsym{gensym}\):%
+\[ \defas{\ildapp{gensym}{s}}{E}{\cpsapp{\cpsret}{\text{a fresh symbol whose prefix is } s}} \]
 
 Other functional languages that feature fully-immutable data employ different
 methods of handling state, IO and other side effects:

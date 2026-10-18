@@ -34,13 +34,18 @@ has minimal core syntax and requires no mutation in order to express
 nontrivial, modular programs. To this end, we \paraphrase{employ} a
 \paraphrase{novel} metaprogramming system based on \emph{callsite-triggered}
 macro expansion, allowing us to build arbitrarily-complex domain-specific or
-general purpose syntax \paraphrase{on top}. We demonstrate expressiveness of
+general purpose syntax \paraphrase{on top}. A feature comparison of similar
+languages is shown in \cref{lang-comparison}.
+
+We demonstrate expressiveness of
 this system by building a \paraphrase{library function} called a \emph{module
 loader}, which allows user programs to be structured in modular subprograms
 while retaining the property that the whole program is a single expression,
 rather than a series of mutation statements. An example program that can be
 loaded by the module loader is shown in
 \cref{example-module-fact}.
+Example bodies of \code{"core/prelude.ild"} and \code{"module-utils.ild"} are
+shown in \cref{ild-code-appendix}.
 \begin{ildcode}
 (module
   (doc "this module calculates 5!")
@@ -57,9 +62,8 @@ loaded by the module loader is shown in
         1
         (* x (fact (+ x -1)))))))
 \end{ildcode}
-\lstcaption{Example module}\label{example-module-fact}
+\lstcaption{Example module \code{"demos/fact.ild"}}\label{example-module-fact}
 
-A feature comparison of similar languages is shown in \cref{lang-comparison}.
 
 \begin{cfig}{Table}{Feature comparison of similar languages}{Table comparing features}
 \label{lang-comparison}
