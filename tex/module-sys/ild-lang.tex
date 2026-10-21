@@ -23,7 +23,7 @@
 % Proposal: Allow CPS value terms in the apply function position, then state the host-function side condition at the reduction rule; check closure of the grammar under all displayed reductions.
 % Reason: The claimed calculus needs a grammar that contains its intermediate terms.
 % END-PAPER-REVIEW[codex:PR-TECHNICAL-0005]
-\begin{cfig}{Grammar}{Syntax of ILD}{BCNF definition of the ILD syntax}
+\begin{cfig}{Grammar}{grammar}{Syntax of ILD}{BCNF definition of the ILD syntax}
 \begin{tabular}{r@{\;}c@{\;}l@{\qquad}l}
 \(\ildsetVal\) & \(:=\) & \(\ildsetSym \mid \ildsetSexp \mid \ildsetSF \mid \ildsetFail \mid \ildsetHost\) & \paraphrase{Tangible} values \\
 \(\ildsetSym\) & \(\in\) & \emph{symbols} & \\
@@ -104,7 +104,7 @@ and library functions (\(\ildsetHost\)). We split the semantics of ILD into:
 
 \subsubsection{Notes on small-step semantics}
 \label{stepped-semantics}
-\begin{cfig}{Figure}{Small-step semantics of ILD}{Reduction rules for the Comp-terms}
+\begin{cfig}{Figure}{figure}{Small-step semantics of ILD}{Reduction rules for the Comp-terms}
 \label{stepped-semantics-fig}
 \begin{semgroup}{Simple cases:}
 \semrow{%

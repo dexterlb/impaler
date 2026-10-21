@@ -152,6 +152,9 @@
 \lstnewenvironment{schemecode}[1][]{\lstset{style=ildstyle,language=Lisp,#1}}{}
 
 \numberwithin{figure}{section}
+\newcounter{grammar}
+\numberwithin{grammar}{section}
+\numberwithin{table}{section}
 
 \makeatletter
 \BeforeBeginEnvironment{ildcode}{\let\@vspace\@vspace@orig\let\@vspacer\@vspacer@orig}
@@ -177,16 +180,18 @@
 }
 
 % full-width spans
-\newenvironment{cfig}[3]{%
+\newenvironment{cfig}[4]{%
   \begin{figure*}[t]
   \centering
-  \Description{#3}%
-  \refstepcounter{figure}%
+  \Description{#4}%
   \def\cfigname{#1}%
-  \def\cfigcaption{#2}%
+  \def\cfigcaption{#3}%
+  \refstepcounter{#2}%
+  \edef\cfigprintnum{\csname the#2\endcsname}%
 }{%
-  \addtocounter{figure}{-1}%
   \captionsetup{name={\cfigname},labelsep=colon}%
+  \def\thefigure{\cfigprintnum}%
+  \addtocounter{figure}{-1}%
   \caption{\cfigcaption}%
   \end{figure*}%
 }
