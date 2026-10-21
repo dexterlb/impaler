@@ -1,11 +1,30 @@
 \section{Future work}
 \label{future-work}
+% PAPER-REVIEW[claude:PR-STRUCTURE-0004] pass=structure state=open
+% Issue: Secondary location: missing section overview sentence; see primary block in meat.tex.
+% END-PAPER-REVIEW[claude:PR-STRUCTURE-0004]
 \paraphrase{Several directions remain open for future work.}
 \subsection{Optimisations}
 This paper focuses on the semantics and expressiveness of ILD and does not attempt
 to address performance. To make ILD practical to use, optimisations need to be
 put in place.
 \subsubsection{Partial evaluation}
+% PAPER-REVIEW[codex:PR-TECHNICAL-0013,claude:PR-TECHNICAL-0020] pass=technical state=open
+% Issue (codex): The quantitative performance and complexity assertions lack enough evidence to assess or reproduce them.
+% Evidence (codex): The paper reports one second on a "modern machine" and attributes this to exponential macro reevaluation; host-env also asserts exponential time and space for the ILD Y-combinator. No implementation revision, command, machine, repetitions, recurrence or independent input-size parameter is given.
+% Proposal (codex): Identify the interpreter revision and measurement setup, report observed timing with its conditions, and provide a cost argument for each exponential claim or replace it with a suitably bounded qualitative statement.
+% Reason (codex): Repeated work alone does not establish exponential growth or its cause; a semantics paper can state limitations without unsupported quantitative claims.
+% Issue (claude): [Insufficient evidence] Performance and complexity claims have no method or measurement behind them.
+% Evidence (claude): Here "possibly exponential in the depth of ... nested macro invocations" and "takes a whole second to evaluate
+%   the program from Listing 1.1 on a modern machine due to exponential macro call reevaluation": no implementation,
+%   hardware, repetitions or measurement are given, and the cause is asserted, not shown. Section 2.3.5 states
+%   "exponential space and time complexity" for the Y-combinator version without an argument. Per-call re-evaluation in
+%   letrec (PR-TECHNICAL-0006) may be a contributing cause.
+% Proposal (claude): Report the setup (which interpreter, hardware, method, input, mean of N runs), or state the observation
+%   qualitatively; add a short complexity argument (e.g. count of macro expansions as a function of nesting depth)
+%   for both claims.
+% Reason (claude): PEPM reviewers expect performance statements to be substantiated, especially as motivation for PE.
+% END-PAPER-REVIEW[codex:PR-TECHNICAL-0013,claude:PR-TECHNICAL-0020]
 In a naïve implementation of ILD's interpreter, macros are expanded at runtime, as encountered.
 This strategy incurs a significant cost, possibly exponential in the depth
 of encountered nested macro invocations, since the body of each macro call
@@ -22,6 +41,18 @@ as an optimisation pass in ILD, similar to how this has been done in FExpr-based
 such as Kraken \cite{fexpr-pe}. In addition to eliminating the overhead
 of runtime macro semantics, PE is known to be useful for also improving the performance of
 non-macro code that does not depend on user input.~\cite{anydsl}
+% PAPER-REVIEW[codex:PR-LANGUAGE-0001,claude:PR-LANGUAGE-0007] pass=language state=open
+% Issue (codex): The position of "well" makes the last sentence ambiguous.
+% Evidence (codex): The sentence ends with "code that does not depend on user input well".
+% Proposal (codex): If "well" describes optimisation, write "PE can also optimise non-macro code that does not depend on user input"; otherwise state the intended dependency.
+% Reason (codex): The current word order can attach "well" to "depend" rather than to optimisation.
+% Issue (claude): Malformed last sentence of this paragraph: "PE is known to be useful for optimising other,
+%   non-macro code that does not depend on user input well.~\cite{anydsl}".
+% Evidence (claude): The final "well" can attach to "optimising" or to "depend"; the citation follows the full stop.
+% Proposal (claude): "In addition to eliminating the overhead of runtime macro semantics, PE is known to optimise
+%   other, non-macro code that does not depend on user input~\cite{anydsl}."
+% Reason (claude): Removes the dangling adverb and places the citation inside the sentence.
+% END-PAPER-REVIEW[codex:PR-LANGUAGE-0001,claude:PR-LANGUAGE-0007]
 \subsubsection{Tail call optimisation}
 Languages such as Scheme, Lisp or Racket support expressing efficient iterative
 algorithms as tail-recursive functions, which get optimised into \paraphrase{trampolined}
@@ -39,6 +70,17 @@ much can be gained by extending the \emph{host environment} and libraries with
 more features.
 \subsubsection{State management}
 \label{side-effects}
+% PAPER-REVIEW[claude:PR-TECHNICAL-0022] pass=technical state=open
+% Issue: [Question for author] Several claims about other languages in Section 7 seem overstated or unsupported
+%   by the cited sources.
+% Evidence: "can be extended to model any monadic effect system \cite[Section 3.3]{wadler}": strong claim; the pinpoint
+%   was not inspected; Filinski, "Representing monads" (POPL 1994) is the usual reference for such universality.
+%   "IO operations in Clojure also work via similar references": Clojure performs I/O directly through host interop;
+%   the cited atom documentation does not discuss I/O. Section 7.2.2: Common Lisp does not require tail-call
+%   optimisation, and Clinger (1998) defines proper tail recursion as a space property, not trampolining.
+% Proposal: Qualify or re-source these statements (author to verify the suggested reference).
+% Reason: Side claims that are easy to dispute distract reviewers.
+% END-PAPER-REVIEW[claude:PR-TECHNICAL-0022]
 The host environment presented in this paper is purely functional and makes no
 provision for user-managed state. However, for general-purpose applications,
 ILD must be embedded in an impure environment that allows state management and

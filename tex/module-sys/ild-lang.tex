@@ -2,6 +2,27 @@
 
 \subsection{Syntax}
 \label{syntax}
+% PAPER-REVIEW[claude:PR-LANGUAGE-0003] pass=language state=open
+% Issue: The figure's accessibility description says "BCNF definition of the ILD syntax".
+% Evidence: BCNF usually means Boyce-Codd normal form (databases); the figure is a grammar, most likely
+%   meant as BNF (Backus-Naur form).
+% Proposal: If BNF is intended, change the third cfig argument to "BNF definition of the ILD syntax".
+% Reason: The \Description text is read by screen readers and kept in the ACM metadata.
+% END-PAPER-REVIEW[claude:PR-LANGUAGE-0003]
+% PAPER-REVIEW[claude:PR-TECHNICAL-0009] pass=technical state=open
+% Issue: [Demonstrated inconsistency] The Env footnote points to the wrong section for key uniqueness.
+% Evidence: The footnote says "We assume keys are restricted to be unique (\cref{stepped-semantics})", but
+%   Section 2.2.2 never mentions uniqueness; it is the substitution operator in Appendix B (env-substitution) that
+%   keeps keys unique.
+% Proposal: Reference \cref{env-substitution} instead (or state uniqueness as an invariant maintained by that operator).
+% Reason: The cross-reference should support the stated assumption.
+% END-PAPER-REVIEW[claude:PR-TECHNICAL-0009]
+% PAPER-REVIEW[codex:PR-TECHNICAL-0005] pass=technical state=open
+% Issue: The CPS term grammar does not admit some terms produced by the reduction rules.
+% Evidence: Comp restricts the function slot of apply to HostFunc, but macroexpand produces an apply whose function slot is the CPS-bound variable f before substitution.
+% Proposal: Allow CPS value terms in the apply function position, then state the host-function side condition at the reduction rule; check closure of the grammar under all displayed reductions.
+% Reason: The claimed calculus needs a grammar that contains its intermediate terms.
+% END-PAPER-REVIEW[codex:PR-TECHNICAL-0005]
 \begin{cfig}{Grammar}{Syntax of ILD}{BCNF definition of the ILD syntax}
 \begin{tabular}{r@{\;}c@{\;}l@{\qquad}l}
 \(\ildsetVal\) & \(:=\) & \(\ildsetSym \mid \ildsetSexp \mid \ildsetSF \mid \ildsetFail \mid \ildsetHost\) & \paraphrase{Tangible} values \\
@@ -51,6 +72,14 @@ the operational semantics.
 
 \subsection{Semantics}
 \label{semantics}
+% PAPER-REVIEW[claude:PR-STYLE-0005] pass=style state=open
+% Issue: Abbreviations are used without expansion at first use.
+% Evidence: CPS (first in Grammar 2.1 and here), FFI (Section 2.2.1 "FFI semantics"), PE (Section 7.2.1 "PE is known"),
+%   TCO (Section 7.2.2 "A TCO-enabled"), IO (Section 7.1.1; usually written I/O).
+% Proposal: Expand at first use in the body, e.g. "a continuation-passing style (CPS) calculus", "foreign function
+%   interface (FFI)", "partial evaluation (PE)", "tail call optimisation (TCO)", "input/output (I/O)".
+% Reason: Standard practice; PEPM readers outside the Lisp community may not know every abbreviation.
+% END-PAPER-REVIEW[claude:PR-STYLE-0005]
 We define the semantics of ILD in terms of a CPS calculus based on
 standard \(\beta\)-reduction%
 \footnote{
@@ -110,6 +139,21 @@ and library functions (\(\ildsetHost\)). We split the semantics of ILD into:
 \end{semgroup}
 \end{cfig}
 
+% PAPER-REVIEW[claude:PR-TECHNICAL-0008] pass=technical state=open
+% Issue: The substitution notation is never defined, reverses the usual convention, and is overloaded.
+% Evidence: \subst{x}{v} renders [x/v] and is used for (a) capture-avoiding beta-reduction M[x/v] (Figure 2.2),
+%   (b) replacing a marker, omega[ret/C] (Section 2.3), and (c) environment update e[p/a] (Section 2.3.3, Appendix B).
+%   The common convention is M[v/x] or M[x := v]; (c) is a different operation from (a) and (b).
+% Proposal: Define the notation at first use (e.g. "M[x/v] denotes M with v substituted for x") and use a distinct
+%   symbol for environment update (e.g. e[x |-> v]), pointing to Appendix B.
+% Reason: Readers will otherwise read [x/v] with the opposite meaning.
+% END-PAPER-REVIEW[claude:PR-TECHNICAL-0008]
+% PAPER-REVIEW[codex:PR-TECHNICAL-0006] pass=technical state=open
+% Issue: The permitted reduction contexts and fallback failure rule do not determine the intended evaluation strategy.
+% Evidence: Any Cont or Comp subterm is declared reducible, including continuation bodies with unbound CPS variables; the generic operand rule refers to alpha_1 even for zero operands, and unlisted cases are only said to produce a bare failure despite failures requiring a context.
+% Proposal: Specify evaluation contexts or a transition-machine discipline, give the zero-operand apply case, and define which runtime errors resume which continuation with which failure context; distinguish symbolic open terms from runtime errors.
+% Reason: These details are needed to justify sequential evaluation and the zero-argument thunks used by if.
+% END-PAPER-REVIEW[codex:PR-TECHNICAL-0006]
 Small-step semantics is outlined in \cref{stepped-semantics-fig}. The following
 cases are worth noting:
 \begin{itemize}

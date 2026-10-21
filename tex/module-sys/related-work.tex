@@ -1,6 +1,25 @@
 \section{Related work}
 \label{fexpr-comparison}
 
+% PAPER-REVIEW[claude:PR-STYLE-0002] pass=style state=open
+% Issue: The same concept appears under five spellings.
+% Evidence: "F-expressions" (Section 6), "FExpr"/"FExprs"/"FExpr-objects" (Sections 6, 7.2.1), "fexprs" (Table 1.1);
+%   the cited works use "fexpr(s)" (Shutt 2010; Braswell et al. 2023).
+% Proposal: Choose one form (e.g. "fexpr", plural "fexprs", as in the cited literature) and use it throughout,
+%   including the table and the footnote.
+% Reason: Varying forms suggest different concepts; the footnote even defines "the term FExpr".
+% END-PAPER-REVIEW[claude:PR-STYLE-0002]
+% PAPER-REVIEW[claude:PR-STRUCTURE-0006] pass=structure state=open
+% Issue: Related work covers only fexprs; comparisons to other prior work are scattered or missing.
+% Evidence: Module systems, the topic of the title, are not discussed anywhere. The comparison with hygienic
+%   macro systems is in Section 5.1.1, the language comparison (Table 1.1) is in Section 1 with no discussion, and
+%   the state-handling comparison (Clojure, Haskell, Erlang) is in Section 7.1.1.
+% Proposal: Organise Section 6 by topic, e.g. (a) macro systems and first-class macros, (b) fexprs, (c) module
+%   systems in Lisp-family languages, and discuss Table 1.1 there. Shorten the Section 7.1.1 comparison to a pointer.
+%   Candidate works for the author to verify: Flatt, "Composable and compilable macros: you want it when?"
+%   (ICFP 2002) on Racket modules and phases; Bawden, "First-class macros have types" (POPL 2000).
+% Reason: Reviewers judge originality (R4) from how the work is positioned; see also the technical finding on novelty.
+% END-PAPER-REVIEW[claude:PR-STRUCTURE-0006]
 The techniques applied in this paper achieve results similar to systems using
 F-expressions~\cite{fexpr-shutt,fexpr-pe}.
 
@@ -24,6 +43,21 @@ Similar to modern FExpr-based systems, ILD's macro expansion facility matches
 unhygienic LISP macros in expressive power and \paraphrase{provides first-class
 status and runtime semantics with no separate expansion phase for macros}.
 
+% PAPER-REVIEW[claude:PR-TECHNICAL-0001,codex:PR-TECHNICAL-0011] pass=technical state=open
+% Issue (claude): [Demonstrated contradiction] The claim that "no language with first-class F-expression support also
+%   supports first-class continuations" is false for Kernel, the language behind the cited fexpr work.
+% Evidence (claude): Shutt, "Revised^-1 Report on the Kernel Programming Language", WPI-CS-TR-05-07 (amended 2009),
+%   https://ftp.cs.wpi.edu/pub/techreports/pdf/05-07.pdf (accessed 2026-10-21): the abstract says "All manipulable
+%   entities in Kernel are first-class objects" (operatives = fexprs); Section 7 "Continuations" defines call/cc (7.2.2),
+%   extend-continuation, guard-continuation and continuation->applicative.
+% Proposal (claude): Remove the claim, or narrow it to what holds (e.g. compare with Kraken specifically, Table 1.1),
+%   and discuss Kernel's operatives + continuations as closest prior work.
+% Reason (claude): A reviewer familiar with Kernel will notice this immediately; it also affects the novelty argument (PR-TECHNICAL-0015).
+% Issue (codex): The claimed absence of first-class continuations in fexpr languages has a documented counterexample.
+% Evidence (codex): Kernel has first-class operatives and continuations: Shutt's Kernel Report section 7 and 7.2.2 define continuation capture and call/cc (https://ftp.cs.wpi.edu/pub/techreports/pdf/05-07.pdf, revised 2009-10-29; https://web.cs.wpi.edu/~jshutt/kernel.html; accessed 2026-10-20).
+% Proposal (codex): Replace the universal absence claim with a precise comparison of ILD's callsite-triggered expansion and Kernel's operative/applicative mechanism, and identify the actual novelty.
+% Reason (codex): An explicit prior system contradicts the current novelty argument.
+% END-PAPER-REVIEW[claude:PR-TECHNICAL-0001,codex:PR-TECHNICAL-0011]
 We argue that callsite-triggered macro expansion is simpler to implement and
 reason about while being as expressive. In addition, to the best of our
 knowledge no language with first-class F-expression support also supports

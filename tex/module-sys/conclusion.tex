@@ -1,4 +1,28 @@
 \section{Conclusion}
+% PAPER-REVIEW[claude:PR-STYLE-0004,codex:PR-STYLE-0002] pass=style state=open
+% Issue (claude): Vague evaluative phrases that state a quality without saying how it is measured.
+% Evidence (claude): here "semantically simple and easy to implement" and "great expressive power"; Section 5.1
+%   "The evaluator can be simplified greatly".
+% Proposal (claude): Replace with concrete properties already shown in the paper, e.g. "three special forms and the four
+%   rule groups of the small-step semantics", "modular programs with named functions, mutual recursion and imports, none
+%   built into the base language", "the evaluator distinguishes only special forms and functions".
+% Reason (claude): Concrete statements are more persuasive to PEPM reviewers than adjectives; whether the claims
+%   are supported is handed to the technical pass.
+% Issue (codex): The conclusion relies on broad evaluative wording instead of naming the demonstrated capabilities.
+% Evidence (codex): The paragraph describes ILD as "semantically simple", "easy to implement", and having "great expressive power".
+% Proposal (codex): Replace these descriptions with a concise account of the three core special forms and the library constructions for binding, recursion and module loading; retain only claims established in the paper.
+% Reason (codex): Concrete capabilities give the reader a precise statement of the outcome.
+% END-PAPER-REVIEW[claude:PR-STYLE-0004,codex:PR-STYLE-0002]
+% PAPER-REVIEW[claude:PR-STRUCTURE-0007] pass=structure state=open
+% Issue: The conclusion does not mirror the abstract or answer the problem posed in the introduction.
+% Evidence: The introduction motivates modular programs without mutation, and the abstract claims a module system
+%   (named functions, mutual recursion, imports) and a hygiene benefit. The conclusion mentions neither the module
+%   loader nor hygiene, and introduces "as powerful as traditional macro systems", which the body argues only informally.
+% Proposal: Restructure as: problem (mutation-free modular programs) -> approach (ILD, callsite-triggered macros) ->
+%   what was shown (library up to letrec, module loader without built-in features, hygiene through embedded values)
+%   -> limitations and next step (performance, partial evaluation).
+% Reason: Readers who skim abstract and conclusion should see the same contributions.
+% END-PAPER-REVIEW[claude:PR-STRUCTURE-0007]
 The programming language ILD, presented in this paper, is semantically
 simple and easy to implement. Together with a set of host functions
 and data structures, provided via FFI, and a metaprogramming library,

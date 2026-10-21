@@ -1,6 +1,16 @@
 \section{Introduction}
 \label{introduction}
 
+% PAPER-REVIEW[claude:PR-LANGUAGE-0001] pass=language state=open
+% Issue: Faulty sentence construction in the REPL description (partly inside \paraphrase{then}).
+% Evidence: "...entering expressions (...) in a terminal, which are then Read, Evaluated, and then the
+%   result is Printed." The relative "which" follows "a terminal" but refers to "expressions", and the
+%   list switches from verbs (Read, Evaluated) to a new clause ("the result is Printed").
+% Proposal: "The user interacts with the program by entering expressions (which may refer to objects
+%   in the global environment) in a terminal; each expression is Read and Evaluated, and the result
+%   is Printed." (keeps the capitalised R/E/P that spell out REPL).
+% Reason: Restores the antecedent of the relative clause and parallel structure; resolves the author marker.
+% END-PAPER-REVIEW[claude:PR-LANGUAGE-0001]
 Traditionally, LISP and similar programming languages have been designed with a
 REPL in mind: the program lives as data in the memory of the machine and parts
 of the program (functions, named values) are available under a global namespace
@@ -12,6 +22,23 @@ Printed. To extend the program, the user may enter expressions
 through it. Programs can then be optionally persisted to storage
 and recalled upon request~\cite{sexp,steele-gabriel-evolution}.
 
+% PAPER-REVIEW[claude:PR-LANGUAGE-0002] pass=language state=open
+% Issue: Spelling errors inside author-marked (\paraphrase) passages, left unedited per the marker policy.
+% Evidence: here: \paraphrase{writing turing-complete programs}; host-env.tex (Section 2.3.3):
+%   \paraphrase{... the abillity to create functions...}.
+% Proposal: When rewording these passages, use "Turing-complete" (proper name) and "ability".
+% Reason: Both misspellings currently appear in the rendered PDF.
+% Note: the passage under this anchor already reads "Turing-complete" and host-env.tex already reads "ability" in the current worktree.
+% END-PAPER-REVIEW[claude:PR-LANGUAGE-0002]
+% PAPER-REVIEW[claude:PR-TECHNICAL-0013] pass=technical state=open
+% Issue: [Verified] Wrong pinpoint for the SICP citation, and a claim about LISP supported by a Scheme text.
+% Evidence: SICP 2nd ed., Section 4.1.5 is "Data as Programs"; mutually recursive internal definitions (even?/odd?,
+%   scanned out into let + set!) are in Section 4.1.6 "Internal Definitions" (MIT Press full text, book-Z-H-26,
+%   accessed 2026-10-21). SICP uses Scheme; Common Lisp's labels gives mutually recursive local functions
+%   without user-visible mutation.
+% Proposal: \cite[Section 4.1.6]{sicp}, and say "in Scheme" (or qualify the claim for LISP).
+% Reason: Citations should support the exact claim.
+% END-PAPER-REVIEW[claude:PR-TECHNICAL-0013]
 Modern programming languages deviate from that paradigm by storing the whole
 program as text (code) ahead of time, and then evaluating the entire code
 before running the program. However, languages like LISP, Scheme or Racket are
@@ -29,6 +56,20 @@ metalanguage of macros has limited facilities for local scope definitions. For
 these reasons, programs written without mutation are difficult to modularise
 and extend.
 
+% PAPER-REVIEW[claude:PR-TECHNICAL-0015] pass=technical state=open
+% Issue: [Insufficient evidence] The novelty claims ("novel" here, "which we introduce" in Section 8, "to our
+%   knowledge" in Section 6) are not set against the closest prior work.
+% Evidence: (a) macroexpand applies f to unevaluated operands and evaluates the result in the caller's environment;
+%   this can be expressed with a Kernel operative ($vau + eval), and Kernel states that operatives "subsume the roles
+%   ... of special forms and macros" (Shutt 2009, abstract). (b) Call-site marking of macro invocations exists in
+%   Rust (name!(...)) and Julia (@name), though those macros are not first-class. (c) First-class macros have been
+%   studied (e.g. Bawden, POPL 2000, "First-class macros have types", author to verify). (d) Section 1 calls Racket
+%   "centred around ... a mutable global environment", yet Racket programs are organised in modules, which is the
+%   closest prior module-system work.
+% Proposal: State precisely which combination is new (e.g. macros as ordinary first-class functions + call-site
+%   trigger + runtime expansion + immutable environments + first-class continuations), and compare with (a)-(d) in Section 6.
+% Reason: Originality is a PEPM review criterion (R4); related to PR-STRUCTURE-0006 and PR-TECHNICAL-0001.
+% END-PAPER-REVIEW[claude:PR-TECHNICAL-0015]
 As an alternative, we design a LISP-like programming language, called ILD, that
 has minimal core syntax and requires no mutation in order to express
 nontrivial, modular programs. To this end, we employ a
@@ -37,6 +78,33 @@ macro expansion, allowing us to build arbitrarily-complex domain-specific or
 general purpose syntax \paraphrase{on top}. A feature comparison of similar
 languages is shown in \cref{lang-comparison}.
 
+% PAPER-REVIEW[codex:PR-STRUCTURE-0001,claude:PR-STRUCTURE-0001] pass=structure state=open
+% Issue (codex): The introduction does not distinguish the paper's contributions from the successive implementation steps.
+% Evidence (codex): The abstract promises language semantics, a module library and capture avoidance; the introduction moves from a design claim straight to the factorial module and comparison table.
+% Proposal (codex): Add a short contribution paragraph before the example, linking the core semantics, library/module-loader construction and capture-avoidance technique to their sections; state which part is claimed as new.
+% Reason (codex): Readers can then distinguish the central result from the supporting language tutorial.
+% Issue (claude): The introduction has no explicit contribution statement and no outline of the paper.
+% Evidence (claude): Contributions are spread over three paragraphs ("we design ... ILD", "we employ a novel metaprogramming
+%   system", "We demonstrate ... module loader"); the hygiene result from the abstract and the formal semantics
+%   (Section 2.2) are not mentioned; no paragraph maps Sections 2-7.
+% Proposal (claude): After this paragraph, add a short itemised list of contributions that mirrors the abstract (e.g. (1) ILD
+%   and its CPS small-step semantics with callsite-triggered macro expansion, Section 2; (2) a minimal immutable host
+%   environment, Section 2.3; (3) a library bootstrapped in ILD up to letrec and a module loader, Sections 3-4;
+%   (4) a discussion of first-class macros and hygiene, Section 5), followed by a one-sentence roadmap.
+% Reason (claude): Reviewers judge originality and significance (R4) from the contribution list; it also anchors the conclusion.
+% END-PAPER-REVIEW[codex:PR-STRUCTURE-0001,claude:PR-STRUCTURE-0001]
+% PAPER-REVIEW[claude:PR-GUIDELINES-0001] pass=guidelines state=open
+% Issue: No explicit statement of desired properties or of how they are achieved (rule R5).
+% Evidence: The PEPM 2027 CfP (https://popl27.sigplan.org/home/pepm-2027, accessed 2026-10-21) says each technique
+%   "should have a clear, although perhaps informal, statement of desired properties" "along with an argument about how
+%   these properties can be achieved". The intro implies properties (no mutation, minimal core, first-class macros,
+%   modules in the language itself) but never states them as such.
+% Proposal: Add a short list of desired properties, e.g. (P1) a whole program is a single expression with no
+%   environment mutation; (P2) a minimal core (three special forms); (P3) macros are first-class functions;
+%   (P4) modules, named functions and mutual recursion are library features; (P5) macros avoid name capture without
+%   hygiene machinery. Map each to the section that argues it. This can be combined with PR-STRUCTURE-0001.
+% Reason: The venue explicitly asks for this, and reviewers use it to judge correctness and significance.
+% END-PAPER-REVIEW[claude:PR-GUIDELINES-0001]
 We demonstrate expressiveness of
 this system by building a \paraphrase{library function} called a \emph{module
 loader}, which allows user programs to be structured in modular subprograms
@@ -46,6 +114,17 @@ loaded by the module loader is shown in
 \cref{example-module-fact}.
 Example bodies of \code{"core/prelude.ild"} and \code{"module-utils.ild"} are
 shown in \cref{ild-code-appendix}.
+% PAPER-REVIEW[claude:PR-STRUCTURE-0002] pass=structure state=open
+% Issue: The introduction shows notation and terms before the paper defines them.
+% Evidence: Listing 1.1 uses "!fn"/"!if", the module clauses doc/exports/imports/defs and a host import of
+%   macroexpand; "!" is only explained in Section 2.1, and the reason macroexpand must be imported only follows
+%   from that sugar. Table 1.1 uses "Trigger: bind time/callsite", "Expansion: separate pass/runtime", "fexprs" and
+%   "Kraken", which are explained (if at all) in Sections 5.1 and 6.
+% Proposal: Next to Listing 1.1 add one or two sentences: "!" marks a callsite-triggered macro expansion (Section 2.1),
+%   so fn and if are ordinary functions imported from library modules. Either add a short paragraph or caption
+%   note defining the Table 1.1 columns, or move the table to Section 5.1/6 where those concepts are discussed.
+% Reason: Readers meet the key notation on page 1 without the means to read it.
+% END-PAPER-REVIEW[claude:PR-STRUCTURE-0002]
 \begin{ildcode}
 (module
   (doc "this module calculates 5!")
@@ -65,6 +144,30 @@ shown in \cref{ild-code-appendix}.
 \lstcaption{Example module \code{"demos/fact.ild"}}\label{example-module-fact}
 
 
+% PAPER-REVIEW[claude:PR-STYLE-0001] pass=style state=open
+% Issue: Cross-reference names do not match the captions.
+% Evidence: \cref{lang-comparison} renders "Figure 1.1" but the caption reads "Table 1.1" (cfig steps the
+%   figure counter and only renames the caption). Listing references render in lower case ("listing 3.1")
+%   while captions read "Listing 3.1:". Table, Grammar and Figure share one counter, so the paper has
+%   "Figure 2.2" with no "Figure 2.1".
+% Proposal: In macros/paper.tex add \crefname{listing}{Listing}{Listings} and \Crefname{listing}{Listing}{Listings}.
+%   For the cfig objects, either give Table/Grammar their own counters and \crefname entries, or reference
+%   them explicitly (e.g. "Table~\ref{lang-comparison}", "Grammar~\ref{...}").
+% Reason: Readers look for a Figure 1.1 that does not exist; consistent names avoid this.
+% END-PAPER-REVIEW[claude:PR-STYLE-0001]
+% PAPER-REVIEW[codex:PR-TECHNICAL-0010,claude:PR-TECHNICAL-0016] pass=technical state=open
+% Issue (codex): The comparison mixes core-data immutability, language-wide effects and macro binding/expansion semantics.
+% Evidence (codex): The table calls Clojure immutable and hygienic, while future-work describes its mutable references. Its reader documents opt-in syntax-quote and gensym mechanisms (https://clojure.org/reference/reader, accessed 2026-10-20). LISP names no dialect; "bind time" and "few/many" lack definitions. The discussion also says local macro bindings are visible only to macros, although R5RS 4.3.1 expands ordinary bodies in those bindings.
+% Proposal (codex): Define the dimensions and named language versions, qualify Clojure's entries, separate macro binding identity from expansion phase, and describe local macro names as unavailable as ordinary runtime values rather than unavailable to program bodies.
+% Reason (codex): The comparison underpins the motivation and should compare the same properties across languages.
+% Issue (claude): [Question for author] Several Table 1.1 entries look doubtful, and the table gives no sources.
+% Evidence (claude): "LISP / Continuations? yes": Common Lisp and LISP 1.5 have no first-class continuations; which LISP is meant?
+%   "Clojure / hygienic": Clojure macros are generally described as non-hygienic (syntax-quote namespace-qualifies
+%   symbols, gensyms via foo#). "LFE / limited" is not defined. Only Kraken has a citation.
+% Proposal (claude): Name the dialect (e.g. Common Lisp), re-check these cells, define the column values in the caption or
+%   text, and cite a source per row.
+% Reason (claude): The table is the paper's main comparison; questionable cells undermine it.
+% END-PAPER-REVIEW[codex:PR-TECHNICAL-0010,claude:PR-TECHNICAL-0016]
 \begin{cfig}{Table}{Feature comparison of similar languages}{Table comparing features}
 \label{lang-comparison}
 \begin{tabular}{clccccll}
