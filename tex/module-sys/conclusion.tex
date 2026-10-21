@@ -1,5 +1,5 @@
 \section{Conclusion}
-% PAPER-REVIEW[claude:PR-STYLE-0004,codex:PR-STYLE-0002] pass=style state=open
+% PAPER-APP[claude:PR-STYLE-0004,codex:PR-STYLE-0002] pass=style state=open
 % Issue (claude): Vague evaluative phrases that state a quality without saying how it is measured.
 % Evidence (claude): here "semantically simple and easy to implement" and "great expressive power"; Section 5.1
 %   "The evaluator can be simplified greatly".
@@ -12,8 +12,8 @@
 % Evidence (codex): The paragraph describes ILD as "semantically simple", "easy to implement", and having "great expressive power".
 % Proposal (codex): Replace these descriptions with a concise account of the three core special forms and the library constructions for binding, recursion and module loading; retain only claims established in the paper.
 % Reason (codex): Concrete capabilities give the reader a precise statement of the outcome.
-% END-PAPER-REVIEW[claude:PR-STYLE-0004,codex:PR-STYLE-0002]
-% PAPER-REVIEW[claude:PR-STRUCTURE-0007] pass=structure state=open
+% END-PAPER-APP[claude:PR-STYLE-0004,codex:PR-STYLE-0002]
+% PAPER-APP[claude:PR-STRUCTURE-0007] pass=structure state=open
 % Issue: The conclusion does not mirror the abstract or answer the problem posed in the introduction.
 % Evidence: The introduction motivates modular programs without mutation, and the abstract claims a module system
 %   (named functions, mutual recursion, imports) and a hygiene benefit. The conclusion mentions neither the module
@@ -22,12 +22,20 @@
 %   what was shown (library up to letrec, module loader without built-in features, hygiene through embedded values)
 %   -> limitations and next step (performance, partial evaluation).
 % Reason: Readers who skim abstract and conclusion should see the same contributions.
-% END-PAPER-REVIEW[claude:PR-STRUCTURE-0007]
-The programming language ILD, presented in this paper, is semantically
-simple and easy to implement. Together with a set of host functions
-and data structures, provided via FFI, and a metaprogramming library,
-it lets the user write modular programs with great expressive power.
-Callsite-triggered macro expansion, which we introduce, allows for
-minimal language semantics and evaluator while being as powerful
-as traditional macro systems. In the future we aim to improve performance
+% END-PAPER-APP[claude:PR-STRUCTURE-0007]
+We set out to support modular
+programs without mutation of a global environment, to which end we present the
+programming language ILD. Its semantics (summarised in \cref{stepped-semantics-fig})
+is minimal: the only possible \emph{combination} steps are function application and
+one of the three special forms. Together with a set of host functions
+and data structures, provided via FFI, and a metaprogramming library written in ILD itself,
+it lets the user write modular programs
+with named functions, mutual recursion and source imports, none of which
+is built into the base language. Callsite-triggered macro expansion,
+where macros are ordinary first-class functions called at runtime,
+allows for a simple evaluator with no separate macro expansion phase.
+The macros in this paper make use of this runtime semantics to
+emit values instead of keywords, which avoids name capture and leakage without
+hygiene machinery.
+In the future we aim to improve performance
 by employing partial evaluation as an optimisation step.
