@@ -3,6 +3,7 @@
 
 \begin{note}
 % claude:PR-STYLE-0002
+% MTODO: use "fexprs", "fexpr-objects" everywhere
 The concept still appears as ``F-expressions'', ``FExpr''/``FExprs''/
 ``FExpr-objects'' and ``fexprs''. Use one form throughout, e.g. ``fexpr'' and
 ``fexprs'' as in the cited literature, including the table and the footnote.
@@ -30,17 +31,14 @@ FExpr-objects are first-class regardless of their evaluation semantics.
 Similar to modern FExpr-based systems, ILD's macro expansion facility matches
 unhygienic LISP macros in expressive power and \paraphrase{provides first-class
 status and runtime semantics with no separate expansion phase for macros}.
-
 \begin{note}
 % claude:PR-TECHNICAL-0001, codex:PR-TECHNICAL-0011
+% MTODO: add a line for Kernel in the table
 The claim that no language with first-class fexprs supports first-class
 continuations is false: Kernel has first-class operatives and \ild{call/cc}
 (Shutt, Revised\(^{-1}\) Report on the Kernel Programming Language,
 Section 7). Remove or narrow the claim and compare ILD's callsite-triggered
 expansion with Kernel's operative/applicative mechanism instead.
 \end{note}
-
 We argue that callsite-triggered macro expansion is simpler to implement and
-reason about while being as expressive. In addition, to the best of our
-knowledge no language with first-class F-expression support also supports
-first-class continuations, which ILD does support.
+reason about while being as expressive.

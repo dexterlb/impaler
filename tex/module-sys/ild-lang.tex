@@ -70,10 +70,9 @@ the operational semantics.
 \label{semantics}
 We define the semantics of ILD in terms of a CPS calculus based on
 standard \(\beta\)-reduction%
-\footnote{
-We omit details related to variable renaming and substitution.
-}
-over the set of \emph{computations} (\(\ildsetComp\)). Evaluation starts from
+over the set of \emph{computations} (\(\ildsetComp\)). Details
+related to dealing with variable name clashes during substitution are omitted.
+Evaluation starts from
 the term \(\interop{eval}{\cpsyield}{E}{v}\) for some value \(v\), the root
 continuation \(\cpsyield\) and a root binding environment \(E\) (\cref{root-env}).
 Evaluation of well-formed, terminating programs will reach a term of the form

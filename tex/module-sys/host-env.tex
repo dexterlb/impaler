@@ -71,13 +71,9 @@ provided as bindings in the root environment.
 
 \subsubsection{\(\lambda\)-abstractions}
 \label{abstraction}
-\paraphrase{The most essential feature of a functional programming language is the ability to
-create functions}\footnote{Citation needed.}. User-introduced functional objects in the host environment are
+User-introduced functional objects in the host environment are
 represented as \(\ildsetAbstr\)-terms. Each such term carries a binding environment \(e\),
-a list of formal parameters \(P\) and a body%
-\footnote{The body being a single expression instead of a list of body
-expressions to be evaluated in order is purely a stylistic choice for the sake
-of simplicity.}
+a list of formal parameters \(P\) and a body expression
 \(\beta\), and is \emph{applied} by substituting (\cref{env-substitution})
 the formal parameters by the actual parameters in the local binding environment,
 and then evaluating the body in the resulting environment:
@@ -87,21 +83,12 @@ and then evaluating the body in the resulting environment:
   \text{where } e' = \spacedlist{e}{\subst{p_1}{a_1}}{\subst{p_2}{a_2}}{\dots}{\subst{p_n}{a_n}}
 \end{gather*}
 Variadic functions with \(P = \ildpair{\ildlist{p_1}{p_2}{\dots}{p_m}}{r}\)
-for an \(m < n\), or\footnote{Both representations of \(m = 0\) are valid} \(P = {r}\) for \(m = 0\) require a similar rule where:
+for an \(m < n\), or \(P = {r}\) or \(P = \ildpair{()}{r} \) for \(m = 0\) require a similar rule where:
 \begin{gather*}
   e' = \spacedlist{e}{\subst{p_1}{a_1}}{\subst{p_2}{a_2}}{\dots}{\subst{p_m}{a_m}}{\subst{r}{\ildlist{a_{m+1}}{\dots}{a_{n}}}}
 \end{gather*}
 To let programs build such \(\ildsetAbstr\)-objects, we provide a data constructor:
 \[ \defas{\ildapp{mk-lambda}{e}{P}{B}}{E}{\cpsapp{\cpsret}{\ildabstr{e}{P}{B}}} \]
-
-\begin{note}
-% claude:PR-STRUCTURE-0008
-Too many footnotes: reduce them. Move the renaming note into a parenthetical;
-drop or source the ``Citation needed'' footnote; fold the single-expression
-body remark into the text; drop the \(m = 0\) footnote once the
-parameter-list notation is fixed; move the unique-keys note next to the
-reference to Appendix B. Keep the fexpr footnote in Section 6.
-\end{note}
 
 \subsubsection{Branching}\label{branching}
 The boolean datatype is \paraphrase{useless} without a function that
