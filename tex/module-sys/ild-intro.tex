@@ -6,7 +6,7 @@ REPL in mind: the program lives as data in the memory of the machine and parts
 of the program (functions, named values) are available under a global namespace
 (\emph{environment}). The user interacts with the program by entering
 expressions (which may refer to objects in the global environment) in a
-terminal, which are then Read, Evaluated, and \paraphrase{then} the result is
+terminal, which are then Read, Evaluated, and subsequently the result is
 Printed. To extend the program, the user may enter expressions
 (\emph{statements}) that \emph{mutate} the environment and the objects reachable
 through it. Programs can then be optionally persisted to storage
@@ -18,21 +18,21 @@ before running the program. However, languages like LISP, Scheme or Racket are
 still centered around the model of a mutable global environment, which
 complicates the evaluator and makes the language difficult to reason about and
 optimise~\cite{steele-gabriel-evolution}. Mutual recursion in LISP is achieved
-by explicit mutation\cite[Chapter 4.1.5]{sicp}, and even programming languages
+by explicit mutation~\cite[Chapter 4.1.5]{sicp}, and even programming languages
 like Clojure or LFE, whose core data structures are immutable, organise
 nontrivial programs as sequences of environment-mutating
 statements~\cite{clojure-hist,lfe-reference}. A core mechanic of such
 programming languages is \emph{macro expansion} – extending syntax via custom
 transformations called \emph{macros}. Although these languages support
-\paraphrase{writing turing-complete programs} as a single expression, the
-metalanguage of macros has limited facillities for local scope definitions. For
+\paraphrase{writing Turing-complete programs} as a single expression, the
+metalanguage of macros has limited facilities for local scope definitions. For
 these reasons, programs written without mutation are difficult to modularise
 and extend.
 
 As an alternative, we design a LISP-like programming language, called ILD, that
 has minimal core syntax and requires no mutation in order to express
-nontrivial, modular programs. To this end, we \paraphrase{employ} a
-\paraphrase{novel} metaprogramming system based on \emph{callsite-triggered}
+nontrivial, modular programs. To this end, we employ a
+metaprogramming system based on \emph{callsite-triggered}
 macro expansion, allowing us to build arbitrarily-complex domain-specific or
 general purpose syntax \paraphrase{on top}. A feature comparison of similar
 languages is shown in \cref{lang-comparison}.
@@ -40,7 +40,7 @@ languages is shown in \cref{lang-comparison}.
 We demonstrate expressiveness of
 this system by building a \paraphrase{library function} called a \emph{module
 loader}, which allows user programs to be structured in modular subprograms
-while retaining the property that the whole program is a single expression,
+while retaining the property that the whole program is a single pure expression,
 rather than a series of mutation statements. An example program that can be
 loaded by the module loader is shown in
 \cref{example-module-fact}.

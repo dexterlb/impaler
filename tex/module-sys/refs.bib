@@ -272,3 +272,40 @@
     pages = {25–28},
     numpages = {4}
 }
+
+@inproceedings{elm-async-frp,
+    author = 	 {Evan Czaplicki and Stephen Chong},
+    title = 	 {Asynchronous Functional Reactive Programming for {GUI}s},
+    booktitle =    {Proceedings of the 34th ACM SIGPLAN Conference on Programming Language Design and Implementation},
+    year = 	 2013,
+    month = 	 jun,
+    pages =        {411--422},
+    publisher =    {ACM Press},
+    address = 	 {New York, NY, USA}
+}
+
+
+@inproceedings{hudak-frp,
+    author = {Wan, Zhanyong and Hudak, Paul},
+    title = {Functional reactive programming from first principles},
+    year = {2000},
+    isbn = {1581131992},
+    publisher = {Association for Computing Machinery},
+    address = {New York, NY, USA},
+    url = {https://doi.org/10.1145/349299.349331},
+    doi = {10.1145/349299.349331},
+    abstract = {Functional Reactive Programming, or FRP, is a general framework for programming hybrid systems in a high-level, declarative manner. The key ideas in FRP are its notions of behaviors and events. Behaviors are time-varying, reactive values, while events are time-ordered sequences of discrete-time event occurrences. FRP is the essence of Fran, a domain-specific language embedded in Haskell for programming reactive animations, but FRP is now also being used in vision, robotics and other control systems applications. In this paper we explore the formal semantics of FRP and how it relates to an implementation based on streams that represent (and therefore only approximate) continuous behaviors. We show that, in the limit as the sampling interval goes to zero, the implementation is faithful to the formal, continuous semantics, but only when certain constraints on behaviors are observed. We explore the nature of these constraints, which vary amongst the FRP primitives. Our results show both the power and limitations of this approach to language design and implementation. As an example of a limitation, we show that streams are incapable of representing instantaneous predicate events over behaviors.},
+    booktitle = {Proceedings of the ACM SIGPLAN 2000 Conference on Programming Language Design and Implementation},
+    pages = {242–252},
+    numpages = {11},
+    location = {Vancouver, British Columbia, Canada},
+    series = {PLDI '00}
+}
+
+@manual{racket,
+    author = {Flatt, Matthew and {PLT}},
+    title = {The {Racket} Reference},
+    year = {2024},
+    organization = {PLT Design Inc.},
+    url = {https://docs.racket-lang.org/reference/index.html}
+}

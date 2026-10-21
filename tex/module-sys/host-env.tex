@@ -41,14 +41,13 @@ operations on S-expressions, are also provided through the FFI (\(\ildsetHostFun
 \end{itemize}
 Unlike Scheme or LISP, ILD's immutable nature does not allow building cyclic
 objects easily, which can be remedied by externally providing data structures,
-either higher level (like graphs) or lower level (like indexed arrays). \paraphrase{
-This, however, is out of this paper's scope}.
+either higher level (like graphs) or lower level (like indexed arrays).
+This, however, is outside the scope of this paper.
 
 \subsubsection{First-class special forms}
-To keep the parser minimal, ILD special forms are not keywords, and are instead
-provided as bindings in the root environment. This also allows
-operating on special forms as data and strengthens the homoiconic character of ILD.
-\paraphrase{See also} \cref{hygiene-discussion}.
+To avoid name capture issues (\cref{hygiene-discussion}) and keep the parser
+minimal, ILD special forms are not keywords, and are instead
+provided as bindings in the root environment.
 \[
   \begin{array}{@{}l@{}}
     E = ( \\
@@ -63,12 +62,12 @@ operating on special forms as data and strengthens the homoiconic character of I
 
 \subsubsection{\(\lambda\)-abstractions}
 \label{abstraction}
-\paraphrase{The most essential element of a functional programming language is the abillity to
-create functions\footnote{Citation needed.}.} User-introduced functional objects in the host environment are
-\paraphrase{syntactically} defined as \(\ildsetAbstr\)-terms. Each such term carries a binding environment \(e\),
+\paraphrase{The most essential feature of a functional programming language is the ability to
+create functions}\footnote{Citation needed.}. User-introduced functional objects in the host environment are
+represented as \(\ildsetAbstr\)-terms. Each such term carries a binding environment \(e\),
 a list of formal parameters \(P\) and a body%
 \footnote{The body being a single expression instead of a list of body
-expressions to be evaluated in order is purely a stylistic choise for the sake
+expressions to be evaluated in order is purely a stylistic choice for the sake
 of simplicity.}
 \(\beta\), and is \emph{applied} by substituting (\cref{env-substitution})
 the formal parameters by the actual parameters in the local binding environment,
@@ -92,7 +91,7 @@ too many footnotes! reduce them!
 
 \subsubsection{Branching}\label{branching}
 The boolean datatype is \paraphrase{useless} without a function that
-\paraphrase{discriminates between} its values. Thus, we provide
+distinguishes between its values. Thus, we provide
 the \ildsym{bool-to-k} function that transforms a boolean into
 an argument selector:
 \[
@@ -105,7 +104,7 @@ an argument selector:
     }
   }
 \]
-This allows the base language to \paraphrase{not care about branching}:
+This allows the base language to \paraphrase{ignore branching}:
 branching is merely a feature of the boolean host datatype. The \ildsym{bool-to-k}
 function can then be used to build higher-level branching primitives
 (e.g. \cref{if}).

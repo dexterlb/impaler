@@ -33,7 +33,7 @@ that:
 \begin{enumerate}
 \item Recursively processes imported modules and builds a binding environment \ild{env}
 that contains all imports
-\item Builds a list of name-body pairs from the definitions \paraphrase{defined} in the module
+\item Builds a list of name-body pairs from the definitions \paraphrase{given} in the module
 \item Calls \ild{letrec} with these definition pairs and a body that generates a list
 of key-value pairs for the module exports. Note that unlike other places, where letrec
 is used as a macro, here it is used as a function (\cref{macro-function-duality}).
@@ -64,7 +64,6 @@ is used as a macro, here it is used as a function (\cref{macro-function-duality}
           (map sym-item-pair exports)))))))
 \end{ildcode}
 \lstcaption{Definitions of \ild{load-module} and \ild{eval-module}}\label{def-eval-module}
-\label{def-eval-module}
 The \ild{process-imports} helper (\cref{def-process-imports}) calls \ild{load-module} recursively on
 imported modules and then merges the resulting export lists. For the special
 case when the \ild{host} keyword is used in place of a module name,
@@ -91,8 +90,19 @@ picks the requested key-value pairs from the export lists.
 
 Finally, we implement the function \ild{module-loader} which, given a module name,
 entrypoint function name and arguments, loads that module, picks the entrypoint function
-from its export list and applies it to the given arguments (implementation omitted
-for \paraphrase{brevity}). Running a program
+from its export list and applies it to the given arguments (implementation in \cref{def-module-loader}).
+\begin{ildcode}
+; ---- inside letrec block ----
+(module-loader
+  (!lambda
+    (mod-name entry-func-name . args)
+    (apply
+      (kv-get entry-func-name
+        (load-module mod-name))
+      args)))
+\end{ildcode}
+\lstcaption{Definition of \ild{module-loader}}\label{def-module-loader}
+Running a program
 such as the one in \cref{example-module-fact} is now a matter of passing its
 name and entrypoint to the module loader (shown in \cref{module-load-example}).
 \begin{ildcode}
@@ -102,7 +112,7 @@ name and entrypoint to the module loader (shown in \cref{module-load-example}).
   "demos/fact.ild"
   'main)
 \end{ildcode}
-\lstcaption{Executing the module loader on an user program}\label{module-load-example}
-The ILD interpreter and/or build system need not be concerned of any details
+\lstcaption{Executing the module loader on \paraphrase{a user} program}\label{module-load-example}
+The ILD interpreter and/or build system need not be \paraphrase{concerned with} any details
 about loading and importing modules and can be kept simple: all of the logic
 is implemented in ILD itself.

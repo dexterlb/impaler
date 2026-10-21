@@ -15,15 +15,16 @@ unifies functions and macros as \emph{FExpr}-objects%
 can be first-class and as flexible as unhygienic macros,%
 ~\cite{kohlbecker1986syntactic,fexpr-shutt} and can be implemented
 in a performant way~\cite{fexpr-pe}. The core mechanism of FExprs is
-\paraphrase{to tag the object with evaluation metadata and then use that metadata
-when evaluating the combination to determine whether to eval the arguments}.
+\paraphrase{
+to tag the object with evaluation metadata and consult that metadata
+when evaluating a combination to decide whether to evaluate the operands}.
 FExpr-objects are first-class regardless of their evaluation semantics.
 
-Similar to modern FExpr-based systems, ILD's macro expansion facillity matches
+Similar to modern FExpr-based systems, ILD's macro expansion facility matches
 unhygienic LISP macros in expressive power and \paraphrase{provides first-class
-status and runtime semantics with no separate expansion phase to macros}.
+status and runtime semantics with no separate expansion phase for macros}.
 
 We argue that callsite-triggered macro expansion is simpler to implement and
-reason about while being as expressive. In addition, \paraphrase{to our
-knowledge} no language with first-class F-expression support also supports
+reason about while being as expressive. In addition, to the best of our
+knowledge no language with first-class F-expression support also supports
 first-class continuations, which ILD does support.

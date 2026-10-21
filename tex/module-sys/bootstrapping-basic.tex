@@ -186,7 +186,7 @@ macro function via \ild{Y}, similarly to \ild{map}.
 \subsection{Letrec}
 \label{letrec}
 The low-level primitive for building mutually-recursive functions is
-\ildsym{poly-fix}. To provide high-level convenient syntax \paraphrase{for that},
+\ildsym{poly-fix}. \paraphrase{To provide convenient high-level syntax for this purpose},
 in \cref{letrec-def} we define \ild{letrec} as a macro that:
 \begin{itemize}
 \item Builds a list of higher-order operators
@@ -220,4 +220,4 @@ operator for the letrec body
 \lstcaption{Definition of letrec}\label{letrec-def}
 As defined in \cref{letrec-def}, \ild{letrec} has similar semantics
 to \code{letrec} in Scheme, which also requires that definition bodies
-can be evaluated without referencing the other bindings.~\cite{r5rs}
+can be evaluated without referencing the other bindings~\cite{r5rs}.

@@ -46,7 +46,7 @@ In addition, the parser of ILD is augmented with the following syntax sugars:
     \ild{(macroexpand <expr1> ... <exprN>)}
 \end{itemize}
 
-We also introduce a set of computation terms (\(\ildsetComp\)) that facillitate
+We also introduce a set of computation terms (\(\ildsetComp\)) that facilitate
 the operational semantics.
 
 \subsection{Semantics}
@@ -133,7 +133,7 @@ To invoke a function as a macro, the special form
 \(\ildlist{\ildsf{macroexpand}}{\varphi}{\alpha_1}{\alpha_2}{\dots}{\alpha_n}\)
 evaluates just \(\varphi\) and then passes the
 \textbf{unevaluated} arguments to it. This allows the macro function to treat the sub-program
-passed to it as data and transform it arbitrarily, and the resulting new \paraphrase{program}
+passed to it as data and transform it arbitrarily, and the resulting new program
 is then in turn evaluated. Macro expansion, being a regular evaluation step, proceeds from the outermost call
 inward, similarly to macro semantics in other unhygienic macro
 systems such as the one in LISP\cite{kohlbecker1986syntactic}.
