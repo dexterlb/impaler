@@ -4,7 +4,7 @@
 We construct a program called \ild{module-loader} that is able to process
 programs organised in modules like the one defined in
 \cref{example-module-fact}. We will present it in a top-down manner while
-omitting technical details such as \ild{let*} or \ild{kv-*} functions for
+omitting technical details such as logical operators and \ild{kv-*} functions for
 operating on key-value lists. The outermost expression defining the module
 loader is shown in \cref{module-loader-outer}.
 \begin{ildcode}
@@ -29,7 +29,7 @@ loader is shown in \cref{module-loader-outer}.
 \end{ildcode}
 \lstcaption{Outer scope bindings of the module loader}\label{module-loader-outer}
 
-\begin{note}
+\begin{notefixed}
 % codex:PR-TECHNICAL-0008, claude:PR-TECHNICAL-0011
 The printed construction still does not bind everything it uses. Listing 4.1
 binds only host-bindings, lambda, letrec, if and map, while the listings below
@@ -39,7 +39,7 @@ although it is defined in Listing 3.10. Add the missing bindings, or state
 that the listing is abridged and inventory what is omitted and how it reaches
 \ild{eval-module}; and either provide \ild{gensym} in Section 2.3 or drop it
 from Listing C.1.
-\end{note}
+\end{notefixed}
 
 The core of the module loader is a function called \ild{eval-module} (\cref{def-eval-module})
 that:
