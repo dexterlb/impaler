@@ -3,12 +3,12 @@
 \subsection{Syntax}
 \label{syntax}
 
-\begin{note}
+\begin{notefixed}
 % claude:PR-LANGUAGE-0003
 The grammar's accessibility description still says ``BCNF definition of the
 ILD syntax''; BCNF means Boyce-Codd normal form. Change it to ``BNF definition
 of the ILD syntax''.
-\end{note}
+\end{notefixed}
 
 \begin{note}
 % codex:PR-TECHNICAL-0005
@@ -19,7 +19,7 @@ that position, state the host-function side condition at the reduction rule,
 and check that the grammar is closed under all displayed reductions.
 \end{note}
 
-\begin{cfig}{Grammar}{grammar}{Syntax of ILD}{BCNF definition of the ILD syntax}
+\begin{cfig}{Grammar}{grammar}{Syntax of ILD}{BNF definition of the ILD syntax}
 \begin{tabular}{r@{\;}c@{\;}l@{\qquad}l}
 \(\ildsetVal\) & \(:=\) & \(\ildsetSym \mid \ildsetSexp \mid \ildsetSF \mid \ildsetFail \mid \ildsetHost\) & \paraphrase{Tangible} values \\
 \(\ildsetSym\) & \(\in\) & \emph{symbols} & \\

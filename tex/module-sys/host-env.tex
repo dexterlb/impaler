@@ -125,13 +125,13 @@ function can then be used to build higher-level branching primitives
 
 \subsubsection{A recursion operator}
 
-\begin{note}
+\begin{notefixed}
 % claude:PR-TECHNICAL-0007
 The poly-fix rule uses \(n\) for both the number of operators and the number
 of call arguments, which suggests every \(\ildconst{f}{i}\) takes exactly
 \(n\) arguments. Use a separate index for the arguments, e.g.
 \(a_1, \dots, a_k\), in the rule and in \(C'\).
-\end{note}
+\end{notefixed}
 
 We provide a low-level operator \(\ildsym{poly-fix}\) for constructing
 mutually-recursive functions:
@@ -139,10 +139,10 @@ mutually-recursive functions:
 whose evaluation introduces the functional objects \(\ildconst{f}{1}, \dots, \ildconst{f}{n}\) whose semantics are:
 \begin{gather*}
   \evalstobr
-    {\interop{apply}{C}{\ildconst{f}{i}}{a_1}{\dots}{a_n}}
+    {\interop{apply}{C}{\ildconst{f}{i}}{a_1}{\dots}{a_k}}
     {\interop{apply}{C'}{\Gamma_i}{\ildconst{f}{1}}{\ildconst{f}{2}}{\dots}{\ildconst{f}{n}}}
   \\
-  \text{where } C' = \cpsabstr{{f_i}'}{\interop{apply}{C}{{f_i}'}{a_1}{\dots}{a_n}}
+  \text{where } C' = \cpsabstr{{f_i}'}{\interop{apply}{C}{{f_i}'}{a_1}{\dots}{a_k}}
 \end{gather*}
 Note that \ildsym{poly-fix} is not formally necessary: instead, one may
 opt to use an implementation of the Y-combinator written in ILD itself
@@ -161,7 +161,7 @@ space and time complexity.
 % codex:PR-TECHNICAL-0001
 The host \ild{apply} rule still forwards individual arguments, while the
 library calls it with one argument list (\ild{letrec} passes
-\ild{(poly-fix \dots)} and the Y-combinator passes \ild{(p p)}). Define
+\ild{(poly-fix ...)} and the Y-combinator passes \ild{(p p)}). Define
 \ild{apply} on a function and an argument list, unpack that list into the CPS
 apply term, and check the \ild{letrec} and module-loader derivations against
 it.

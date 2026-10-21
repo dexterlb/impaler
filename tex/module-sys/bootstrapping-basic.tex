@@ -47,19 +47,18 @@ Embedding the values of \ild{mk-lambda}, \ild{free-vars} and \ild{quote}
 avoids name shadowing problems traditionally encountered with unhygienic
 macro systems (\cref{hygiene-discussion}).
 
-\begin{note}
+\begin{notefixed}
 % claude:PR-GUIDELINES-0002
-% MTODO: allow breaks in paths
 Lines still overflow into the neighbouring column: the current build has 13
 overfull hboxes, the worst 12.5pt, including the long
 \texttt{core/bootstrap/\dots} paths here and in the introduction and
 Section 4. Allow breaks in long monospace paths (\verb|\path| or
 \verb|\nolinkurl|) or rephrase locally, then recheck the log.
-\end{note}
+\end{notefixed}
 
 This definition can then be wrapped in another call of \ild{mk-lambda} in order to expose
 it under a \ild{lambda} name usable from the scoped body -- supposing that
-this definition is stored as an ILD program called \texttt{core/bootstrap/lambda-macro.ild},
+this definition is stored as an ILD program called \pathcode{core/bootstrap/lambda-macro.ild},
 we recall it twice (once to define \ild{lambda}, and once to pass itself as the
 value of \ild{lambda}). Such a wrapper is shown in \cref{lambda-wrap}.
 \begin{ildcode}
