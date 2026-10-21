@@ -1,6 +1,6 @@
-\section{Discussion on metaprogramming}
+\section{Discussion on language features}
 \label{discussion}
-% PAPER-REVIEW[claude:PR-STRUCTURE-0004] pass=structure state=open
+% PAPER-APP[claude:PR-STRUCTURE-0004] pass=structure state=open
 % Issue: Sections 5 and 7 lack the opening sentences the author marked as missing (note box here; \paraphrase in
 %   future-work.tex "It feels wrong to not have a sentence here...").
 % Evidence: Both sections start directly with a subsection, so readers get no overview.
@@ -9,15 +9,36 @@
 %   enabled by the CPS semantics." Section 7, e.g.: "We outline extensions of the host environment and libraries
 %   (Section 7.1) and optimisations needed to make ILD practical (Section 7.2)." Adjust if PR-STRUCTURE-0005 changes Section 5.
 % Reason: A one-sentence roadmap per section improves orientation and resolves both author markers.
-% END-PAPER-REVIEW[claude:PR-STRUCTURE-0004]
-\begin{note}
-need a couple of glue sentences here
-\end{note}
+% END-PAPER-APP[claude:PR-STRUCTURE-0004]
+In this section we discuss the application of first-class macros with callsite-triggered expansion,
+as implemented in ILD, and implications regarding immutability. Features of
+similar languages are compared in \cref{lang-comparison}.
+
+\begin{cfig}{Table}{table}{Feature comparison of similar languages}{Table comparing features}
+\label{lang-comparison}
+\begin{tabular}{llccccll}
+\toprule
+& Immutable & First-class & & \multicolumn{4}{c}{Macros} \\
+\noalign{\vskip-0.4ex}
+\cmidrule(lr){5-8}
+\noalign{\vskip-0.4ex}
+Language & core data? & continuations? & Special forms & Kind & First-class? & Expansion & Trigger \\
+\midrule
+Common LISP~\cite{steele-gabriel-evolution} & no & no & many & unhygienic & no & separate pass & bind time \\
+Scheme~\cite{r5rs} & no & yes & few & hygienic & no & separate pass & bind time \\
+LFE~\cite{lfe-reference} & yes & no & many & limited & no & separate pass & bind time \\
+Clojure~\cite{clojure-hist,clojure-atoms} & yes & no & few & unhygienic & no & separate pass & bind time \\
+Kraken~\cite{fexpr-pe} & yes & no & one & fexprs & yes & runtime & bind time \\
+ILD & yes & yes & three & unhygienic & yes & runtime & callsite \\
+\bottomrule
+\end{tabular}
+\end{cfig}
+
 
 \subsection{Callsite-triggered first-class macros}
 \label{macro-function-duality}
 
-% PAPER-REVIEW[claude:PR-TECHNICAL-0014,codex:PR-TECHNICAL-0017] pass=technical state=open
+% PAPER-APP[claude:PR-TECHNICAL-0014,codex:PR-TECHNICAL-0017] pass=technical state=open
 % Issue (claude): [Demonstrated] The citation key "racket" is undefined, so the PDF shows "[11?, 12]".
 % Evidence (claude): refs.bib has no @...{racket, entry; the build log reports "Citation `racket' ... undefined".
 % Proposal (claude): Add the intended Racket reference to refs.bib (e.g. the Racket Reference / PLT technical report the
@@ -28,7 +49,7 @@ need a couple of glue sentences here
 % Proposal (codex): Select and add the intended authoritative Racket bibliographic entry, and retain a single def-eval-module label at its intended listing anchor; then rebuild to verify references.
 % Reason (codex): The evidence and listing must be resolvable in the submitted document; no citation metadata is invented here.
 % Note: refs.bib in the current worktree defines the racket key (line 305) and bootstrapping-module-loader.tex defines def-eval-module once; both defects were introduced by the reviewer branch state and do not reproduce here.
-% END-PAPER-REVIEW[claude:PR-TECHNICAL-0014,codex:PR-TECHNICAL-0017]
+% END-PAPER-APP[claude:PR-TECHNICAL-0014,codex:PR-TECHNICAL-0017]
 Functions in languages such as LISP, Scheme or Racket are \emph{first-class}
 objects, meaning that they can be used (placed in data structures, passed as arguments,
 returned as values) as any other value~\cite{kohlbecker1986syntactic,r5rs,racket}.
@@ -41,7 +62,7 @@ are traditionally not first-class objects:
 program begins, and the resulting program has no notion of macros.
 \item Macros are defined in their own scope, separate from the scope
 of the program.
-% PAPER-REVIEW[claude:PR-TECHNICAL-0019] pass=technical state=open
+% PAPER-APP[claude:PR-TECHNICAL-0019] pass=technical state=open
 % Issue: Two statements in Section 5.1 do not match the examples they cite.
 % Evidence: (a) Local macros from macrolet / letrec-syntax are usable in the body code of their scope, not "only visible
 %   to other macros"; what they lack is first-class runtime values. (b) The example for "used ... in bodies of other
@@ -49,11 +70,11 @@ of the program.
 % Proposal: (a) "... but these macros exist only at expansion time and cannot be passed or returned as values";
 %   (b) "... for example in other code-generating functions (letrec in eval-module, Listing 4.2)".
 % Reason: Accurate contrasts strengthen the argument for first-class macros.
-% END-PAPER-REVIEW[claude:PR-TECHNICAL-0019]
+% END-PAPER-APP[claude:PR-TECHNICAL-0019]
 \item The meta-language of macros may have limited facilities for
 introducing new macros within local scopes (e.g. \ild{macrolet} in LISP or
-\ild{letrec-syntax} in Scheme), but these bindings are only visible
-to other macros and not to the rest of the language.
+\ild{letrec-syntax} in Scheme), but these bindings are only syntactically visible
+to the enclosed body rather than as runtime values.
 \end{itemize}
 ILD's macro expansion semantics addresses this shortcoming by unifying functions
 and macros, thereby granting first-class status to macros.
@@ -70,7 +91,7 @@ the usage of \ild{letrec} in \cref{def-eval-module}).
 \item The evaluator can be simplified greatly, since the only possible applicatives apart
 from special forms are functions
 \end{itemize}
-% PAPER-REVIEW[claude:PR-TECHNICAL-0018,codex:PR-TECHNICAL-0016] pass=technical state=open
+% PAPER-APP[claude:PR-TECHNICAL-0018,codex:PR-TECHNICAL-0016] pass=technical state=open
 % Issue (claude): [Demonstrated from the paper's own semantics] "The programmer is certain whether a combination is a function
 %   application or a macro expansion" does not hold with first-class special forms.
 % Evidence (claude): Section 2.3.2 binds quote/macroexpand/free-vars to ordinary symbols, and Figure 2.2 applies any head that
@@ -83,10 +104,11 @@ from special forms are functions
 % Evidence (codex): The parser rewrites ! using the symbol macroexpand, which is an ordinary shadowable binding; the head of any combination can also evaluate to a first-class special form.
 % Proposal (codex): Qualify syntactic recognisability by the intended macroexpand binding discipline, or explain how the language ensures the sugar denotes the special-form object; distinguish explicit request syntax from arbitrary first-class dispatch.
 % Reason (codex): The defined semantics does not by itself guarantee that visible ! syntax always selects macro expansion.
-% END-PAPER-REVIEW[claude:PR-TECHNICAL-0018,codex:PR-TECHNICAL-0016]
+% END-PAPER-APP[claude:PR-TECHNICAL-0018,codex:PR-TECHNICAL-0016]
 In addition, we contend that code written with callsite-triggered
 macro expansion is easier to read and reason about, because the programmer
-is certain whether a combination is a function application or a macro expansion.
+is certain whether a combination is a function application or a macro expansion
+(as long as the macroexpand special form is not rebound).
 
 \subsubsection{Notes on hygiene}
 \label{hygiene-discussion}
@@ -111,8 +133,8 @@ macros are \emph{unhygienic}, which allows for great flexibility but creates
 problems such as accidental capture of identifiers emitted by macros. Other
 languages such as Scheme and Racket have \emph{hygienic} macro systems that
 employ techniques such as automatic symbol renaming and try to guarantee that macro
-expansion is independent of the surrounding environment. These systems are much
-more restrictive in expressive power~\cite{bawden-rees-syntactic-closures}.
+expansion is independent of the surrounding environment. These systems are
+more restrictive in expressive power~\cite{r5rs,racket}.
 One of the most commonly-encountered pitfalls of unhygienic macro
 systems is accidental namespace capture (or leakage) due to name clashes between
 keywords in the surrounding user code and symbols generated by the macro~\cite{kohlbecker1986syntactic,clinger-explicit-renaming}.
@@ -136,45 +158,18 @@ symbols in the scope they are called in, and are thus immune to name clash issue
 Nevertheless, it is up to the programmer to use these techniques, and to reach
 for \ild{gensym} (\cref{side-effects}) only when they are insufficient.
 
-\begin{cfig}{Table}{table}{Feature comparison of similar languages}{Table comparing features}
-\label{lang-comparison}
-\begin{tabular}{llccccll}
-\toprule
-& Immutable & First-class & & \multicolumn{4}{c}{Macros} \\
-\noalign{\vskip-0.4ex}
-\cmidrule(lr){5-8}
-\noalign{\vskip-0.4ex}
-Language & core data? & continuations? & Special forms & Kind & First-class? & Expansion & Trigger \\
-\midrule
-Common LISP~\cite{steele-gabriel-evolution} & no & no & many & unhygienic & no & separate pass & bind time \\
-Scheme~\cite{r5rs} & no & yes & few & hygienic & no & separate pass & bind time \\
-LFE~\cite{lfe-reference} & yes & no & many & limited & no & separate pass & bind time \\
-Clojure~\cite{clojure-hist,clojure-atoms} & yes & no & few & unhygienic & no & separate pass & bind time \\
-Kraken~\cite{fexpr-pe} & yes & no & one & fexprs & yes & runtime & bind time \\
-ILD & yes & yes & three & unhygienic & yes & runtime & callsite \\
-\bottomrule
-\end{tabular}
-\end{cfig}
-
-% PAPER-REVIEW[claude:PR-STRUCTURE-0005] pass=structure state=open
+% PAPER-APP[claude:PR-STRUCTURE-0005] pass=structure state=open
 % Issue: This subsection does not fit its parent section "Discussion on metaprogramming".
 % Evidence: Section 5.2 concerns first-class continuations and early return (no macros involved); continuations are
 %   introduced in Section 2.3.7, three sections earlier.
 % Proposal: Either rename Section 5 to "Discussion" (keeping 5.1 metaprogramming, 5.2 control flow), or move this
 %   example to Section 2.3.7 as an illustration of call/cc and drop Section 5.2.
 % Reason: Section titles should predict their content; the example is most useful where call/cc is defined.
-% END-PAPER-REVIEW[claude:PR-STRUCTURE-0005]
+% END-PAPER-APP[claude:PR-STRUCTURE-0005]
 \subsection{Complex control flow on top of CPS}
-
 ILD's semantics is built on CPS, similar to Scheme. This allows implementing
 popular non-linear control flow constructs such as try/catch, early return
 and coroutines in the language itself~\cite{r5rs}.
-% PAPER-REVIEW[codex:PR-TECHNICAL-0015] pass=technical state=open
-% Issue: The early-return example evaluates f twice for each visited item.
-% Evidence: The predicate calls (f x), and each selected branch calls it again to return the value or record the failure.
-% Proposal: Bind the first result to a local name, test that value with fail?, and reuse it in both branches; state any assumptions on callbacks that can invoke continuations.
-% Reason: This avoids duplicated work and ensures the value reported or returned is the one that was tested.
-% END-PAPER-REVIEW[codex:PR-TECHNICAL-0015]
 The following example illustrates early return from the recursive computation
 enacted by \ild{map}:
 \begin{ildcode}
@@ -185,10 +180,9 @@ enacted by \ild{map}:
         (!if (fail? (f x))
           (return
             (make-fail
-            (list 'fail-in-element x (f x))))
+            (list 'fail-in-element x)))
           (f x))) l)))))
 \end{ildcode}
 \lstcaption{Early return from \ild{map}}
 If \ild{f} returns failure for an item in the list, the subsequent items will not
 be processed.
-
