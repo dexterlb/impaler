@@ -10,14 +10,14 @@ ILD syntax''; BCNF means Boyce-Codd normal form. Change it to ``BNF definition
 of the ILD syntax''.
 \end{notefixed}
 
-\begin{note}
+\begin{notefixed}
 % codex:PR-TECHNICAL-0005
 The CPS grammar still restricts the function slot of
 \(\interop{apply}\) to \(\ildsetHostFunc\), but \ildsf{macroexpand} produces an apply whose function slot
 is the CPS-bound variable \(f\) before substitution. Allow CPS value terms in
 that position, state the host-function side condition at the reduction rule,
 and check that the grammar is closed under all displayed reductions.
-\end{note}
+\end{notefixed}
 
 \begin{cfig}{Grammar}{grammar}{Syntax of ILD}{BNF definition of the ILD syntax}
 \begin{tabular}{r@{\;}c@{\;}l@{\qquad}l}
@@ -118,7 +118,7 @@ and library functions (\(\ildsetHost\)). We split the semantics of ILD into:
   \evalsto{\interop{comb}{C}{e}{\ildsf{free-vars}}}{\cpsapp{C}{e}}
 }%
 \semrow{%
-  \evalsto{\interop{comb}{C}{e}{\ildsf{macroexpand}}{\varphi}{\vec{\alpha}}}{\interop{eval}{\cpsabstr{f}{\interop{apply}{\cpsabstr{x}{\interop{eval}{C}{e}{x}}}{f}{\vec{\alpha}}}}{e}{\varphi}}
+  \evalsto{\interop{comb}{C}{e}{\ildsf{macroexpand}}{\varphi}{\vec{\alpha}}}{\interop{eval}{\cpsabstr{f}{\interop{comb}{\cpsabstr{x}{\interop{eval}{C}{e}{x}}}{e}{f}{\vec{\alpha}}}}{e}{\varphi}}
 }%
 \end{semgroup}
 

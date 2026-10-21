@@ -10,7 +10,7 @@ In a naïve implementation of ILD's interpreter, macros are expanded at runtime,
 This strategy incurs a significant cost, possibly exponential in the depth
 of encountered nested macro invocations, since the body of each macro call
 is re-evaluated each time the surrounding expression is evaluated. The naïve
-ILD interpreter takes a whole second to evaluate the program from \cref{example-module-fact}
+ILD interpreter takes approximately one second to evaluate the program from \cref{example-module-fact}
 on a modern machine due to expensive macro call reevaluation.
 Nevertheless, performance can be greatly improved by evaluating macros ahead of time.
 We argue that placing the boundary between code evaluated ahead of time and code

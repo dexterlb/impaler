@@ -1,15 +1,15 @@
 \subsection{A minimal host environment}
 \label{root-env}
 
-\begin{note}
+\begin{notefixed}
 % codex:PR-STYLE-0001, claude:PR-STYLE-0003
 Evaluative and colloquial wording remains: ``is useless by itself'' here,
 ``takes a whole second'' (Section 7.2.1) and ``quite elegantly'' (Appendix A).
 Use ``The base language cannot express useful programs on its own.'',
 ``takes approximately one second'', and ``we can define it as follows:''.
-\end{note}
+\end{notefixed}
 
-The base language, as defined in \cref{semantics}, is useless by itself. In this section we constrain
+The base language, as defined in \cref{semantics}, cannot express useful programs on its own. In this section we constrain
 \(\ildsetHost\) to contain data structures, functions and constants that allow implementing non-trivial
 programs. To make these values available to programs, we also define a root binding environment \(E\)
 that is used for the outermost eval.
