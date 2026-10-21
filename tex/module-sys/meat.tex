@@ -136,6 +136,26 @@ symbols in the scope they are called in, and are thus immune to name clash issue
 Nevertheless, it is up to the programmer to use these techniques, and to reach
 for \ild{gensym} (\cref{side-effects}) only when they are insufficient.
 
+\begin{cfig}{Table}{table}{Feature comparison of similar languages}{Table comparing features}
+\label{lang-comparison}
+\begin{tabular}{llccccll}
+\toprule
+& Immutable & First-class & & \multicolumn{4}{c}{Macros} \\
+\noalign{\vskip-0.4ex}
+\cmidrule(lr){5-8}
+\noalign{\vskip-0.4ex}
+Language & core data? & continuations? & Special forms & Kind & First-class? & Expansion & Trigger \\
+\midrule
+Common LISP~\cite{steele-gabriel-evolution} & no & no & many & unhygienic & no & separate pass & bind time \\
+Scheme~\cite{r5rs} & no & yes & few & hygienic & no & separate pass & bind time \\
+LFE~\cite{lfe-reference} & yes & no & many & limited & no & separate pass & bind time \\
+Clojure~\cite{clojure-hist,clojure-atoms} & yes & no & few & unhygienic & no & separate pass & bind time \\
+Kraken~\cite{fexpr-pe} & yes & no & one & fexprs & yes & runtime & bind time \\
+ILD & yes & yes & three & unhygienic & yes & runtime & callsite \\
+\bottomrule
+\end{tabular}
+\end{cfig}
+
 % PAPER-REVIEW[claude:PR-STRUCTURE-0005] pass=structure state=open
 % Issue: This subsection does not fit its parent section "Discussion on metaprogramming".
 % Evidence: Section 5.2 concerns first-class continuations and early return (no macros involved); continuations are
@@ -171,3 +191,4 @@ enacted by \ild{map}:
 \lstcaption{Early return from \ild{map}}
 If \ild{f} returns failure for an item in the list, the subsequent items will not
 be processed.
+
