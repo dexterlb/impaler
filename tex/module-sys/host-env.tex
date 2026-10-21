@@ -1,18 +1,14 @@
 \subsection{A minimal host environment}
 \label{root-env}
-% PAPER-REVIEW[codex:PR-STYLE-0001,claude:PR-STYLE-0003] pass=style state=open
-% Issue (codex): "Useless by itself" is an imprecise evaluative description of the core.
-% Evidence (codex): The next sentence explains that the host provides the data structures and operations needed for the examples.
-% Proposal (codex): Consider "To support the programs developed below, we equip the base language with the following host values and operations."
-% Reason (codex): This identifies the role of the host without an undefined judgement about usefulness.
-% Issue (claude): Informal or colloquial register in several places outside the author markers.
-% Evidence (claude): here "is useless by itself"; Section 7.2.1 "takes a whole second"; Appendix A "we can quite elegantly
-%   define it"; Section 4 "The ILD interpreter and/or build system".
-% Proposal (claude): e.g. "The base language ... cannot express useful programs on its own."; "takes approximately one
-%   second" (see technical handoff on the measurement); "we can define it as follows:"; "The ILD interpreter
-%   and build system" (or "or").
-% Reason (claude): Neutral wording keeps attention on the technical content; evaluative adverbs like "quite elegantly" add no information.
-% END-PAPER-REVIEW[codex:PR-STYLE-0001,claude:PR-STYLE-0003]
+
+\begin{note}
+% codex:PR-STYLE-0001, claude:PR-STYLE-0003
+Evaluative and colloquial wording remains: ``is useless by itself'' here,
+``takes a whole second'' (Section 7.2.1) and ``quite elegantly'' (Appendix A).
+Use ``The base language cannot express useful programs on its own.'',
+``takes approximately one second'', and ``we can define it as follows:''.
+\end{note}
+
 The base language, as defined in \cref{semantics}, is useless by itself. In this section we constrain
 \(\ildsetHost\) to contain data structures, functions and constants that allow implementing non-trivial
 programs. To make these values available to programs, we also define a root binding environment \(E\)
@@ -52,15 +48,6 @@ operations on S-expressions, are also provided through the FFI (\(\ildsetHostFun
   \item Equality --- \(\ildapp{sym-eq?}{s_1}{s_2}\), \(\ildapp{str-eq?}{s_1}{s_2}\)
   \item Failure --- \(\defas{\ildapp{make-fail}{v}}{E}{\cpsapp{\cpsret}{\ildfail{v}}}\)
 \end{itemize}
-% PAPER-REVIEW[claude:PR-LANGUAGE-0004] pass=language state=open
-% Issue: Faulty comparison: "Unlike Scheme or LISP, ILD's immutable nature does not allow..." compares
-%   two languages with a "nature".
-% Evidence: The subject of the main clause is "ILD's immutable nature", not a language.
-% Proposal: "Unlike in Scheme or LISP, cyclic objects cannot easily be built in ILD because its data is
-%   immutable; this can be remedied by externally providing data structures, either higher level
-%   (such as graphs) or lower level (such as indexed arrays)." (The following \paraphrase sentence is untouched.)
-% Reason: Makes the comparison grammatical without changing the claim.
-% END-PAPER-REVIEW[claude:PR-LANGUAGE-0004]
 Unlike Scheme or LISP, ILD's immutable nature does not allow building cyclic
 objects easily, which can be remedied by externally providing data structures,
 either higher level (like graphs) or lower level (like indexed arrays).
@@ -84,10 +71,6 @@ provided as bindings in the root environment.
 
 \subsubsection{\(\lambda\)-abstractions}
 \label{abstraction}
-% PAPER-REVIEW[claude:PR-LANGUAGE-0002] pass=language state=open
-% Issue: Secondary location: "abillity" -> "ability" inside the \paraphrase marker (see primary block in ild-intro.tex).
-% Note: the passage under this anchor already reads "ability" and ild-intro.tex already reads "Turing-complete" in the current worktree; the primary block in ild-intro.tex carries the same note.
-% END-PAPER-REVIEW[claude:PR-LANGUAGE-0002]
 \paraphrase{The most essential feature of a functional programming language is the ability to
 create functions}\footnote{Citation needed.}. User-introduced functional objects in the host environment are
 represented as \(\ildsetAbstr\)-terms. Each such term carries a binding environment \(e\),
@@ -103,21 +86,6 @@ and then evaluating the body in the resulting environment:
   \\
   \text{where } e' = \spacedlist{e}{\subst{p_1}{a_1}}{\subst{p_2}{a_2}}{\dots}{\subst{p_n}{a_n}}
 \end{gather*}
-% PAPER-REVIEW[codex:PR-TECHNICAL-0003,claude:PR-TECHNICAL-0003] pass=technical state=open
-% Issue (codex): The displayed variadic parameter shape is not a ParList, and the strict arity inequality excludes an empty rest list.
-% Evidence (codex): ((p_1 ... p_m) . r) has a list in its car, but ParList requires a symbol; m < n excludes n=m, including the zero-argument list helper used by the loader.
-% Proposal (codex): Write the nested dotted symbol list (p_1 ... p_m . r), allow n >= m when the rest is empty, and explicitly state arity and duplicate-parameter behaviour.
-% Reason (codex): Variadic binding must agree with the grammar and the zero-argument utility calls.
-% Issue (claude): [Demonstrated inconsistency] The variadic parameter list is written in a form outside ParList, and the
-%   arity condition excludes an empty rest list.
-% Evidence (claude): \ildpair{\ildlist{p_1}{...}{p_m}}{r} renders ((p1 ... pm) . r), a pair whose car is a list; Grammar 2.1 has
-%   ParList := () | Sym | (Sym . ParList), i.e. the improper list (p1 ... pm . r). The condition "m < n" makes a call
-%   with exactly m arguments fall into "all unlisted cases" (#fail), although r = () would be natural. The footnote
-%   "Both representations of m = 0 are valid" only arises from the pair notation.
-% Proposal (claude): Write P = (p1 p2 ... pm . r) for m <= n (with r bound to () when m = n); then P = r is just the m = 0 case
-%   and the footnote can be dropped. Author to confirm that m = n is intended to succeed.
-% Reason (claude): The rule should match the grammar it relies on.
-% END-PAPER-REVIEW[codex:PR-TECHNICAL-0003,claude:PR-TECHNICAL-0003]
 Variadic functions with \(P = \ildpair{\ildlist{p_1}{p_2}{\dots}{p_m}}{r}\)
 for an \(m < n\), or\footnote{Both representations of \(m = 0\) are valid} \(P = {r}\) for \(m = 0\) require a similar rule where:
 \begin{gather*}
@@ -126,18 +94,13 @@ for an \(m < n\), or\footnote{Both representations of \(m = 0\) are valid} \(P =
 To let programs build such \(\ildsetAbstr\)-objects, we provide a data constructor:
 \[ \defas{\ildapp{mk-lambda}{e}{P}{B}}{E}{\cpsapp{\cpsret}{\ildabstr{e}{P}{B}}} \]
 
-% PAPER-REVIEW[claude:PR-STRUCTURE-0008] pass=structure state=open
-% Issue: The author note asks to reduce footnotes; here is a concrete plan (the note itself is left in place).
-% Evidence: Footnotes 1-5 (Grammar 2.1 Env, Section 2.2 beta-reduction, Section 2.3.3 x2, variadic rule) carry
-%   content needed to read the semantics.
-% Proposal: fn 2 (renaming) -> parenthetical in the sentence; fn 3 "Citation needed." -> delete with the
-%   \paraphrase sentence or replace by a citation; fn 4 (single-expression body) -> one clause in the text;
-%   fn 5 (m = 0) -> unnecessary once the parameter-list notation is fixed (see PR-TECHNICAL finding on ParList);
-%   fn 1 (unique keys) -> move next to the reference to Appendix B. Keep fn 6 (fexpr definition) in Section 6.
-% Reason: Fewer footnotes keep the formal definitions readable in the two-column layout.
-% END-PAPER-REVIEW[claude:PR-STRUCTURE-0008]
 \begin{note}
-too many footnotes! reduce them!
+% claude:PR-STRUCTURE-0008
+Too many footnotes: reduce them. Move the renaming note into a parenthetical;
+drop or source the ``Citation needed'' footnote; fold the single-expression
+body remark into the text; drop the \(m = 0\) footnote once the
+parameter-list notation is fixed; move the unique-keys note next to the
+reference to Appendix B. Keep the fexpr footnote in Section 6.
 \end{note}
 
 \subsubsection{Branching}\label{branching}
@@ -161,13 +124,15 @@ function can then be used to build higher-level branching primitives
 (e.g. \cref{if}).
 
 \subsubsection{A recursion operator}
-% PAPER-REVIEW[claude:PR-TECHNICAL-0007] pass=technical state=open
-% Issue: [Demonstrated inconsistency] The poly-fix rule uses n for two different quantities.
-% Evidence: n is the number of operators (Gamma_1 ... Gamma_n, #f_1 ... #f_n) and also the number of call arguments
-%   (a_1 ... a_n) in [apply C #f_i a_1 ... a_n], which suggests every #f_i takes exactly n arguments.
-% Proposal: Use a separate index for the arguments, e.g. a_1 ... a_k, in both the rule and C'.
-% Reason: Removes an unintended arity constraint from the formal definition.
-% END-PAPER-REVIEW[claude:PR-TECHNICAL-0007]
+
+\begin{note}
+% claude:PR-TECHNICAL-0007
+The poly-fix rule uses \(n\) for both the number of operators and the number
+of call arguments, which suggests every \(\ildconst{f}{i}\) takes exactly
+\(n\) arguments. Use a separate index for the arguments, e.g.
+\(a_1, \dots, a_k\), in the rule and in \(C'\).
+\end{note}
+
 We provide a low-level operator \(\ildsym{poly-fix}\) for constructing
 mutually-recursive functions:
 \[ \defas{\ildapp{poly-fix}{\Gamma_1}{\Gamma_2}{\dots}{\Gamma_n}}{E}{\cpsapp{\cpsret}{\ildlist{\ildconst{f}{1}}{\ildconst{f}{2}}{\dots}{\ildconst{f}{n}}}} \]
@@ -179,9 +144,6 @@ whose evaluation introduces the functional objects \(\ildconst{f}{1}, \dots, \il
   \\
   \text{where } C' = \cpsabstr{{f_i}'}{\interop{apply}{C}{{f_i}'}{a_1}{\dots}{a_n}}
 \end{gather*}
-% PAPER-REVIEW[claude:PR-TECHNICAL-0020] pass=technical state=open
-% Issue: Secondary location: "exponential space and time complexity" claim without argument; see primary block in future-work.tex.
-% END-PAPER-REVIEW[claude:PR-TECHNICAL-0020]
 Note that \ildsym{poly-fix} is not formally necessary: instead, one may
 opt to use an implementation of the Y-combinator written in ILD itself
 (\cref{poly-fix-Y}). This, however, would be impractical due to exponential
@@ -194,25 +156,23 @@ space and time complexity.
 % sides. Lazy languages like Haskell and Nix do not have this problem.
 
 \subsubsection{Interpreter access}
-% PAPER-REVIEW[codex:PR-TECHNICAL-0001] pass=technical state=open
-% Issue: The host apply definition disagrees with its uses in the derived library.
-% Evidence: The rule forwards separate a_i arguments, but letrec-def emits (apply body-operator (poly-fix ...)) and poly-fix-y uses (apply li (p p)). Local rs-interpreter/src/sandbox.rs do_apply and hs-interpreter/lib/Sandbox.hs internalApply both take one argument list.
-% Proposal: Define host apply on a function and a list, unpacking that list into the internal CPS apply term; check the letrec and module-loader derivations against that signature.
-% Reason: As printed, the library passes one list instead of the intended individual recursive functions.
-% END-PAPER-REVIEW[codex:PR-TECHNICAL-0001]
+
+\begin{notefixed}
+% codex:PR-TECHNICAL-0001
+The host \ild{apply} rule still forwards individual arguments, while the
+library calls it with one argument list (\ild{letrec} passes
+\ild{(poly-fix \dots)} and the Y-combinator passes \ild{(p p)}). Define
+\ild{apply} on a function and an argument list, unpack that list into the CPS
+apply term, and check the \ild{letrec} and module-loader derivations against
+it.
+\end{notefixed}
+
 Even though not strictly necessary (an ILD interpreter can be implemented in ILD),
 it is practical to allow programs to call into the interpreter:
 \begin{gather*}
-  \defas{\ildapp{apply}{f}{a_1}{\dots}{a_n}}{E}{\interop{apply}{\cpsret}{f}{a_1}{\dots}{a_n}}\\
+  \defas{\ildapp{apply}{f}{\ildlist{a_1}{\dots}{a_n}}}{E}{\interop{apply}{\cpsret}{f}{a_1}{\dots}{a_n}}\\
   \defas{\ildapp{eval}{e}{v}}{E}{\interop{eval}{\cpsret}{e}{v}}
 \end{gather*}
-% PAPER-REVIEW[claude:PR-TECHNICAL-0021] pass=technical state=open
-% Issue: [Question for author] read-source performs I/O, but Section 7.1.1 calls the host environment purely functional.
-% Evidence: read-source has no formal rule; it "will read the file whose path is p". The module loader depends on it.
-% Proposal: State the assumption that makes it pure (e.g. read-source is a fixed function from names to programs,
-%   such as an immutable source store during evaluation), and give it a rule in the same notation as the other host functions.
-% Reason: Keeps the purity claim and the semantics consistent.
-% END-PAPER-REVIEW[claude:PR-TECHNICAL-0021]
 Furthermore, to allow programs to reference other programs, we provide
 a host function \ildsym{read-source} that retrieves a program by name. In real-life
 implementations, \(\ildapp{read-source}{p}\) will read the file whose path is \(p\),
@@ -220,23 +180,21 @@ parse its contents and return the resulting value.
 
 \subsubsection{First-class continuations}
 \label{first-class-continuations}
-% PAPER-REVIEW[codex:PR-TECHNICAL-0002,claude:PR-TECHNICAL-0002] pass=technical state=open
-% Issue (codex): The call/cc rule omits the continuation argument of the internal apply term.
-% Evidence (codex): Its right side is [apply f #cont<ret>], while Comp and every other internal application require [apply C f ...].
-% Proposal (codex): If conventional call/cc is intended, use [apply ret f #cont<ret>] and explain normal return as well as continuation invocation; check the implementation agrees.
-% Reason (codex): The current rule is malformed and leaves the behaviour of a normally returning callback unspecified.
-% Issue (claude): [Demonstrated error] The call/cc rule produces a malformed apply term.
-% Evidence (claude): The rule gives \interop{apply}{f}{\ildcont{\cpsret}}, i.e. [apply f #cont<ret>], but Grammar 2.1 defines
-%   [apply Cont HostFunc CVal*], and every other apply term has a continuation first (e.g. Section 2.3.6).
-% Proposal (claude): \interop{apply}{\cpsret}{f}{\ildcont{\cpsret}}, i.e. [apply ret f #cont<ret>].
-% Reason (claude): As written, f would be read as the continuation and #cont<ret> as the function.
-% END-PAPER-REVIEW[codex:PR-TECHNICAL-0002,claude:PR-TECHNICAL-0002]
+
+\begin{notefixed}
+% codex:PR-TECHNICAL-0002, claude:PR-TECHNICAL-0002
+The \ild{call/cc} rule below is still malformed: it produces
+\(\interop{apply}{f}{\ildcont{\cpsret}}\), but every apply term takes the
+continuation first. Write \(\interop{apply}{\cpsret}{f}{\ildcont{\cpsret}}\)
+and explain normal return as well as continuation invocation.
+\end{notefixed}
+
 To allow ILD programs to implement complex control flow, we define
 a host function \(\ildsym{call/cc}\) that passes the current continuation as a
 first-class value to a given callable, and a rule to consume such reified
 continuations by discarding the current continuation:
 \begin{gather*}
-  \defas{\ildapp{call/cc}{f}}{E}{\interop{apply}{f}{\ildcont{\cpsret}}}
+  \defas{\ildapp{call/cc}{f}}{E}{\interop{apply}{\cpsret}{f}{\ildcont{\cpsret}}}
   \\
   \evalsto{\interop{apply}{C}{\ildcont{C'}}{v}}{\cpsapp{C'}{v}}
 \end{gather*}

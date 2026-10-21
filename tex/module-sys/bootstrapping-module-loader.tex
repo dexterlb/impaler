@@ -1,29 +1,6 @@
 \section{Bootstrapping the module loader}
 \label{module-loader}
 
-% PAPER-REVIEW[codex:PR-STRUCTURE-0002,claude:PR-TECHNICAL-0023] pass=structure,technical state=open
-% Issue (codex): The bridge from individually bootstrapped macros to the loader's complete environment is missing.
-% Evidence (codex): The introduction says let* details are omitted although let* was just defined; subsequent code also uses list, concat, sym-item-pair, !and and kv-fetch without a dependency inventory.
-% Proposal (codex): Add a compact dependency map that separates already-defined utilities, omitted routine helpers and the order in which their scopes are built; explain the input/output contracts of omitted helpers, especially sym-item-pair.
-% Reason (codex): This makes the top-down presentation navigable and separates conceptual dependencies from implementation omissions.
-% Issue (claude): [Missing information] The central artefact cannot be reproduced from the paper.
-% Evidence (claude): module-loader, process-import-items, kv-fetch, sym-item-pair, concat and the bootstrap files
-%   core/bootstrap/*.ild are omitted, and no implementation, repository or artifact is referenced, although a naive
-%   interpreter is mentioned (Section 7.2.1). The body ends on p.10 of 12 allowed pages (R1), and appendices are unlimited.
-% Proposal (claude): Add a repository/artifact link (allowed under single-blind review, R3) and/or include the omitted
-%   definitions in an appendix.
-% Reason (claude): Lets reviewers check correctness claims and the timing statement; related PR-TECHNICAL-0011 and -0020.
-% END-PAPER-REVIEW[codex:PR-STRUCTURE-0002,claude:PR-TECHNICAL-0023]
-% PAPER-REVIEW[claude:PR-STRUCTURE-0003] pass=structure state=open
-% Issue: The module format, the title's subject, is never specified; readers must infer it from examples.
-% Evidence: The meaning of the doc/exports/imports/defs clauses, the "host" pseudo-module, the import-list form, and
-%   the fact that defs evaluate to name/expression pairs are only implicit in Listing 1.1, Appendix C and the code
-%   of eval-module. Listing 1.1 writes defs with "!fn" while Appendix C writes quoted pairs '(name ...), and the
-%   connection (fn expands to a quoted pair) appears only in Listing C.2.
-% Proposal: Open Section 4 with a compact description of the module format (one sentence per clause, how imports
-%   are resolved, that each def must evaluate to a (name expr) pair, and what fn does), then present the loader.
-% Reason: Gives the reader a specification to check the loader against, and connects Listing 1.1 with Appendix C.
-% END-PAPER-REVIEW[claude:PR-STRUCTURE-0003]
 We construct a program called \ild{module-loader} that is able to process
 programs organised in modules like the one defined in
 \cref{example-module-fact}. We will present it in a top-down manner while
@@ -51,20 +28,19 @@ loader is shown in \cref{module-loader-outer}.
     module-loader))
 \end{ildcode}
 \lstcaption{Outer scope bindings of the module loader}\label{module-loader-outer}
-% PAPER-REVIEW[codex:PR-TECHNICAL-0008,claude:PR-TECHNICAL-0011] pass=technical state=open
-% Issue (codex): The displayed loader bootstrap does not bind let* although eval-module calls it.
-% Evidence (codex): module-loader-outer binds lambda, letrec, if and map; let* is absent. eval-module uses !let*. The local core/bootstrap/module-loader.ild supplies a let* binding from let-star.ild.
-% Proposal (codex): Include the let* bootstrap binding or explicitly include an equivalent definition among the omitted helpers and show how it reaches eval-module's captured environment.
-% Reason (codex): The printed construction otherwise leaves an essential macro unresolved.
-% Issue (claude): [Demonstrated inconsistency] Listings use bindings that are neither defined in the paper nor in scope.
-% Evidence (claude): Listing 4.1 binds only host-bindings, lambda, letrec, if, map, but Listings 4.2-4.3 use let*, list,
-%   cadr (via let), concat, sym-item-pair and a macro !and, which is never defined. The text says it omits "let*",
-%   yet let* is now given in Listing 3.10. Listing 3.9 calls "add", but the host provides "+" (Section 2.3.1).
-%   Listing C.1 imports gensym from host, which Section 2.3 does not provide; Section 7.1.1 says it needs an impure host.
-% Proposal (claude): Add the missing bindings to Listing 4.1 (or say explicitly that it is abridged and list what is omitted,
-%   including and/concat/sym-item-pair), replace add by +, and drop gensym from Listing C.1 or add it to Section 2.3.
-% Reason (claude): The paper claims everything is built from the stated host environment; the listings should reflect that.
-% END-PAPER-REVIEW[codex:PR-TECHNICAL-0008,claude:PR-TECHNICAL-0011]
+
+\begin{note}
+% codex:PR-TECHNICAL-0008, claude:PR-TECHNICAL-0011
+The printed construction still does not bind everything it uses. Listing 4.1
+binds only host-bindings, lambda, letrec, if and map, while the listings below
+use \ild{let*}, \ild{list}, \ild{concat}, \ild{sym-item-pair} and an undefined
+\ild{!and}; the text still calls \ild{let*} an omitted technical detail
+although it is defined in Listing 3.10. Add the missing bindings, or state
+that the listing is abridged and inventory what is omitted and how it reaches
+\ild{eval-module}; and either provide \ild{gensym} in Section 2.3 or drop it
+from Listing C.1.
+\end{note}
+
 The core of the module loader is a function called \ild{eval-module} (\cref{def-eval-module})
 that:
 \begin{enumerate}
@@ -101,12 +77,6 @@ is used as a macro, here it is used as a function (\cref{macro-function-duality}
           (map sym-item-pair exports)))))))
 \end{ildcode}
 \lstcaption{Definitions of \ild{load-module} and \ild{eval-module}}\label{def-eval-module}
-% PAPER-REVIEW[codex:PR-TECHNICAL-0014] pass=technical state=open
-% Issue: The loader's domain and the assumptions behind its purity/caching claims are underspecified.
-% Evidence: process-imports concatenates bindings although Env assumes unique keys; load-module recursively follows imports without a cycle case. read-source is described as filesystem IO, while future-work calls the host purely functional and caching only an efficiency concern.
-% Proposal: State a finite acyclic import graph and unique-import-name precondition or define conflict/cycle handling; model read-source as a fixed source mapping if purity is intended, and condition caching equivalence on the allowed host effects and module initialization.
-% Reason: These assumptions determine whether the loader produces a valid environment, terminates, and preserves observable behaviour under caching.
-% END-PAPER-REVIEW[codex:PR-TECHNICAL-0014]
 The \ild{process-imports} helper (\cref{def-process-imports}) calls \ild{load-module} recursively on
 imported modules and then merges the resulting export lists. For the special
 case when the \ild{host} keyword is used in place of a module name,

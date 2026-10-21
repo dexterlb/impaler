@@ -1,26 +1,6 @@
 \section{Environment substitution}
 \label{env-substitution}
 
-% PAPER-REVIEW[codex:PR-TECHNICAL-0004,claude:PR-TECHNICAL-0004] pass=technical state=open
-% Issue (codex): The recursive environment-substitution case has no tail in its premise.
-% Evidence (codex): The right side recurses on e-prime, but the condition prints e=((y . w) . ) with an empty second argument to ildpair.
-% Proposal (codex): Restore e-prime as the tail of the environment in that condition and check the three cases on empty, matching-head and nonmatching-head environments.
-% Reason (codex): The missing tail makes the recursive definition ill-formed; this is a proposed mathematical correction.
-% Issue (claude): [Demonstrated error] The third case of the definition is ill-formed.
-% Evidence (claude): The condition reads \ildpair{\ildpair{y}{w}}{} (renders "((y . w) . )"), but the result uses e',
-%   which is never bound in that case.
-% Proposal (claude): \ildpair{\ildpair{y}{w}}{e'} in the condition, i.e. e = ((y . w) . e') /\ y != x.
-% Reason (claude): Without e' the recursive case is undefined.
-% END-PAPER-REVIEW[codex:PR-TECHNICAL-0004,claude:PR-TECHNICAL-0004]
-% PAPER-REVIEW[claude:PR-GUIDELINES-0003] pass=guidelines state=open
-% Issue: Definitions needed to read the main semantics live in appendices, which reviewers may skip (rule R1).
-% Evidence: The CfP says "Appendices may not necessarily be read by reviewers." The application rule in Section 2.3.3
-%   depends on this 3-line definition of environment substitution, and Section 1 points to Appendix C for the
-%   modules imported by Listing 1.1.
-% Proposal: Move this definition into Section 2.3.3 (the body currently ends on p.10 of the 12 allowed pages), and
-%   keep in the appendices only material that is not needed to follow the main argument.
-% Reason: Keeps the formal core self-contained for reviewers who do not read appendices.
-% END-PAPER-REVIEW[claude:PR-GUIDELINES-0003]
 Formally, parameter substitution in a binding environment $e\subst{x}{v}$ can be defined as:
 \[
   e \subst{x}{v} =

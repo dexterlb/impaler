@@ -1,13 +1,5 @@
 \section{Bootstrapping basic constructs}
 \label{bootstrapping-basic}
-% PAPER-REVIEW[claude:PR-STRUCTURE-0009] pass=structure state=open
-% Issue: Many listings break across columns or pages, and some captions are separated from their code.
-% Evidence (current build): Listing 3.3 splits across columns (p.5); Listing 3.6 splits across pages 5-6; Listing 3.9's
-%   caption starts the next column; Listings 4.2, 4.4 and 5.1 also split (pp.7-9).
-% Proposal: Prevent breaks inside framed listings (e.g. nobreak=true in the listingframe mdframed style in
-%   macros/paper.tex) and keep \lstcaption with its listing; re-check the layout after the other changes.
-% Reason: These short listings are the core evidence and should be readable in one piece.
-% END-PAPER-REVIEW[claude:PR-STRUCTURE-0009]
 The base syntax of ILD is insufficient for writing nontrivial programs
 in a succinct way. However, its \(\ildsf{macroexpand}\) facility allows
 extending the syntax with arbitrary metaprogramming constructs, which can
@@ -55,25 +47,16 @@ Embedding the values of \ild{mk-lambda}, \ild{free-vars} and \ild{quote}
 avoids name shadowing problems traditionally encountered with unhygienic
 macro systems (\cref{hygiene-discussion}).
 
-% PAPER-REVIEW[claude:PR-STRUCTURE-0010] pass=structure state=open
-% Issue: The self-application in Listing 3.3 is hard to follow from the prose.
-% Evidence: The paragraph says the definition is recalled "twice", but does not walk through the listing: the head
-%   macro-expands the lambda macro over ((lambda) body), producing a one-parameter function, which is then applied to
-%   a second evaluation of the same macro.
-% Proposal: Add one or two sentences walking through Listing 3.3 in that order, referring to its line numbers.
-% Reason: This bootstrapping step is the basis for every later scope (Sections 3.2 and 4).
-% END-PAPER-REVIEW[claude:PR-STRUCTURE-0010]
-% PAPER-REVIEW[claude:PR-GUIDELINES-0002] pass=guidelines state=open
-% Issue: Lines extend beyond the column in the two-column sigplan layout (rule R2).
-% Evidence: Build log (2026-10-21): 16 overfull hboxes. The worst, 40.6pt, is in this paragraph: the path
-%   \texttt{core/bootstrap/lambda-macro.ild} runs into the right-hand column on p.5. Others are 11-17pt: ild-intro.tex
-%   ("Example bodies of ..." with code paths), host-env.tex (Arithmetic and Value type predicates bullets),
-%   bootstrapping-module-loader.tex ("The core of the module loader ... eval-module"), future-work.tex (Clojure bullet).
-%   Some widths change with text edits (the intro line grew from 2.9pt to 11pt this round).
-% Proposal: Allow breaks in long monospace paths and identifiers (e.g. \nolinkurl{...} or \path from the url package,
-%   which hyperref already loads), or rephrase locally. Recheck the log before submission. Do not alter margins or fonts.
-% Reason: Text overlapping the neighbouring column does not conform to the template layout and is visible to reviewers.
-% END-PAPER-REVIEW[claude:PR-GUIDELINES-0002]
+\begin{note}
+% claude:PR-GUIDELINES-0002
+% MTODO: allow breaks in paths
+Lines still overflow into the neighbouring column: the current build has 13
+overfull hboxes, the worst 12.5pt, including the long
+\texttt{core/bootstrap/\dots} paths here and in the introduction and
+Section 4. Allow breaks in long monospace paths (\verb|\path| or
+\verb|\nolinkurl|) or rephrase locally, then recheck the log.
+\end{note}
+
 This definition can then be wrapped in another call of \ild{mk-lambda} in order to expose
 it under a \ild{lambda} name usable from the scoped body -- supposing that
 this definition is stored as an ILD program called \texttt{core/bootstrap/lambda-macro.ild},
@@ -125,17 +108,20 @@ of the form \ild{(!lambda <args> <body>)}, we define a helper
         (cons body '())))))
 \end{ildcode}
 \lstcaption{Definition of \ild{expand-lambda}}\label{def-expand-lambda}
-% PAPER-REVIEW[claude:PR-LANGUAGE-0005] pass=language state=open
-% Issue: Malformed clause: "we delay evaluation to after the condition is known by wrapping in a
-%   0-argument function, and force it afterwards".
-% Evidence: "wrapping" has no object, "to after" is ungrammatical, and "it" has no clear antecedent.
-% Proposal: "To evaluate only the selected branch, we delay the evaluation of each branch until the
-%   condition is known by wrapping it in a 0-argument function, and then force the selected function:"
-% Reason: Clarifies what is wrapped and what is forced, matching Listing \ref{if}.
-% END-PAPER-REVIEW[claude:PR-LANGUAGE-0005]
+
+\begin{notefixed}
+% claude:PR-LANGUAGE-0005
+The sentence below is still malformed: ``wrapping'' has no object, ``to
+after'' is ungrammatical, and ``it'' has no clear antecedent. Suggested
+wording: ``To evaluate only the selected branch, we delay the evaluation of
+each branch until the condition is known by wrapping it in a 0-argument
+function, and then force the selected function:''
+\end{notefixed}
+
 We can implement branching via the \ildhost{bool-to-k} host
-function (\cref{branching}). In order to only evaluate the selected branch, we delay
-evaluation to after the condition is known by wrapping in a 0-argument
+function (\cref{branching}).
+To evaluate only the selected branch, we delay the evaluation of
+each branch until the condition is known by wrapping it in a 0-argument
 function, and force it afterwards:
 \begin{ildcode}
 ; body of 'if'
@@ -169,13 +155,6 @@ in \cref{def-map} we define \ild{map} via \ild{Y}.
 \lstcaption{Definition of the \ild{map} function}\label{def-map}
 
 \subsubsection{Let}
-% PAPER-REVIEW[claude:PR-TECHNICAL-0012] pass=technical state=open
-% Issue: [Demonstrated mismatch] let is described as "a lambda expression applied to a list of body expressions".
-% Evidence: Listing 3.8 applies the generated lambda to (map cadr letlist), i.e. the binding (initialiser) expressions;
-%   the body is a single expression inside the lambda.
-% Proposal: "... a lambda expression applied to the list of initialiser expressions".
-% Reason: The description should match the definition it introduces.
-% END-PAPER-REVIEW[claude:PR-TECHNICAL-0012]
 The binding construct \ild{let} is simply a more ergonomic way
 of writing a \ild{lambda} expression applied to a list of body expressions
 (example in \cref{let-example}).
@@ -190,29 +169,29 @@ In \cref{def-let} we show how it can be defined via \ild{expand-lambda}.
     (map cadr letlist)))
 \end{ildcode}
 \lstcaption{Definition of \ild{let}}\label{def-let}
-% PAPER-REVIEW[claude:PR-LANGUAGE-0006] pass=language state=open
-% Issue: Misspelled identifier "fourty-two" in the following listing (let-example).
-% Evidence: "fourty-two" appears 5 times in the listing (listing lines 2, 3, 7, 13, 15); the
-%   English word is "forty-two".
-% Proposal: Rename consistently to "forty-two" in all 5 occurrences (code and comment).
-% Reason: The misspelling is visible in the listing; this is a proposal because it changes code identifiers.
-% END-PAPER-REVIEW[claude:PR-LANGUAGE-0006]
+
+\begin{notefixed}
+% claude:PR-LANGUAGE-0006
+The listing still misspells \texttt{fourty-two} five times; rename it to
+\texttt{forty-two} throughout.
+\end{notefixed}
+
 \begin{ildcode}
 ; this program
-  ((!lambda (add1 fourty-two)
-      (add1 fourty-two))
+  ((!lambda (add1 forty-two)
+      (add1 forty-two))
 
       (!lambda (x)
         (add x 1)) ; definition of add1
-      42)          ; definition of fourty-two
+      42)          ; definition of forty-two
 
 ; can now be written as
   (!let (
       (add1 (!lambda (x)
               (add x 1)))
-      (fourty-two  42))
+      (forty-two  42))
 
-    (add1 fourty-two))
+    (add1 forty-two))
 \end{ildcode}
 \lstcaption{Rewriting a \ild{lambda}-based scope binding to use \ild{let}}\label{let-example}
 To bind several names in sequence, where each binding may refer to the
@@ -234,15 +213,6 @@ macro function via \ild{Y}, similarly to \ild{map}.
 
 \subsection{Letrec}
 \label{letrec}
-% PAPER-REVIEW[claude:PR-TECHNICAL-0010] pass=technical state=open
-% Issue: [Demonstrated inconsistency] Two names conflict with their definitions.
-% Evidence: (a) In the bullet list below, poly-fix is set with \ildsf (the special-form colour), but Section 2.3.5
-%   defines it as a host function (\ildsym), and Grammar 2.1 lists only three special forms. (b) Section 1 says
-%   "Example bodies of ... \code{"module-utils.ild"}", whereas Listing 1.1 imports and Listing C.2 is
-%   captioned "core/module-utils.ild".
-% Proposal: (a) \ildsym{poly-fix}; (b) \code{"core/module-utils.ild"} in ild-intro.tex.
-% Reason: Notation colours encode value classes; the path should match the code.
-% END-PAPER-REVIEW[claude:PR-TECHNICAL-0010]
 The low-level primitive for building mutually-recursive functions is
 \ildsym{poly-fix}. \paraphrase{To provide convenient high-level syntax for this purpose},
 in \cref{letrec-def} we define \ild{letrec} as a macro that:
@@ -276,22 +246,6 @@ operator for the letrec body
       (cons poly-fix bind-operators))))
 \end{ildcode}
 \lstcaption{Definition of letrec}\label{letrec-def}
-% PAPER-REVIEW[claude:PR-TECHNICAL-0006,codex:PR-TECHNICAL-0009] pass=technical state=open
-% Issue (claude): [Demonstrated from the paper's own definitions] ILD's letrec is narrower than Scheme's: it binds only
-%   functions, and re-evaluates each definition body on every call.
-% Evidence (claude): By Section 2.3.5, each name is bound to #f_i, and applying #f_i applies Gamma_i (here (!lambda names body_i))
-%   to all #f's and then applies the result to the arguments. So (1) a definition such as (n 42) binds n to a
-%   function wrapper, and using n as a value yields #f_n, while calling it fails (42 is not applicable); (2) body_i,
-%   including its !lambda expansion, is re-evaluated on every call. Scheme's letrec allows non-procedure inits
-%   evaluated once (R5RS 4.2.2).
-% Proposal (claude): State that letrec (and therefore module defs, Section 4) supports function definitions only, and note the
-%   per-call re-evaluation. Either qualify "similar semantics to letrec in Scheme" or relate the cost to Section 7.2.1.
-% Reason (claude): Limits what the module system can export (no constants) and affects the performance discussion.
-% Issue (codex): The Scheme comparison omits restrictions and re-evaluation introduced by the functional fixed-point construction.
-% Evidence (codex): ILD binds each name to a callable proxy and evaluates Gamma_i on each call; an initializer such as 1 therefore does not bind x to 1. R5RS 4.2.2 permits such initializers when independent of the recursive bindings (https://conservatory.scheme.org/schemers/Documents/Standards/R5RS/r5rs.pdf, accessed 2026-10-20).
-% Proposal (codex): State the function-valued subset and purity/observational assumptions under which the behaviour matches Scheme; distinguish repeated generator evaluation from one-time initialization.
-% Reason (codex): The current sentence suggests a broader semantic correspondence than the construction establishes.
-% END-PAPER-REVIEW[claude:PR-TECHNICAL-0006,codex:PR-TECHNICAL-0009]
 As defined in \cref{letrec-def}, \ild{letrec} has similar semantics
 to \code{letrec} in Scheme, which also requires that definition bodies
 can be evaluated without referencing the other bindings~\cite{r5rs}.

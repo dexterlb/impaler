@@ -3,19 +3,6 @@
 Instead of relying on a host implementation of \(\ildsym{poly-fix}\), we can
 quite elegantly define it as such:
 
-% PAPER-REVIEW[claude:PR-TECHNICAL-0005,codex:PR-TECHNICAL-0007] pass=technical state=open
-% Issue (claude): [Demonstrated error] Unbalanced parentheses in two listings.
-% Evidence (claude): Listing A.1 (this file) has 3 more ")" than "(" (the last line "l)))))))" closes 7, only 4 are open).
-%   Listing C.1 (ild-code.tex, prelude) leaves "(module" unclosed (one ")" missing after the defs clause).
-%   Checked mechanically, ignoring strings and ; comments.
-% Proposal (claude): Remove three ")" at the end of Listing A.1; add one ")" at the end of Listing C.1.
-%   Ideally re-run the listings through the ILD parser.
-% Reason (claude): Readers will try to parse the code; the paper's claims rest on these listings.
-% Issue (codex): Two appendix listings have unbalanced parentheses.
-% Evidence (codex): A static scan ignoring strings and semicolon comments finds three extra closing parentheses in poly-fix-y and one missing closing parenthesis in ild-code-prelude; the corresponding local library files have balanced forms.
-% Proposal (codex): Reconcile poly-fix-y with core/bootstrap/poly-y.ild and close the prelude module skeleton after its defs block; then validate the corrected extracted forms.
-% Reason (codex): The main text relies on these appendices as concrete constructions.
-% END-PAPER-REVIEW[claude:PR-TECHNICAL-0005,codex:PR-TECHNICAL-0007]
 \begin{ildcode}
 (!lambda l
   ((!lambda (x) (x x))

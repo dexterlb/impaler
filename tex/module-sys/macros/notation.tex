@@ -1,5 +1,21 @@
 % ILD notation macros.
 
+% Colour palette.
+\definecolor{cinterop}{HTML}{1A7F37}
+\definecolor{csym}{HTML}{0B6E99}
+\definecolor{csf}{HTML}{8250DF}
+\definecolor{chost}{HTML}{CF222E}
+\definecolor{cildset}{HTML}{A94A2B}
+
+% Backgrounds for editorial boxes.
+\definecolor{notebg}{HTML}{FFDCF8}
+\definecolor{notefixedbg}{HTML}{DCFFF8}
+\definecolor{commentbg}{HTML}{AADCFF}
+\definecolor{reviewbg}{HTML}{FFF8DC}
+\definecolor{boxborder}{HTML}{E0B000}
+\definecolor{listingfill}{HTML}{FFF3DD}
+\definecolor{clistingcomment}{HTML}{6E7781}
+
 % --- Inline monospaced fragments -------------------------------------------
 \newcommand{\code}[1]{\texttt{#1}}
 \newcommand{\ild}[1]{\code{#1}}
@@ -111,6 +127,14 @@
 ]{note}
 
 \newmdenv[
+  backgroundcolor=notefixedbg, linecolor=boxborder, linewidth=2pt,
+  topline=true, bottomline=false, leftline=false, rightline=false,
+  innerleftmargin=6pt, innerrightmargin=6pt,
+  innertopmargin=4pt, innerbottommargin=4pt,
+  skipabove=6pt, skipbelow=6pt,
+]{notefixed}
+
+\newmdenv[
   backgroundcolor=commentbg, linecolor=boxborder, linewidth=2pt,
   topline=true, bottomline=false, leftline=false, rightline=false,
   innerleftmargin=6pt, innerrightmargin=6pt,
@@ -167,6 +191,7 @@
   innerleftmargin=0pt, innerrightmargin=0pt,
   innertopmargin=4pt, innerbottommargin=4pt,
   skipabove=6pt, skipbelow=2pt,
+  nobreak=true,
 }
 \surroundwithmdframed[style=listingframe]{ildcode}
 \surroundwithmdframed[style=listingframe]{schemecode}
