@@ -1,13 +1,11 @@
 % ILD notation macros.
 
-% Colour palette.
 \definecolor{cinterop}{HTML}{1A7F37}
 \definecolor{csym}{HTML}{0B6E99}
 \definecolor{csf}{HTML}{8250DF}
 \definecolor{chost}{HTML}{CF222E}
 \definecolor{cildset}{HTML}{A94A2B}
 
-% Backgrounds for editorial boxes.
 \definecolor{notebg}{HTML}{FFDCF8}
 \definecolor{notefixedbg}{HTML}{DCFFF8}
 \definecolor{commentbg}{HTML}{AADCFF}
@@ -16,7 +14,7 @@
 \definecolor{listingfill}{HTML}{FFF3DD}
 \definecolor{clistingcomment}{HTML}{6E7781}
 
-% --- Inline monospaced fragments -------------------------------------------
+% inline mono
 \newcommand{\code}[1]{\texttt{#1}}
 \newcommand{\pathcode}[1]{\nolinkurl{#1}}
 \newcommand{\ild}[1]{\code{#1}}
@@ -27,7 +25,7 @@
 \newcommand{\cpsword}[1]{\textcolor{cildset}{\texttt{#1}}}
 \newcommand{\ildset}[1]{\textcolor{cildset}{\textbf{\textsf{#1}}}}
 
-% --- Set names --------------------------------------------------------------
+% sets
 \newcommand{\ildsetSym}{\ildset{Sym}}
 \newcommand{\ildsetVal}{\ildset{Val}}
 \newcommand{\ildsetProg}{\ildset{Prog}}
@@ -49,11 +47,11 @@
 \newcommand{\ildsetVV}{\ildset{VV}}
 \newcommand{\ildsetCVal}{\ildset{CVal}}
 
-% --- CPS calculus markers ---------------------------------------------------
+% cps
 \newcommand{\cpsyield}{\cpsword{yield}}
 \newcommand{\cpsret}{\cpsword{ret}}
 
-% --- Host values ------------------------------------------------------------
+% host values
 \newcommand{\ildhost}[1]{\textcolor{chost}{\texttt{\#{}#1}}}
 \newcommand{\ildconst}[2]{\textcolor{chost}{\texttt{\#{}#1}_{#2}}}
 \newcommand{\ildfailbare}{\textcolor{chost}{\texttt{\#fail}}}
@@ -63,7 +61,7 @@
 \newcommand{\ildcontbare}{\textcolor{chost}{\texttt{\#cont}}}
 \newcommand{\ildcont}[1]{\ildcontbare\langle#1\rangle}
 
-% --- Lists, pairs and applications -----------------------------------------
+% lists
 \makeatletter
 % \spacedlist[<tail>]{<item>}{<item>}... : variadic; separates the items with a
 % space, then expands <tail> once no further brace group follows.
@@ -119,37 +117,21 @@
 \newcommand{\subst}[2]{\left[\frac{#1}{#2}\right]}
 
 % comment boxes
-\newmdenv[
-  backgroundcolor=notebg, linecolor=boxborder, linewidth=2pt,
-  topline=true, bottomline=false, leftline=false, rightline=false,
+\mdfdefinestyle{boxframe}{
+  linecolor=boxborder, linewidth=2pt,
+  bottomline=false, rightline=false,
   innerleftmargin=6pt, innerrightmargin=6pt,
   innertopmargin=4pt, innerbottommargin=4pt,
   skipabove=6pt, skipbelow=6pt,
-]{note}
+}
 
-\newmdenv[
-  backgroundcolor=notefixedbg, linecolor=boxborder, linewidth=2pt,
-  topline=true, bottomline=false, leftline=false, rightline=false,
-  innerleftmargin=6pt, innerrightmargin=6pt,
-  innertopmargin=4pt, innerbottommargin=4pt,
-  skipabove=6pt, skipbelow=6pt,
-]{notefixed}
+\newmdenv[style=boxframe, backgroundcolor=notebg, topline=true, leftline=false]{note}
 
-\newmdenv[
-  backgroundcolor=commentbg, linecolor=boxborder, linewidth=2pt,
-  topline=true, bottomline=false, leftline=false, rightline=false,
-  innerleftmargin=6pt, innerrightmargin=6pt,
-  innertopmargin=4pt, innerbottommargin=4pt,
-  skipabove=6pt, skipbelow=6pt,
-]{commentbox}
+\newmdenv[style=boxframe, backgroundcolor=notefixedbg, topline=true, leftline=false]{notefixed}
 
-\newmdenv[
-  backgroundcolor=reviewbg, linecolor=boxborder, linewidth=2pt,
-  topline=false, bottomline=false, leftline=true, rightline=false,
-  innerleftmargin=6pt, innerrightmargin=6pt,
-  innertopmargin=4pt, innerbottommargin=4pt,
-  skipabove=6pt, skipbelow=6pt,
-]{reviewbox}
+\newmdenv[style=boxframe, backgroundcolor=commentbg, topline=true, leftline=false]{commentbox}
+
+\newmdenv[style=boxframe, backgroundcolor=reviewbg, topline=false, leftline=true]{reviewbox}
 
 % listings
 \lstdefinelanguage{ild}{

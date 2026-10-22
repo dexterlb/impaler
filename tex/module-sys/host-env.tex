@@ -83,7 +83,7 @@ To let programs build such \(\ildsetAbstr\)-objects, we provide a data construct
 \[ \defas{\ildapp{mk-lambda}{e}{P}{B}}{E}{\cpsapp{\cpsret}{\ildabstr{e}{P}{B}}} \]
 
 \subsubsection{Branching}\label{branching}
-The boolean datatype is \paraphrase{useless} without a function that
+The boolean datatype is of no use on its own without a function that
 distinguishes between its values. Thus, we provide
 the \ildsym{bool-to-k} function that transforms a boolean into
 an argument selector:
@@ -97,8 +97,8 @@ an argument selector:
     }
   }
 \]
-This allows the base language to \paraphrase{ignore branching}:
-branching is merely a feature of the boolean host datatype. The \ildsym{bool-to-k}
+This allows the base language to delegate branching entirely to the host
+implementation of the boolean datatype. The \ildsym{bool-to-k}
 function can then be used to build higher-level branching primitives
 (e.g. \cref{if}).
 

@@ -4,7 +4,7 @@
 \label{syntax}
 \begin{cfig}{Grammar}{grammar}{Syntax of ILD}{BNF definition of the ILD syntax}
 \begin{tabular}{r@{\;}c@{\;}l@{\qquad}l}
-\(\ildsetVal\) & \(:=\) & \(\ildsetSym \mid \ildsetSexp \mid \ildsetSF \mid \ildsetFail \mid \ildsetHost\) & \paraphrase{Tangible} values \\
+\(\ildsetVal\) & \(:=\) & \(\ildsetSym \mid \ildsetSexp \mid \ildsetSF \mid \ildsetFail \mid \ildsetHost\) & Observable values \\
 \(\ildsetSym\) & \(\in\) & \emph{symbols} & \\
 \(\ildsetSexp\) & \(:=\) & \(() \mid \ildpair{\ildsetVal}{\ildsetVal}\) & S-expressions \\
 \(\ildsetSF\) & \(:=\) & \(\ildsf{free-vars} \mid \ildsf{quote} \mid \ildsf{macroexpand}\) & Special forms \\
@@ -126,7 +126,7 @@ cases are worth noting:
 \subsubsection{Macro expansion}
 \label{macroexpand-mechanism}
 Macros in ILD are plain functions that assume their arguments
-are \paraphrase{code}: we refer to such functions as \emph{macro functions}.
+are program fragments. We refer to such functions as \emph{macro functions}.
 To invoke a function as a macro, the special form
 \ildsf{macroexpand} is used at the callsite: an expression
 \(\ildlist{\ildsf{macroexpand}}{\varphi}{\alpha_1}{\alpha_2}{\dots}{\alpha_n}\)
