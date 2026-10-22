@@ -1,12 +1,12 @@
 \section{Future work}
 \label{future-work}
-\paraphrase{Several directions remain open for future work.}
+Several directions remain open for future work.
 \subsection{Optimisations}
 This paper focuses on the semantics and expressiveness of ILD and does not attempt
 to address performance. To make ILD practical to use, optimisations need to be
 put in place.
 \subsubsection{Partial evaluation}
-In a naïve implementation of ILD's interpreter, macros are expanded at runtime, as encountered.
+In a straight-forward implementation of ILD's interpreter, macros are expanded at runtime, as encountered.
 This strategy incurs a significant cost, possibly exponential in the depth
 of encountered nested macro invocations, since the body of each macro call
 is re-evaluated each time the surrounding expression is evaluated. The naïve
@@ -15,7 +15,7 @@ on a modern machine due to expensive macro call reevaluation.
 Nevertheless, performance can be greatly improved by evaluating macros ahead of time.
 We argue that placing the boundary between code evaluated ahead of time and code
 evaluated at runtime should not be at the distinction between ``macro expansion'' and
-``code execution'', like LISP does, but rather between ``code dependent on data known ahead of time''
+``code execution'', like traditional LISP-like languages do, but rather between ``code dependent on data known ahead of time''
 (which includes most, but not all, ILD macros) and ``code dependent on runtime data''.
 We aim to explore this topic in further research by applying partial evaluation
 as an optimisation pass in ILD, similar to how this has been done in fexpr-based languages
@@ -24,9 +24,9 @@ of runtime macro semantics, PE is known to be useful for also improving the perf
 non-macro code that does not depend on user input.~\cite{anydsl}
 \subsubsection{Tail call optimisation}
 Languages such as Scheme, Lisp or Racket support expressing efficient iterative
-algorithms as tail-recursive functions, which get optimised into \paraphrase{trampolined}
-tail calls by the interpreter~\cite{clinger-tail-recursion}. A TCO-enabled ILD interpreter is worth
-exploring for similar reasons.
+algorithms as tail-recursive functions, which get optimised into stackless loops
+by the interpreter/compiler~\cite{clinger-tail-recursion}. A TCO-enabled ILD evaluator
+is worth exploring for similar reasons.
 \subsubsection{Module caching}
 The simple module loader program presented in this paper evaluates a module every
 time it appears in the dependency graph of the root module being loaded.
