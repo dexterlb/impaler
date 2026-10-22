@@ -47,13 +47,6 @@ Embedding the values of \ild{mk-lambda}, \ild{free-vars} and \ild{quote}
 avoids name shadowing problems traditionally encountered with unhygienic
 macro systems (\cref{hygiene-discussion}).
 
-\begin{notefixed}
-% claude:PR-GUIDELINES-0002
-Long monospace paths now use \verb|\pathcode| (\verb|\nolinkurl|). The
-remaining overfull hboxes (13 at most, worst 12.5pt) still have to be checked in
-\verb|.log| after the next build.
-\end{notefixed}
-
 This definition can then be wrapped in another call of \ild{mk-lambda} in order to expose
 it under a \ild{lambda} name usable from the scoped body. Supposing that
 this definition is stored as an ILD program called \pathcode{core/bootstrap/lambda-macro.ild},

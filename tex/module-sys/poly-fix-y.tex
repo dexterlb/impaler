@@ -9,9 +9,7 @@ define it as follows:
     (!lambda (p)
       (map (!lambda (li)
         (!lambda args
-          (apply
-            (apply li (p p))
-            args)))
+          (apply (apply li (p p)) args)))
         l))))
 \end{ildcode}
 \lstcaption{Polyvariadic Y-combinator}\label{poly-fix-y}

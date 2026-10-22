@@ -15,5 +15,8 @@ Sequential execution of statements can instead, for example, be implemented as a
 \item Capturing the local environment with a special form (\ildsf{free-vars}) instead
 of making it available to every applicative (similar to fexpr-based languages~\cite{kernel-report})
 allows for a simpler interpreter and simpler (future) implementation of a partial evaluator.
+\item Error handling is explicit (it is up to the user program to check for \ildfailbare objects
+returned from expressions that may fail). However, it is also possible to implement
+mechanisms such as try/catch via macros and ILD's first-class continuation support.
 \end{itemize}
 

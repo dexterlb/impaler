@@ -1,17 +1,14 @@
-\section{Example ILD listings}
+\section{Example core library excerpts}
 \label{ild-code-appendix}
-A trimmed excerpt of \pathcode{"core/prelude.ild"} is shown in \cref{ild-code-prelude}.
+A trimmed excerpt of \pathcode{"core/prelude.ild"}, with elided definitions
+denoted as \ild{...}, is shown in \cref{ild-code-prelude}.
 \begin{ildcode}
 (module
   (doc "some core functions")
   (exports lambda letrec if list expand-lambda)
   (imports
     (host
-      ( eval free-vars read-source
-        mk-lambda macroexpand quote
-        bool-to-k car cdr cons null?
-        pair? func? apply poly-fix
-        make-fail)))
+      (free-vars macroexpand mk-lambda ...)))
   (defs
     '(lambda ...)
     '(letrec ...)
