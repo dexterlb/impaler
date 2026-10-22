@@ -4,7 +4,7 @@
 We construct a program called \ild{module-loader} that is able to process
 programs organised in modules like the one defined in
 \cref{example-module-fact}. We will present it in a top-down manner while
-omitting technical details such as logical operators and \ild{kv-*} functions for
+omitting technical details such as the helper definitions and \ild{kv-*} functions for
 operating on key-value lists. The outermost expression defining the module
 loader is shown in \cref{module-loader-outer}.
 \begin{ildcode}
@@ -15,6 +15,8 @@ loader is shown in \cref{module-loader-outer}.
       "core/bootstrap/lambda-macro.ild")))
     (letrec (eval (free-vars) (read-source
       "core/bootstrap/letrec.ild")))
+    (let* (eval (free-vars) (read-source
+      "core/bootstrap/let-star.ild")))
     (if (eval (free-vars) (read-source
       "core/bootstrap/if.ild")))
     (map (eval (free-vars) (read-source
@@ -28,25 +30,18 @@ loader is shown in \cref{module-loader-outer}.
     module-loader))
 \end{ildcode}
 \lstcaption{Outer scope bindings of the module loader}\label{module-loader-outer}
-
-\begin{notefixed}
-% codex:PR-TECHNICAL-0008, claude:PR-TECHNICAL-0011
-The printed construction still does not bind everything it uses. Listing 4.1
-binds only host-bindings, lambda, letrec, if and map, while the listings below
-use \ild{let*}, \ild{list}, \ild{concat}, \ild{sym-item-pair} and an undefined
-\ild{!and}; the text still calls \ild{let*} an omitted technical detail
-although it is defined in Listing 3.10. Add the missing bindings, or state
-that the listing is abridged and inventory what is omitted and how it reaches
-\ild{eval-module}; and either provide \ild{gensym} in Section 2.3 or drop it
-from Listing C.1.
-\end{notefixed}
+The listing shows only the bindings imported from outside the \ild{letrec}
+block. The helpers used below (\ild{list}, \ild{expand-lambda}, \ild{not},
+\ild{and}, \ild{cadr}, \ild{caar}, the \ild{kv-*} functions, \ild{concat} and
+\ild{sym-item-pair}) are defined within the same \ild{letrec} block and are
+elided.
 
 The core of the module loader is a function called \ild{eval-module} (\cref{def-eval-module})
 that:
 \begin{enumerate}
 \item Recursively processes imported modules and builds a binding environment \ild{env}
 that contains all imports
-\item Builds a list of name-body pairs from the definitions \paraphrase{given} in the module
+\item Builds a list of name-body pairs from the definitions listed in the module
 \item Calls \ild{letrec} with these definition pairs and a body that generates a list
 of key-value pairs for the module exports. Note that unlike other places, where letrec
 is used as a macro, here it is used as a function (\cref{macro-function-duality}).
@@ -101,7 +96,7 @@ used in place of an export list.
 We omit the implementation of \ild{process-import-items}, which merely
 picks the requested key-value pairs from the export lists.
 
-Finally, we implement the function \ild{module-loader} which, given a module name,
+Finally, we implement the function \ild{module-loader}, which, given a module name,
 entrypoint function name and arguments, loads that module, picks the entrypoint function
 from its export list and applies it to the given arguments (implementation in \cref{def-module-loader}).
 \begin{ildcode}
@@ -125,7 +120,7 @@ name and entrypoint to the module loader (shown in \cref{module-load-example}).
   "demos/fact.ild"
   'main)
 \end{ildcode}
-\lstcaption{Executing the module loader on \paraphrase{a user} program}\label{module-load-example}
-The ILD interpreter and/or build system need not be \paraphrase{concerned with} any details
+\lstcaption{Executing the module loader on a user program}\label{module-load-example}
+The ILD interpreter and/or build system need not be concerned with any details
 about loading and importing modules and can be kept simple: all of the logic
 is implemented in ILD itself.

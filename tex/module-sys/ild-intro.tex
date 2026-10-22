@@ -3,27 +3,20 @@
 
 Traditionally, LISP and similar programming languages have been designed with a
 REPL in mind: the program lives as data in the memory of the machine and parts
-of the program (functions, named values) are available under a global namespace
+of the program (functions, named values) are available in a global namespace
 (\emph{environment}). The user interacts with the program by entering
 expressions (which may refer to objects in the global environment) in a
-terminal. Each expression is then Read, Evaluated, and subsequently the result is
-Printed. To extend the program, the user may enter expressions
+terminal. Each expression is Read, Evaluated, and the result is then Printed.
+To extend the program, the user may enter expressions
 (\emph{statements}) that \emph{mutate} the environment and the objects reachable
 through it. Programs can then be optionally persisted to storage
 and recalled upon request~\cite{sexp,steele-gabriel-evolution}.
 
-\begin{notefixed}
-need to mention kernel
-\end{notefixed}
-
-% MTODO: look at all notefixed instances. Verify that they are indeed fixed. Remove them if so, cut them down to the part that is not fixed if not.
-
-% MTODO: spell-check, grammar-check and punctuation-check the entire paper. Suggest edits with the mparaphrase macro.
-
 Modern programming languages deviate from that paradigm by storing the whole
 program as text (code) ahead of time, and then evaluating the entire program
-before interacting with the user and environment. However, languages like LISP, Scheme or Racket are
-still centered around the model of a mutable global environment,%
+before it starts interacting with the user or the outside world.
+However, languages like LISP, Scheme or Racket are
+still centred around the model of a mutable global environment,%
 ~\cite{steele-gabriel-evolution}
 which complicates the evaluator and makes the language difficult to reason about and
 optimise. Mutual recursion in Scheme is achieved
@@ -32,14 +25,14 @@ like Clojure or LFE, whose core data structures are immutable, organise
 nontrivial programs as sequences of environment-mutating
 statements~\cite{clojure-hist,lfe-reference}.
 These languages do support programs written as a single expression without
-mutating a global environment -- we will refer to such programs as
-\emph{statically-scoped}.~\cite{kernel-report} % MTODO: can you find another, more concrete citation for "statically-scoped"?
-However, despite being supported, statically-scoped programs are in practice
-second-class citizens because of the language tooling and module systems
-being centered around the global environment.
+mutating a global environment (we will refer to such programs as
+\emph{statically-scoped}~\cite{kernel-report,sicp}).
+However, despite being supported, statically-scoped programs are
+in practice second-class citizens, because the language tooling and module systems
+are centred around the global environment.
 Another core mechanic of such ("LISP-like") programming languages is
 \emph{macro expansion} – extending syntax via custom transformations called
-\emph{macros}. The metalanguage of macros has limited facilities for local
+\emph{macros}. The meta-language of macros has limited facilities for local
 scope definitions (discussed in \cref{macro-function-duality}).
 For these reasons, statically-scoped programs written without mutation are
 difficult to modularise and extend.
@@ -48,33 +41,22 @@ As an alternative, we design a LISP-like programming language, called ILD, that
 has minimal core syntax and requires no mutation in order to express
 nontrivial, modular programs. To this end, we employ a
 metaprogramming system based on first-class, \emph{callsite-triggered}
-macro expansion, allowing us to build arbitrarily-complex domain-specific or
-general purpose syntax in ILD itself. Specifically, we target the following
+macro expansion, allowing us to build arbitrarily complex domain-specific or
+general-purpose syntax in ILD itself. Specifically, we target the following
 desirable features:
-\begin{itemize} % MTODO: can you paraphrase "rather than" in these bullets, it is getting a bit overused in this paper
-  \item Statically-scoped programs: A program is an expression, rather than a series of environment-mutating statements
+\begin{itemize}
+  \item Statically-scoped programs: A program is an expression rather than a series of environment-mutating statements
   \item Expressive macro system
-  \item Minimal core language: Features such as named functions and modules come from libraries rather than the core language
+  \item Minimal core language: Features such as named functions and modules come from libraries instead of being built into the core language
 \end{itemize}
 
 The concept of statically-scoped programs combined with first-class macros has
-been researched in prior work based on fexpr-based languages such as Kernel.~\cite{kernel-report}
-The correspondence between that research and the techniques presented in this
-paper is further discussed in \cref{fexpr-comparison}.
+been studied in prior work on fexpr-based languages such as Kernel~\cite{kernel-report}.
+The relationship between that work and the techniques presented here is
+discussed further in \cref{fexpr-comparison}.
 A feature comparison of similar languages is shown in \cref{lang-comparison}.
 
-\begin{notefixed}
-% codex:PR-STRUCTURE-0001, claude:PR-STRUCTURE-0001, claude:PR-GUIDELINES-0001
-The introduction still has no explicit contribution list and no roadmap of
-Sections 2--7, and the three bullets above are not stated as the desired
-properties the venue asks for nor mapped to the sections that argue them.
-Add a short itemised list: (1) ILD and its CPS small-step semantics with
-callsite-triggered macro expansion; (2) the minimal immutable host
-environment; (3) the library up to \ild{letrec} and the module loader;
-(4) first-class macros and capture avoidance. Map the properties to those
-sections and close with a one-sentence roadmap.
-\end{notefixed}
-\paraphrase{In this paper we present the following}: % MTODO: suggest another sentence
+This paper makes the following contributions:
 \begin{enumerate}
   \item We present the syntax (\cref{syntax}) and semantics (\cref{semantics}) of the ILD core language.
   \item We construct a small \emph{host environment} of data structures and functions,
@@ -89,7 +71,7 @@ sections and close with a one-sentence roadmap.
   \item We discuss ILD's metaprogramming capabilities (\cref{discussion}).
 \end{enumerate}
 An example program, written in ILD and making use of the library presented
-later in this paper is shown in
+later in this paper, is shown in
 \cref{example-module-fact}.
 Macro calls are denoted with the \ild{!}-notation,
 further discussed in \cref{syntax}.

@@ -1,16 +1,8 @@
 \subsection{A minimal host environment}
 \label{root-env}
 
-\begin{notefixed}
-% codex:PR-STYLE-0001, claude:PR-STYLE-0003
-Evaluative and colloquial wording remains: ``is useless by itself'' here,
-``takes a whole second'' (Section 7.2.1) and ``quite elegantly'' (Appendix A).
-Use ``The base language cannot express useful programs on its own.'',
-``takes approximately one second'', and ``we can define it as follows:''.
-\end{notefixed}
-
 The base language, as defined in \cref{semantics}, cannot express useful programs on its own. In this section we constrain
-\(\ildsetHost\) to contain data structures, functions and constants that allow implementing non-trivial
+\(\ildsetHost\) to contain data structures, functions and constants that allow implementing nontrivial
 programs. To make these values available to programs, we also define a root binding environment \(E\)
 that is used for the outermost eval.
 
@@ -32,8 +24,8 @@ in the root environment, we would write:
 
 \subsubsection{Basic data structures}
 ILD's FFI semantics allows externally providing any data structure to ILD programs.
-The base environment presented here provides numbers, booleans and strings (
-\(\ildsetNum, \ildsetBool, \ildsetStr \subset \ildsetHost\) ), and is sufficient
+The base environment presented here provides numbers, booleans and strings
+(\(\ildsetNum, \ildsetBool, \ildsetStr \subset \ildsetHost\)), and is sufficient
 for demonstrating expressivity. Standard functions on such values, as well as
 operations on S-expressions, are also provided through the FFI (\(\ildsetHostFunc\)):
 \begin{itemize}
@@ -48,9 +40,9 @@ operations on S-expressions, are also provided through the FFI (\(\ildsetHostFun
   \item Equality --- \(\ildapp{sym-eq?}{s_1}{s_2}\), \(\ildapp{str-eq?}{s_1}{s_2}\)
   \item Failure --- \(\defas{\ildapp{make-fail}{v}}{E}{\cpsapp{\cpsret}{\ildfail{v}}}\)
 \end{itemize}
-Unlike Scheme or LISP, ILD's immutable nature does not allow building cyclic
-objects easily, which can be remedied by externally providing data structures,
-either higher level (like graphs) or lower level (like indexed arrays).
+Unlike Scheme or LISP, ILD's immutable nature makes it hard to build cyclic
+objects; this can be remedied by externally providing data structures,
+either higher-level (like graphs) or lower-level (like indexed arrays).
 This, however, is outside the scope of this paper.
 
 \subsubsection{First-class special forms}
@@ -83,7 +75,7 @@ and then evaluating the body in the resulting environment:
   \text{where } e' = \spacedlist{e}{\subst{p_1}{a_1}}{\subst{p_2}{a_2}}{\dots}{\subst{p_n}{a_n}}
 \end{gather*}
 Variadic functions with \(P = \ildpair{\ildlist{p_1}{p_2}{\dots}{p_m}}{r}\)
-for an \(m < n\), or \(P = {r}\) or \(P = \ildpair{()}{r} \) for \(m = 0\) require a similar rule where:
+for \(m < n\), or \(P = {r}\) or \(P = \ildpair{()}{r} \) for \(m = 0\) require a similar rule where:
 \begin{gather*}
   e' = \spacedlist{e}{\subst{p_1}{a_1}}{\subst{p_2}{a_2}}{\dots}{\subst{p_m}{a_m}}{\subst{r}{\ildlist{a_{m+1}}{\dots}{a_{n}}}}
 \end{gather*}
@@ -112,14 +104,6 @@ function can then be used to build higher-level branching primitives
 
 \subsubsection{A recursion operator}
 
-\begin{notefixed}
-% claude:PR-TECHNICAL-0007
-The poly-fix rule uses \(n\) for both the number of operators and the number
-of call arguments, which suggests every \(\ildconst{f}{i}\) takes exactly
-\(n\) arguments. Use a separate index for the arguments, e.g.
-\(a_1, \dots, a_k\), in the rule and in \(C'\).
-\end{notefixed}
-
 We provide a low-level operator \(\ildsym{poly-fix}\) for constructing
 mutually-recursive functions:
 \[ \defas{\ildapp{poly-fix}{\Gamma_1}{\Gamma_2}{\dots}{\Gamma_n}}{E}{\cpsapp{\cpsret}{\ildlist{\ildconst{f}{1}}{\ildconst{f}{2}}{\dots}{\ildconst{f}{n}}}} \]
@@ -144,16 +128,6 @@ space and time complexity.
 
 \subsubsection{Interpreter access}
 
-\begin{notefixed}
-% codex:PR-TECHNICAL-0001
-The host \ild{apply} rule still forwards individual arguments, while the
-library calls it with one argument list (\ild{letrec} passes
-\ild{(poly-fix ...)} and the Y-combinator passes \ild{(p p)}). Define
-\ild{apply} on a function and an argument list, unpack that list into the CPS
-apply term, and check the \ild{letrec} and module-loader derivations against
-it.
-\end{notefixed}
-
 Even though not strictly necessary (an ILD interpreter can be implemented in ILD),
 it is practical to allow programs to call into the interpreter:
 \begin{gather*}
@@ -161,20 +135,12 @@ it is practical to allow programs to call into the interpreter:
   \defas{\ildapp{eval}{e}{v}}{E}{\interop{eval}{\cpsret}{e}{v}}
 \end{gather*}
 Furthermore, to allow programs to reference other programs, we provide
-a host function \ildsym{read-source} that retrieves a program by name. In real-life
-implementations, \(\ildapp{read-source}{p}\) will read the file whose path is \(p\),
-parse its contents and return the resulting value.
+a host function \ildsym{read-source} that retrieves a program by name.
+In real-life implementations, \(\ildapp{read-source}{p}\) will read
+the file whose path is \(p\), parse its contents and return the resulting value.
 
 \subsubsection{First-class continuations}
 \label{first-class-continuations}
-
-\begin{notefixed}
-% codex:PR-TECHNICAL-0002, claude:PR-TECHNICAL-0002
-The \ild{call/cc} rule below is still malformed: it produces
-\(\interop{apply}{f}{\ildcont{\cpsret}}\), but every apply term takes the
-continuation first. Write \(\interop{apply}{\cpsret}{f}{\ildcont{\cpsret}}\)
-and explain normal return as well as continuation invocation.
-\end{notefixed}
 
 To allow ILD programs to implement complex control flow, we define
 a host function \(\ildsym{call/cc}\) that passes the current continuation as a

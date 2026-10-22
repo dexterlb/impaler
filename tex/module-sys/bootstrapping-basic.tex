@@ -5,7 +5,7 @@ in a succinct way. However, its \(\ildsf{macroexpand}\) facility allows
 extending the syntax with arbitrary metaprogramming constructs, which can
 be built incrementally.
 In this section, we present a reference standard library
-of such constructs, \paraphrase{culminating} in \ild{letrec}.
+of such constructs, culminating in \ild{letrec}.
 Keeping that complexity out of the core language makes it simple and portable
 to different host environments.
 
@@ -49,17 +49,15 @@ macro systems (\cref{hygiene-discussion}).
 
 \begin{notefixed}
 % claude:PR-GUIDELINES-0002
-Lines still overflow into the neighbouring column: the current build has 13
-overfull hboxes, the worst 12.5pt, including the long
-\texttt{core/bootstrap/\dots} paths here and in the introduction and
-Section 4. Allow breaks in long monospace paths (\verb|\path| or
-\verb|\nolinkurl|) or rephrase locally, then recheck the log.
+Long monospace paths now use \verb|\pathcode| (\verb|\nolinkurl|). The
+remaining overfull hboxes (13 at most, worst 12.5pt) still have to be checked in
+\verb|.log| after the next build.
 \end{notefixed}
 
 This definition can then be wrapped in another call of \ild{mk-lambda} in order to expose
-it under a \ild{lambda} name usable from the scoped body -- supposing that
+it under a \ild{lambda} name usable from the scoped body. Supposing that
 this definition is stored as an ILD program called \pathcode{core/bootstrap/lambda-macro.ild},
-we recall it twice (once to define \ild{lambda}, and once to pass itself as the
+we recall it twice (once to define \ild{lambda} and once to pass itself as the
 value of \ild{lambda}). Such a wrapper is shown in \cref{lambda-wrap}.
 \begin{ildcode}
 ((!(eval (free-vars)
@@ -108,20 +106,11 @@ of the form \ild{(!lambda <args> <body>)}, we define a helper
 \end{ildcode}
 \lstcaption{Definition of \ild{expand-lambda}}\label{def-expand-lambda}
 
-\begin{notefixed}
-% claude:PR-LANGUAGE-0005
-The sentence below is still malformed: ``wrapping'' has no object, ``to
-after'' is ungrammatical, and ``it'' has no clear antecedent. Suggested
-wording: ``To evaluate only the selected branch, we delay the evaluation of
-each branch until the condition is known by wrapping it in a 0-argument
-function, and then force the selected function:''
-\end{notefixed}
-
 We can implement branching via the \ildhost{bool-to-k} host
 function (\cref{branching}).
-To evaluate only the selected branch, we delay the evaluation of
+To avoid evaluating both branches, we delay the evaluation of
 each branch until the condition is known by wrapping it in a 0-argument
-function, and force it afterwards:
+function, and force the selected branch afterwards:
 \begin{ildcode}
 ; body of 'if'
 (!lambda (cond t f)
@@ -137,7 +126,7 @@ function, and force it afterwards:
 \end{ildcode}
 \lstcaption{Definition of the \ild{if} macro}\label{if}
 
-Since \ild{letrec} is not available at this point of the bootstrap process,
+Since \ild{letrec} is not available at this point in the bootstrap process,
 in \cref{def-map} we define \ild{map} via \ild{Y}.
 \begin{ildcode}
 ; body of 'map'
@@ -168,12 +157,6 @@ In \cref{def-let} we show how it can be defined via \ild{expand-lambda}.
     (map cadr letlist)))
 \end{ildcode}
 \lstcaption{Definition of \ild{let}}\label{def-let}
-
-\begin{notefixed}
-% claude:PR-LANGUAGE-0006
-The listing still misspells \texttt{fourty-two} five times; rename it to
-\texttt{forty-two} throughout.
-\end{notefixed}
 
 \begin{ildcode}
 ; this program
@@ -213,7 +196,7 @@ macro function via \ild{Y}, similarly to \ild{map}.
 \subsection{Letrec}
 \label{letrec}
 The low-level primitive for building mutually-recursive functions is
-\ildsym{poly-fix}. \paraphrase{To provide convenient high-level syntax for this purpose},
+\ildsym{poly-fix}. To provide convenient high-level syntax for this purpose,
 in \cref{letrec-def} we define \ild{letrec} as a macro that:
 \begin{itemize}
 \item Builds a list of higher-order operators

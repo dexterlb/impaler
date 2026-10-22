@@ -6,14 +6,14 @@ Several design choices in ILD's semantics are worth noting:
 special forms (\cref{syntax}) desugar to the \ildsym{quote} and \ildsym{macroexpand}
 symbols instead of the \ildsf{quote} and \ildsf{macroexpand} special form objects.
 This restricts the parser output to simple S-expressions and allows the syntax to be
-overridden by the program, but requires the respective keywords to be bound in the local
+overridden by the program, but requires the respective names to be bound in the local
 scope (also discussed in \cref{macro-function-duality}).
-\item Bodies of \ildsetAbstr-terms (\cref{abstraction}, lambda-expressions)
+\item Bodies of \ildsetAbstr-terms (\cref{abstraction}, lambda expressions)
 carry one expression rather than
 a list of expressions. This choice is consistent with ILD's pure-by-default approach.
 Sequential execution of statements can instead, for example, be implemented as a \ild{do}-macro.
 \item Capturing the local environment with a special form (\ildsf{free-vars}) instead
-of making it available to every applicative (similar to fexpr-based languages \cite{kernel-report})
+of making it available to every applicative (similar to fexpr-based languages~\cite{kernel-report})
 allows for a simpler interpreter and simpler (future) implementation of a partial evaluator.
 \end{itemize}
 

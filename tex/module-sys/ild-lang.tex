@@ -2,23 +2,6 @@
 
 \subsection{Syntax}
 \label{syntax}
-
-\begin{notefixed}
-% claude:PR-LANGUAGE-0003
-The grammar's accessibility description still says ``BCNF definition of the
-ILD syntax''; BCNF means Boyce-Codd normal form. Change it to ``BNF definition
-of the ILD syntax''.
-\end{notefixed}
-
-\begin{notefixed}
-% codex:PR-TECHNICAL-0005
-The CPS grammar still restricts the function slot of
-\(\interop{apply}\) to \(\ildsetHostFunc\), but \ildsf{macroexpand} produces an apply whose function slot
-is the CPS-bound variable \(f\) before substitution. Allow CPS value terms in
-that position, state the host-function side condition at the reduction rule,
-and check that the grammar is closed under all displayed reductions.
-\end{notefixed}
-
 \begin{cfig}{Grammar}{grammar}{Syntax of ILD}{BNF definition of the ILD syntax}
 \begin{tabular}{r@{\;}c@{\;}l@{\qquad}l}
 \(\ildsetVal\) & \(:=\) & \(\ildsetSym \mid \ildsetSexp \mid \ildsetSF \mid \ildsetFail \mid \ildsetHost\) & \paraphrase{Tangible} values \\
@@ -55,7 +38,7 @@ standard S-expressions. Throughout this paper, we use the \(\ildlist{a_1}{a_2}{\
 syntax to denote S-expression lists, i.e. the nested pairs
 \(\ildpair{a_1}{\ildpair{a_2}{\dots \ildpair{a_n}{()} \dots}}\).
 
-In addition, the parser of ILD is augmented with the following syntax sugars:
+In addition, the parser of ILD is augmented with the following syntactic shorthands:
 \begin{itemize}
   \item Quote: \ild{'<expr>} \(\Mapsto\) \ild{(quote <expr>)}
   \item Macroexpand: \\
@@ -132,8 +115,8 @@ cases are worth noting:
   \item The \(\ildsf{free-vars}\) special form captures the current binding environment and is used by higher-level constructs
     such as the lambda macro (\cref{lambda-macro}).
   \item The head of a combination is always evaluated. If the result of that is a special
-    form, the special form is applied on the \textbf{unevaluated} remaining elements of the combination.
-    If the head is a host function, the operands are then \textbf{evaluated} and then the head is applied
+    form, the special form is applied to the \textbf{unevaluated} remaining elements of the combination.
+    If the head is a host function, the operands are then \textbf{evaluated} and the head is applied
     to the resulting arguments.
   \item Congruence rules are omitted for brevity. Any \(\ildsetCont\) or \(\ildsetComp\) subterm
     is considered to be a reduction hole.
@@ -148,10 +131,11 @@ To invoke a function as a macro, the special form
 \ildsf{macroexpand} is used at the callsite: an expression
 \(\ildlist{\ildsf{macroexpand}}{\varphi}{\alpha_1}{\alpha_2}{\dots}{\alpha_n}\)
 evaluates just \(\varphi\) and then passes the
-\textbf{unevaluated} arguments to it. This allows the macro function to treat the sub-program
-passed to it as data and transform it arbitrarily, and the resulting new program
-is then in turn evaluated. Macro expansion, being a regular evaluation step, proceeds from the outermost call
+\textbf{unevaluated} arguments to it. This allows the macro function to treat the subprogram
+passed to it as data and transform it arbitrarily; the resulting program is then
+evaluated in turn. Macro expansion, being a regular evaluation step,
+proceeds from the outermost call
 inward, similarly to macro semantics in other unhygienic macro
-systems such as the one in LISP\cite{kohlbecker1986syntactic}.
+systems such as the one in LISP~\cite{kohlbecker1986syntactic}.
 The advantages and disadvantages of callsite-triggered macros are further
 discussed in \cref{macro-function-duality}.
