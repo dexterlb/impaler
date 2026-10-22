@@ -18,7 +18,7 @@ evaluated at runtime should not be at the distinction between ``macro expansion'
 ``code execution'', like LISP does, but rather between ``code dependent on data known ahead of time''
 (which includes most, but not all, ILD macros) and ``code dependent on runtime data''.
 We aim to explore this topic in further research by applying partial evaluation
-as an optimisation pass in ILD, similar to how this has been done in FExpr-based languages
+as an optimisation pass in ILD, similar to how this has been done in fexpr-based languages
 such as Kraken \cite{fexpr-pe}. In addition to eliminating the overhead
 of runtime macro semantics, PE is known to be useful for also improving the performance of
 non-macro code that does not depend on user input.~\cite{anydsl}

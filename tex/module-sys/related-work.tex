@@ -1,44 +1,49 @@
 \section{Related work}
 \label{fexpr-comparison}
 
-\begin{note}
+\begin{notefixed}
 % claude:PR-STYLE-0002
-% MTODO: use "fexprs", "fexpr-objects" everywhere
 The concept still appears as ``F-expressions'', ``FExpr''/``FExprs''/
 ``FExpr-objects'' and ``fexprs''. Use one form throughout, e.g. ``fexpr'' and
 ``fexprs'' as in the cited literature, including the table and the footnote.
-\end{note}
+\end{notefixed}
 
 The techniques applied in this paper achieve results similar to systems using
-F-expressions~\cite{fexpr-shutt,fexpr-pe}.
+fexprs~\cite{fexpr-shutt,fexpr-pe}.
 
-F-expressions are a different kind of metaprogramming mechanism that
-unifies functions and macros as \emph{FExpr}-objects%
+Fexprs are a different kind of metaprogramming mechanism that
+unifies functions and macros as \emph{fexpr}-objects%
 \footnote{
-    The exact definition of the term \emph{FExpr} varies throughout
+    The exact definition of the term \emph{fexpr} varies throughout
     literature. Here it is used in the sense of applicative object
     that may choose whether to have its operands evaluated before
     application~\cite{fexpr-shutt}.
 }, which, depending on the implementation,
 can be first-class and as flexible as unhygienic macros,%
 ~\cite{kohlbecker1986syntactic,fexpr-shutt} and can be implemented
-in a performant way~\cite{fexpr-pe}. The core mechanism of FExprs is
+in a performant way~\cite{fexpr-pe}. The core mechanism of fexprs is
 \paraphrase{
 to tag the object with evaluation metadata and consult that metadata
 when evaluating a combination to decide whether to evaluate the operands}.
-FExpr-objects are first-class regardless of their evaluation semantics.
+Fexpr-objects are first-class regardless of their evaluation semantics.
 
-Similar to modern FExpr-based systems, ILD's macro expansion facility matches
+Similar to modern fexpr-based systems, ILD's macro expansion facility matches
 unhygienic LISP macros in expressive power and \paraphrase{provides first-class
 status and runtime semantics with no separate expansion phase for macros}.
-\begin{note}
+
+The programming language Kernel implements these concepts and has first-class
+macros and statically-scoped bindings.~\cite{kernel-report,fexpr-shutt} It is the closest
+prior work to ILD, which differs in making macro expansion an explicit at the
+callsite rather than a property of the applied object.
+
+\begin{notefixed}
 % claude:PR-TECHNICAL-0001, codex:PR-TECHNICAL-0011
-% MTODO: add a line for Kernel in the table
 The claim that no language with first-class fexprs supports first-class
 continuations is false: Kernel has first-class operatives and \ild{call/cc}
 (Shutt, Revised\(^{-1}\) Report on the Kernel Programming Language,
 Section 7). Remove or narrow the claim and compare ILD's callsite-triggered
 expansion with Kernel's operative/applicative mechanism instead.
-\end{note}
+\end{notefixed}
+
 We argue that callsite-triggered macro expansion is simpler to implement and
 reason about while being as expressive.
