@@ -16,8 +16,8 @@ Modern programming languages deviate from that paradigm by storing the whole
 program as text (code) ahead of time, and then evaluating the entire program
 before it starts interacting with the user or the outside world.
 However, languages like LISP, Scheme or Racket are
-still centred around the model of a mutable global environment,%
-~\cite{steele-gabriel-evolution}
+still centred around the model of a mutable global environment%
+~\cite{steele-gabriel-evolution},
 which complicates the evaluator and makes the language difficult to reason about and
 optimise. Mutual recursion in Scheme is achieved
 by explicit mutation~\cite[Chapter 4.1.6]{sicp}, and even programming languages
@@ -26,13 +26,13 @@ nontrivial programs as sequences of environment-mutating
 statements~\cite{clojure-hist,lfe-reference}.
 These languages do support programs written as a single expression without
 mutating a global environment (we will refer to such programs as
-\emph{statically-scoped}~\cite{kernel-report,sicp}).
+\emph{statically-scoped}~\cite{kernel-report}).
 However, despite being supported, statically-scoped programs are
 in practice second-class citizens, because the language tooling and module systems
 are centred around the global environment.
 Another core mechanic of such ("LISP-like") programming languages is
 \emph{macro expansion} – extending syntax via custom transformations called
-\emph{macros}. The meta-language of macros has limited facilities for local
+\emph{macros}. The meta-language of macros has only limited facilities for local
 scope definitions (discussed in \cref{macro-function-duality}).
 For these reasons, statically-scoped programs written without mutation are
 difficult to modularise and extend.
@@ -51,7 +51,7 @@ desirable features:
 \end{itemize}
 
 The concept of statically-scoped programs combined with first-class macros has
-been studied in prior work on fexpr-based languages such as Kernel~\cite{kernel-report}.
+been studied in prior work on fexpr-based languages such as Kernel~\cite{kernel-report,fexpr-shutt}.
 The relationship between that work and the techniques presented here is
 discussed further in \cref{fexpr-comparison}.
 A feature comparison of similar languages is shown in \cref{lang-comparison}.

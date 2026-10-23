@@ -2,7 +2,7 @@
 
 \subsection{Syntax}
 \label{syntax}
-\begin{cfig}{Grammar}{grammar}{Syntax of ILD}{BNF definition of the ILD syntax}
+\begin{cfig}{Grammar}{grammar}{Syntax of ILD}{BNF definition of the ILD syntax}\label{syntax-grammar}
 \begin{tabular}{r@{\;}c@{\;}l@{\qquad}l}
 \(\ildsetVal\) & \(:=\) & \(\ildsetSym \mid \ildsetSexp \mid \ildsetSF \mid \ildsetFail \mid \ildsetHost\) & Observable values \\
 \(\ildsetSym\) & \(\in\) & \emph{symbols} & \\
@@ -36,8 +36,7 @@ We define ILD as a homoiconic language where parseable programs (\(\ildsetProg\)
 are a subset of the internal syntax \(\ildsetVal\). Source code is parsed as
 standard S-expressions. Throughout this paper, we use the \(\ildlist{a_1}{a_2}{\dots}{a_n}\)
 syntax to denote S-expression lists, i.e. the nested pairs
-\(\ildpair{a_1}{\ildpair{a_2}{\dots \ildpair{a_n}{()} \dots}}\).
-
+\(\ildpair{a_1}{\ildpair{a_2}{\dots \ildpair{a_n}{()} \dots}}\).~\cite{sexp}
 In addition, the parser of ILD is augmented with the following syntactic shorthands:
 \begin{itemize}
   \item Quote: \ild{'<expr>} \(\Mapsto\) \ild{(quote <expr>)}
@@ -45,14 +44,13 @@ In addition, the parser of ILD is augmented with the following syntactic shortha
     \ild{(!<expr1> ... <exprN>)} \(\Mapsto\) \\
     \ild{(macroexpand <expr1> ... <exprN>)}
 \end{itemize}
-
 We also introduce a set of computation terms (\(\ildsetComp\)) that facilitate
-the operational semantics.
+the operational semantics. The complete syntax is shown in \cref{syntax-grammar}.
 
 \subsection{Semantics}
 \label{semantics}
 We define the semantics of ILD in terms of a CPS calculus based on
-standard \(\beta\)-reduction%
+standard \(\beta\)-reduction
 over the set of \emph{computations} (\(\ildsetComp\)). Details
 related to dealing with variable name clashes during substitution are omitted.
 Evaluation starts from
@@ -134,8 +132,7 @@ evaluates just \(\varphi\) and then passes the
 \textbf{unevaluated} arguments to it. This allows the macro function to treat the subprogram
 passed to it as data and transform it arbitrarily; the resulting program is then
 evaluated in turn. Macro expansion, being a regular evaluation step,
-proceeds from the outermost call
-inward, similarly to macro semantics in other unhygienic macro
-systems such as the one in LISP~\cite{kohlbecker1986syntactic}.
+proceeds from the outermost call inward, similarly to macro semantics
+in most LISP dialects with unhygienic macro systems~\cite{steele-gabriel-evolution,kohlbecker1986syntactic}.
 The advantages and disadvantages of callsite-triggered macros are further
 discussed in \cref{macro-function-duality}.
