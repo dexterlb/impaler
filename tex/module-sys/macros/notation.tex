@@ -181,11 +181,13 @@
 
 \newcounter{listing}
 \numberwithin{listing}{section}
+\makeatletter
 \newcommand{\lstcaption}[1]{%
   \par\nobreak\smallskip\noindent
   \refstepcounter{listing}\textbf{Listing \thelisting:} #1\par\medskip
-  \everypar{\noindent\everypar{}}%
+  \@afterindentfalse\@afterheading
 }
+\makeatother
 
 % full-width spans
 \newenvironment{cfig}[4]{%
