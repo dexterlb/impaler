@@ -24,7 +24,7 @@ We aim to explore this topic in further research by applying partial evaluation
 as an optimisation pass in ILD, similar to how this has been done in fexpr-based languages
 such as Kraken~\cite{fexpr-pe}. In addition to eliminating the overhead
 of runtime macro semantics, PE is known to be useful for improving the performance of
-non-macro code that does not depend on user input.~\cite{anydsl}
+non-macro code that does not depend on user input~\cite{anydsl}.
 \subsubsection{Tail call optimisation}
 Languages such as Scheme, Lisp or Racket support expressing efficient iterative
 algorithms as tail-recursive functions, which get optimised into stackless loops
@@ -64,10 +64,10 @@ methods of handling state, IO and other side effects:
     facility (e.g. \code{IORef}, \code{MVar})~\cite{tackling-awkward-squad}.
     \item Erlang, LFE and other languages on the BEAM virtual machine employ
     processes and message passing as primitives and manage state via an
-    actor pattern.~\cite{erlang,hewitt-actors}
+    actor pattern~\cite{erlang,hewitt-actors}.
     \item User interface DSLs often employ \emph{Functional Reactive Programming},
     where a pure function returning a set of actions to be executed is called by the host
-    environment.~\cite{hudak-frp,elm-async-frp}
+    environment~\cite{hudak-frp,elm-async-frp}.
 \end{itemize}
 Embedding ILD in environments that provide similar practical features is worth exploring.
 
