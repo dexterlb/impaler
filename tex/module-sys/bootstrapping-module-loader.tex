@@ -1,27 +1,22 @@
 \section{Bootstrapping the module loader}
 \label{module-loader}
-
 We construct a program called \ild{module-loader} that is able to process
 programs organised in modules like the one defined in
 \cref{example-module-fact}. We will present it in a top-down manner while
-omitting technical details such as the helper definitions and \ild{kv-*} functions for
-operating on key-value lists. The outermost expression defining the module
-loader is shown in \cref{module-loader-outer}.
+omitting technical details such as the helper definitions
+(list operations, \ild{kv-*} functions for key/value lists, \ild{concat},
+\ild{lambda}, \ild{map}, \ild{if}, \ild{let*}, \ild{sym-item-pair}).
+The outermost expression defining the module
+loader (shown in \cref{module-loader-outer}) makes the root environment
+(captured via \ildsf{free-vars}) and \ild{letrec} available to the
+\ild{letrec} expression that defines the module loader and the helpers
+it needs.
 \begin{ildcode}
 (!(eval (free-vars) (read-source
     "core/bootstrap/let.ild"))
   ( (host-bindings (free-vars))
-    (lambda (eval (free-vars) (read-source
-      "core/bootstrap/lambda-macro.ild")))
     (letrec (eval (free-vars) (read-source
-      "core/bootstrap/letrec.ild")))
-    (let* (eval (free-vars) (read-source
-      "core/bootstrap/let-star.ild")))
-    (if (eval (free-vars) (read-source
-      "core/bootstrap/if.ild")))
-    (map (eval (free-vars) (read-source
-      "core/bootstrap/map.ild"))))
-
+      "core/bootstrap/letrec.ild"))))
   (!letrec (
     ; <definitions of helpers>
     ; <definition of module-loader>
@@ -30,12 +25,6 @@ loader is shown in \cref{module-loader-outer}.
     module-loader))
 \end{ildcode}
 \lstcaption{Outer scope bindings of the module loader}\label{module-loader-outer}
-The listing shows only the bindings imported from outside the \ild{letrec}
-block. The helpers used below (\ild{list}, \ild{not},
-\ild{and}, \ild{cadr}, \ild{caar}, the \ild{kv-*} functions, \ild{concat} and
-\ild{sym-item-pair}) are defined within the same \ild{letrec} block and are
-elided.
-
 The core of the module loader is a function called \ild{eval-module} (\cref{def-eval-module})
 that:
 \begin{enumerate}
