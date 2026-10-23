@@ -5,7 +5,7 @@ denoted as \ild{...}, is shown in \cref{ild-code-prelude}.
 \begin{ildcode}
 (module
   (doc "some core functions")
-  (exports lambda letrec if list expand-lambda)
+  (exports lambda letrec if list)
   (imports
     (host
       (free-vars macroexpand mk-lambda ...)))
@@ -13,8 +13,7 @@ denoted as \ild{...}, is shown in \cref{ild-code-prelude}.
     '(lambda ...)
     '(letrec ...)
     '(list (!lambda args args))
-    '(if ...)
-    '(expand-lambda ...)))
+    '(if ...)))
 \end{ildcode}
 \lstcaption{Example module \code{"core/prelude.ild"}}\label{ild-code-prelude}
 The helper \ild{fn}, implemented in \pathcode{"core/module-utils.ild"}, is shown in \cref{ild-code-module-utils}.
@@ -26,13 +25,13 @@ The helper \ild{fn}, implemented in \pathcode{"core/module-utils.ild"}, is shown
     (host
       (macroexpand quote))
     ("core/prelude.ild"
-      (lambda expand-lambda list))
+      (lambda list))
   )
   (defs
     '(fn (!lambda (name arg-spec body)
       (list quote
         (list
           name
-          (expand-lambda arg-spec body)))))))
+          (lambda arg-spec body)))))))
 \end{ildcode}
 \lstcaption{Example module \code{"core/module-utils.ild"}}\label{ild-code-module-utils}

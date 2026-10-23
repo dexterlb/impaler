@@ -8,8 +8,6 @@
   (!letrec (
     (list (!lambda args args))
 
-    (expand-lambda (!lambda (args body) (list macroexpand lambda args body)))
-
     (not (!lambda (b)
       (!if b
         #f

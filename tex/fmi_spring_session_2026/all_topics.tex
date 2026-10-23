@@ -112,11 +112,6 @@ Bootstrapping can be done in a few tiers:
 
 \begin{frame}[fragile]{Bootstrapping specific constructs}
 \begin{minted}{lisp}
-  ; definition of helper "expand-lambda"
-  (!lambda (args body)
-    (cons macroexpand
-      (cons lambda (cons args (cons body ())))))
-
   ; definition of "map" without use of letrec
   (Y (!lambda (map)
       (!lambda (f l)
@@ -129,7 +124,7 @@ Bootstrapping can be done in a few tiers:
   ; definition of "let"
   (!lambda (letlist body)
     (cons
-      (expand-lambda (map car letlist) body)
+      (lambda (map car letlist) body)
       (map cadr letlist)))))
 \end{minted}
 \end{frame}

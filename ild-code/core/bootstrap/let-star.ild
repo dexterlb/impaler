@@ -5,7 +5,6 @@
   (Y (eval (free-vars) (read-source "core/bootstrap/y.ild"))))
 
   (!let (
-    (expand-lambda (!lambda (args body) (cons macroexpand (cons lambda (cons args (cons body '()))))))
     (list (!lambda args args))
     (caar (!lambda (p) (car (car p))))
     (cadr (!lambda (p) (car (cdr p)))))
@@ -16,7 +15,7 @@
         (!if (null? defs)
           body
           (list
-            (expand-lambda
+            (lambda
               (list (caar defs))
               (let* (cdr defs) body))
             (cadr (car defs)))))))))

@@ -1,6 +1,6 @@
 (module
   (doc "some core functions")
-  (exports lambda letrec if list expand-lambda)
+  (exports lambda letrec if list)
   (imports
     (host (eval free-vars read-source mk-lambda macroexpand quote bool-to-k car cdr cons null? pair? func? apply poly-fix gensym make-fail)))
   (defs
@@ -14,7 +14,5 @@
       (list                          ; eval the result with no arguments to force the lazy value
         (list                        ; eval the K or K*, getting one of the two lazy values
           (list bool-to-k cond)      ; convert the boolean condition to K or K* to do the selection
-          (expand-lambda '() t)      ; lazy value that evals the "true" branch
-          (expand-lambda '() f)))))  ; lazy value that evals the "false" branch
-
-    '(expand-lambda (!lambda (args body) (list macroexpand lambda args body)))))
+          (lambda '() t)             ; lazy value that evals the "true" branch
+          (lambda '() f)))))))       ; lazy value that evals the "false" branch

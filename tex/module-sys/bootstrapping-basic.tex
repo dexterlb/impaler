@@ -71,33 +71,18 @@ To keep the code succinct, we store these definitions in separate bootstrap
 source files and introduce them in scope with the same technique as the
 \ild{lambda} macro.
 \begin{ildcode}
-; body of 'list'
-(!lambda args args)
-
-; body of 'cadr'
-(!lambda (p) (car (cdr p)))
-
-; body of 'caar'
-(!lambda (p) (car (car p)))
+(!lambda args args)         ; body of 'list'
+(!lambda (p) (car (cdr p))) ; body of 'cadr'
+(!lambda (p) (car (car p))) ; body of 'caar'
 
 ; 'Y' is special case of poly-fix
 (!lambda (f) (car (poly-fix f)))
 \end{ildcode}
 \lstcaption{Definitions of basic helper primitives}
-To more easily write macros that generate expressions
-of the form \ild{(!lambda <args> <body>)}, we define a helper
-(\cref{def-expand-lambda}).
-\begin{ildcode}
-; body of 'expand-lambda'
-(!lambda (args body)
-  (cons macroexpand
-    (cons lambda
-      (cons args
-        (cons body '())))))
-\end{ildcode}
-\lstcaption{Definition of \ild{expand-lambda}}\label{def-expand-lambda}
-
-We can implement branching via the \ildhost{bool-to-k} host
+Since \ild{lambda} is an ordinary function, it can also be called directly
+to obtain the expression it expands to, which is useful when writing macros
+that generate \ild{(!lambda <args> <body>)} expressions.
+We can now implement branching via the \ildhost{bool-to-k} host
 function (\cref{branching}).
 To avoid evaluating both branches, we delay the evaluation of
 each branch until the condition is known by wrapping it in a 0-argument
@@ -112,11 +97,10 @@ function, and force the selected branch afterwards:
       (list bool-to-k cond) ; selector
 
       ; delayed #t and #f branches
-      (expand-lambda '() t)
-      (expand-lambda '() f))))
+      (lambda '() t)
+      (lambda '() f))))
 \end{ildcode}
 \lstcaption{Definition of the \ild{if} macro}\label{if}
-
 Since \ild{letrec} is not available at this point in the bootstrap process,
 in \cref{def-map} we define \ild{map} via \ild{Y}.
 \begin{ildcode}
@@ -137,12 +121,12 @@ in \cref{def-map} we define \ild{map} via \ild{Y}.
 The binding construct \ild{let} is simply a more ergonomic way
 of writing a \ild{lambda} expression applied to a list of body expressions
 (example in \cref{let-example}).
-In \cref{def-let} we show how it can be defined via \ild{expand-lambda}.
+In \cref{def-let} we show how it can be defined via \ild{lambda}.
 \begin{ildcode}
 ; body of 'let'
 (!lambda (letlist body)
   (cons
-    (expand-lambda
+    (lambda
       (map car letlist)
       body)
     (map cadr letlist)))
@@ -177,7 +161,7 @@ macro function via \ild{Y}, similarly to \ild{map}.
     (!if (null? defs)
       body
       (list
-        (expand-lambda
+        (lambda
           (list (caar defs))
           (let* (cdr defs) body))
         (cadr (car defs)))))))
@@ -208,10 +192,10 @@ operator for the letrec body
     (bind-operators
       (map
         (!lambda (def)
-          (expand-lambda names (cadr def)))
+          (lambda names (cadr def)))
         defs))
     (body-operator
-      (expand-lambda names body)))
+      (lambda names body)))
 
     (list
       apply
