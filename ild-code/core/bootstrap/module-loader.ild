@@ -84,10 +84,16 @@
         (env (process-imports imports))
         (eval-def (!lambda (def)
           (eval env def)))
-        (def-items (map eval-def defs)))
+        (def-items (map eval-def defs))
+
+        (body (cons list
+          (map
+            (!lambda (sym)
+              (list cons (list quote sym) sym))
+            exports))))
 
         (eval env
-          (letrec def-items (cons list (map (!lambda (sym) (list cons (list quote sym) sym)) exports)))))))
+          (letrec def-items body)))))
 
     (process-imports (!lambda (import-list)
       (concat (map process-import import-list))))

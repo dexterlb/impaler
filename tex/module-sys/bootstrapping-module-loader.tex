@@ -1,16 +1,9 @@
 \section{Bootstrapping the module loader}
 \label{module-loader}
-We construct a program called \ild{module-loader} that is able to process
-programs organised in modules like the one defined in
-\cref{example-module-fact}. We will present it in a top-down manner while
-omitting technical details such as the helper definitions
-(list operations, \ild{kv-*} functions for key/value lists, \ild{concat},
-\ild{lambda}, \ild{map}, \ild{if}, \ild{let*}).
-The outermost expression defining the module
-loader (shown in \cref{module-loader-outer}) makes the root environment
-(captured via \ildsf{free-vars}) and \ild{letrec} available to the
-\ild{letrec} expression that defines the module loader and the helpers
-it needs.
+Starting in \cref{module-loader-outer} we construct a program called
+\ild{module-loader} that is able to process
+user programs organised in modules such as the one defined in
+\cref{example-module-fact}.
 \begin{ildcode}
 (!(eval (free-vars) (read-source
     "core/bootstrap/let.ild"))
@@ -25,8 +18,15 @@ it needs.
     module-loader))
 \end{ildcode}
 \lstcaption{Outer scope bindings of the module loader}\label{module-loader-outer}
-The core of the module loader is a function called \ild{eval-module} (\cref{def-eval-module})
-that:
+The outermost \ild{let}-expression makes the root environment
+(captured via \ildsf{free-vars}) and \ild{letrec} available to the
+internal \ild{letrec} expression that defines everything else.
+The core helper is a function called \ild{eval-module},
+whose implementation we show in \cref{def-eval-module} while
+omitting technical details such as standard helpers
+(list operations, \ild{kv-*} functions for key/value lists, \ild{concat},
+\ild{lambda}, \ild{map}, \ild{if}, \ild{let*}).
+The \emph{eval-module} function:
 \begin{enumerate}
 \item Recursively processes imported modules and builds a binding environment \ild{env}
 that contains all imports
@@ -41,24 +41,24 @@ a body that generates a list of key-value pairs for the module exports.
 
 (eval-module (!lambda (mod-expr)
   (!let* (
-    (items (cdr mod-expr))
+      (mod (cdr mod-expr))
 
-    (imports (kv-fetch 'imports (list) items))
-    (defs    (kv-fetch 'defs    (list) items))
-    (exports (kv-fetch 'exports (list) items))
+      (imports (kv-fetch 'imports (list) mod))
+      (defs    (kv-fetch 'defs    (list) mod))
+      (exports (kv-fetch 'exports (list) mod))
 
-    (env (process-imports imports))
-    (eval-def (!lambda (def)
-      (eval env def)))
-    (def-items (map eval-def defs)))
+      (env (process-imports imports))
+      (eval-def (!lambda (def)
+        (eval env def)))
+      (def-items (map eval-def defs))
 
-    (eval env
-      (letrec def-items
-        (cons list
-          (map
-            (!lambda (sym)
-              (list cons (list quote sym) sym))
-            exports)))))))
+      (body (cons list
+        (map
+          (!lambda (sym)
+            (list cons (list quote sym) sym))
+          exports))))
+
+    (eval env (letrec def-items body)))))
 \end{ildcode}
 \lstcaption{Definitions of \ild{load-module} and \ild{eval-module}}\label{def-eval-module}
 The \ild{process-imports} helper (\cref{def-process-imports}) calls \ild{load-module} recursively on
@@ -85,7 +85,7 @@ used in place of an export list.
 We omit the implementation of \ild{process-import-items}, which merely
 picks the requested key-value pairs from the export lists.
 
-Finally, we implement the function \ild{module-loader}, which, given a module name,
+Finally, we implement the function \ild{module-loader} itself, which, given a module name,
 entrypoint function name and arguments, loads that module, picks the entrypoint function
 from its export list and applies it to the given arguments (implementation in \cref{def-module-loader}).
 \begin{ildcode}
