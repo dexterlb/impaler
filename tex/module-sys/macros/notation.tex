@@ -117,21 +117,41 @@
 \newcommand{\subst}[2]{\left[\frac{#1}{#2}\right]}
 
 % comment boxes
-\mdfdefinestyle{boxframe}{
-  linecolor=boxborder, linewidth=2pt,
-  bottomline=false, rightline=false,
-  innerleftmargin=6pt, innerrightmargin=6pt,
-  innertopmargin=4pt, innerbottommargin=4pt,
-  skipabove=6pt, skipbelow=6pt,
+\newsavebox{\noteboxcontent}
+\newcommand{\topruleboxbegin}{%
+  \par\medskip
+  \begin{lrbox}{\noteboxcontent}%
+  \begin{minipage}{\linewidth}%
+  \leftskip=6pt \rightskip=6pt \vspace{4pt}%
+}
+\newcommand{\topruleboxend}[1]{%
+  \par\vspace{4pt}%
+  \end{minipage}%
+  \end{lrbox}%
+  \setlength{\fboxsep}{0pt}%
+  \noindent{\color{boxborder}\rule{\linewidth}{2pt}}\par\nobreak\vspace{2pt}%
+  \noindent\colorbox{#1}{\usebox{\noteboxcontent}}\par\medskip
+}
+\newcommand{\leftruleboxbegin}{%
+  \par\medskip
+  \begin{lrbox}{\noteboxcontent}%
+  \begin{minipage}{\dimexpr\linewidth-4pt\relax}%
+  \leftskip=6pt \rightskip=6pt \vspace{4pt}%
+}
+\newcommand{\leftruleboxend}[1]{%
+  \par\vspace{4pt}%
+  \end{minipage}%
+  \end{lrbox}%
+  \setlength{\fboxsep}{0pt}%
+  \noindent{\color{boxborder}\vrule width 2pt
+    height\ht\noteboxcontent depth\dp\noteboxcontent}\hspace{2pt}%
+  \colorbox{#1}{\usebox{\noteboxcontent}}\par\medskip
 }
 
-\newmdenv[style=boxframe, backgroundcolor=notebg, topline=true, leftline=false]{note}
-
-\newmdenv[style=boxframe, backgroundcolor=notefixedbg, topline=true, leftline=false]{notefixed}
-
-\newmdenv[style=boxframe, backgroundcolor=commentbg, topline=true, leftline=false]{commentbox}
-
-\newmdenv[style=boxframe, backgroundcolor=reviewbg, topline=false, leftline=true]{reviewbox}
+\newenvironment{note}{\topruleboxbegin}{\topruleboxend{notebg}}
+\newenvironment{notefixed}{\topruleboxbegin}{\topruleboxend{notefixedbg}}
+\newenvironment{commentbox}{\topruleboxbegin}{\topruleboxend{commentbg}}
+\newenvironment{reviewbox}{\leftruleboxbegin}{\leftruleboxend{reviewbg}}
 
 % listings
 \lstdefinelanguage{ild}{
@@ -145,11 +165,13 @@
   keywordstyle=,
   commentstyle=\color{clistingcomment},
   stringstyle=\color{chost},
-  frame=none,
+  frame=single,
+  rulecolor=\color{clistingcomment},
+  framerule=0.4pt,
   numbers=left,
   numberstyle=\normalsize\color{clistingcomment},
   numbersep=10pt,
-  xleftmargin=6pt, xrightmargin=6pt,
+  xleftmargin=0pt, xrightmargin=0pt,
   aboveskip=0pt, belowskip=0pt,
   columns=fullflexible,
   keepspaces=true,
@@ -158,33 +180,30 @@
 \lstnewenvironment{ildcode}[1][]{\lstset{style=ildstyle,#1}}{}
 \lstnewenvironment{schemecode}[1][]{\lstset{style=ildstyle,language=Lisp,#1}}{}
 
-\numberwithin{figure}{section}
-\newcounter{grammar}
-\numberwithin{grammar}{section}
-\numberwithin{table}{section}
+\newenvironment{listingbox}{%
+  \par\addvspace{10pt}\noindent
+  \begin{minipage}{\linewidth}%
+}{%
+  \end{minipage}\par
+}
 
 \makeatletter
 \BeforeBeginEnvironment{ildcode}{\let\@vspace\@vspace@orig\let\@vspacer\@vspacer@orig}
 \BeforeBeginEnvironment{schemecode}{\let\@vspace\@vspace@orig\let\@vspacer\@vspacer@orig}
 \makeatother
 
-\mdfdefinestyle{listingframe}{
-  hidealllines=true,
-  backgroundcolor=listingfill,
-  innerleftmargin=0pt, innerrightmargin=0pt,
-  innertopmargin=4pt, innerbottommargin=4pt,
-  skipabove=6pt, skipbelow=2pt,
-  nobreak=true,
-}
-\surroundwithmdframed[style=listingframe]{ildcode}
-\surroundwithmdframed[style=listingframe]{schemecode}
+\numberwithin{figure}{section}
+\newcounter{grammar}
+\numberwithin{grammar}{section}
+\numberwithin{table}{section}
 
 \newcounter{listing}
 \numberwithin{listing}{section}
 \makeatletter
 \newcommand{\lstcaption}[1]{%
-  \par\nobreak\smallskip\noindent
-  \refstepcounter{listing}\textbf{Listing \thelisting:} #1\par\medskip
+  \par\nobreak\vskip\smallskipamount\noindent
+  \refstepcounter{listing}\textbf{Listing \thelisting:} #1\par
+  \vskip\medskipamount
   \@afterindentfalse\@afterheading
 }
 \makeatother
@@ -205,13 +224,3 @@
   \caption{\cfigcaption}%
   \end{figure*}%
 }
-
-% acmart warns whenever the kernel \vspace is used outside a small set of
-% environments; mdframed calls it internally, so restore the original macro
-% inside our mdframed-based environments.
-\makeatletter
-\AtBeginEnvironment{mdframed}{\let\@vspace\@vspace@orig\let\@vspacer\@vspacer@orig}
-\AtBeginEnvironment{note}{\let\@vspace\@vspace@orig\let\@vspacer\@vspacer@orig}
-\AtBeginEnvironment{commentbox}{\let\@vspace\@vspace@orig\let\@vspacer\@vspacer@orig}
-\AtBeginEnvironment{reviewbox}{\let\@vspace\@vspace@orig\let\@vspacer\@vspacer@orig}
-\makeatother

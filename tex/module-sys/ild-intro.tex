@@ -77,7 +77,7 @@ Macro calls are denoted with the \ild{!}-notation,
 further discussed in \cref{syntax}.
 Example bodies of \pathcode{"core/prelude.ild"} and \pathcode{"module-utils.ild"} are
 shown in \cref{ild-code-appendix}.
-\begin{ildcode}
+\begin{listingbox}\begin{ildcode}
 (module
   (doc "this module calculates 5!")
   (exports main)
@@ -92,5 +92,5 @@ shown in \cref{ild-code-appendix}.
       (!if (<= x 0)
         1
         (* x (fact (+ x -1)))))))
-\end{ildcode}
+\end{ildcode}\end{listingbox}
 \lstcaption{Example module \code{"demos/fact.ild"}}\label{example-module-fact}

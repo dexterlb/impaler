@@ -6,7 +6,6 @@ The base language, as defined in \cref{semantics}, cannot express useful program
 programs. To make these values available to programs, we also define a root binding environment \(E\)
 that is used for the outermost eval.
 
-\begin{samepage}
 We will use the following notation
 to define the semantics of the host functions:
 \[ \defas{\ildapp{foo}{v_1}{v_2}{\dots}{v_n}}{E}{\omega} \]
@@ -16,7 +15,6 @@ Formally, the aforementioned notation introducing \ildsym{foo} is shorthand for:
   \item \(\evalsto{\interop{apply}{C}{\ildhost{foo}}{v_1}{v_2}{\dots}{v_n}}{\omega\subst{\cpsret}{C}}\)
   \item \(E = \ildlist{\dots}{\ildpair{\ildsym{foo}}{\ildhost{foo}}}{\dots}\)
 \end{itemize}
-\end{samepage}
 Informally, it means that the symbol \ildsym{foo} stands for the host value \ildhost{foo},
 which, when applied to arguments \(\vec{v}\), results in the term \(\omega\).
 Within \(\omega\)-terms, we use the marker \(\cpsret\) to denote the \emph{current continuation}.

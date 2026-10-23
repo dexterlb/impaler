@@ -2,7 +2,7 @@
 \label{ild-code-appendix}
 A trimmed excerpt of \pathcode{"core/prelude.ild"}, with elided definitions
 denoted as \ild{...}, is shown in \cref{ild-code-prelude}.
-\begin{ildcode}
+\begin{listingbox}\begin{ildcode}
 (module
   (doc "some core functions")
   (exports lambda letrec if list)
@@ -14,10 +14,10 @@ denoted as \ild{...}, is shown in \cref{ild-code-prelude}.
     '(letrec ...)
     '(list (!lambda args args))
     '(if ...)))
-\end{ildcode}
+\end{ildcode}\end{listingbox}
 \lstcaption{Example module \code{"core/prelude.ild"}}\label{ild-code-prelude}
 The helper \ild{fn}, implemented in \pathcode{"core/module-utils.ild"}, is shown in \cref{ild-code-module-utils}.
-\begin{ildcode}
+\begin{listingbox}\begin{ildcode}
 (module
   (doc "some helpers for working with modules")
   (exports fn)
@@ -33,5 +33,5 @@ The helper \ild{fn}, implemented in \pathcode{"core/module-utils.ild"}, is shown
         (list
           name
           (lambda arg-spec body)))))))
-\end{ildcode}
+\end{ildcode}\end{listingbox}
 \lstcaption{Example module \code{"core/module-utils.ild"}}\label{ild-code-module-utils}

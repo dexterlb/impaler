@@ -15,12 +15,12 @@ First, we define a macro called \ild{lambda} that will let us introduce new
 abstraction objects (\cref{abstraction}). We want expansion of the \ild{lambda}
 macro to result in a call to \ild{mk-lambda} given the current binding environment
 (\ild{free-vars}) and the quoted argument names and body (\cref{lambda-expansion-example}).
-\begin{ildcode}
+\begin{listingbox}\begin{ildcode}
 (!lambda (x y) (+ x y))
 ; should become
 (mk-lambda (free-vars) (quote (x y))
   (quote (+ x y)))
-\end{ildcode}
+\end{ildcode}\end{listingbox}
 \lstcaption{Example expansion for \ild{!lambda} expression}\label{lambda-expansion-example}
 A possible implementation of the \ild{lambda} macro is provided in \cref{lambda-macro-def}:
 The outer call to \ild{mk-lambda} introduces a new \(\ildsetAbstr\)-object
@@ -32,7 +32,7 @@ carrying the current binding environment
 % }
 and a body. The body then, when called, in turn
 expands to an expression embedding \ildhost{mk-lambda} in its head.
-\begin{ildcode}
+\begin{listingbox}\begin{ildcode}
 (mk-lambda
   (free-vars)
   '(arg-names body)
@@ -41,7 +41,7 @@ expands to an expression embedding \ildhost{mk-lambda} in its head.
       (cons (cons quote (cons arg-names '()))
         (cons (cons quote (cons body '()))
           '())))))
-\end{ildcode}
+\end{ildcode}\end{listingbox}
 \lstcaption{Implementation of the lambda macro}\label{lambda-macro-def}
 Embedding the values of \ild{mk-lambda}, \ild{free-vars} and \ild{quote}
 avoids name shadowing problems traditionally encountered with unhygienic
@@ -52,7 +52,7 @@ it under a \ild{lambda} name usable from the scoped body. Supposing that
 this definition is stored as an ILD program called \pathcode{core/bootstrap/lambda-macro.ild},
 we recall it twice (once to define \ild{lambda} and once to pass itself as the
 value of \ild{lambda}). Such a wrapper is shown in \cref{lambda-wrap}.
-\begin{ildcode}
+\begin{listingbox}\begin{ildcode}
 ((!(eval (free-vars)
     (read-source
       "core/bootstrap/lambda-macro.ild"))
@@ -62,7 +62,7 @@ value of \ild{lambda}). Such a wrapper is shown in \cref{lambda-wrap}.
   (eval (free-vars)
     (read-source
       "core/bootstrap/lambda-macro.ild")))
-\end{ildcode}
+\end{ildcode}\end{listingbox}
 \lstcaption{Outermost usage of the lambda macro}\label{lambda-wrap}
 
 \subsection{Basic utilities}
@@ -70,14 +70,14 @@ We define helper utilities in a scope where the \ild{lambda} macro is present.
 To keep the code succinct, we store these definitions in separate bootstrap
 source files and introduce them in scope with the same technique as the
 \ild{lambda} macro.
-\begin{ildcode}
+\begin{listingbox}\begin{ildcode}
 (!lambda args args)         ; body of 'list'
 (!lambda (p) (car (cdr p))) ; body of 'cadr'
 (!lambda (p) (car (car p))) ; body of 'caar'
 
 ; 'Y' is special case of poly-fix
 (!lambda (f) (car (poly-fix f)))
-\end{ildcode}
+\end{ildcode}\end{listingbox}
 \lstcaption{Definitions of basic helper primitives}
 Since \ild{lambda} is an ordinary function, it can also be called directly
 to obtain the expression it expands to, which is useful when writing macros
@@ -87,7 +87,7 @@ function (\cref{branching}).
 To avoid evaluating both branches, we delay the evaluation of
 each branch until the condition is known by wrapping it in a 0-argument
 function, and force the selected branch afterwards:
-\begin{ildcode}
+\begin{listingbox}\begin{ildcode}
 ; body of 'if'
 (!lambda (cond t f)
   ; generate an expression that
@@ -99,11 +99,11 @@ function, and force the selected branch afterwards:
       ; delayed #t and #f branches
       (lambda '() t)
       (lambda '() f))))
-\end{ildcode}
+\end{ildcode}\end{listingbox}
 \lstcaption{Definition of the \ild{if} macro}\label{if}
 Since \ild{letrec} is not available at this point in the bootstrap process,
 in \cref{def-map} we define \ild{map} via \ild{Y}.
-\begin{ildcode}
+\begin{listingbox}\begin{ildcode}
 ; body of 'map'
 (Y (!lambda (map)
   (!lambda (f l)
@@ -114,7 +114,7 @@ in \cref{def-map} we define \ild{map} via \ild{Y}.
           (f (car l)) (map f (cdr l)))
         (make-fail
           (list 'not-a-list l)))))))
-\end{ildcode}
+\end{ildcode}\end{listingbox}
 \lstcaption{Definition of the \ild{map} function}\label{def-map}
 
 \subsubsection{Let}
@@ -122,7 +122,7 @@ The binding construct \ild{let} is simply a more ergonomic way
 of writing a \ild{lambda} expression applied to a list of body expressions
 (example in \cref{let-example}).
 In \cref{def-let} we show how it can be defined via \ild{lambda}.
-\begin{ildcode}
+\begin{listingbox}\begin{ildcode}
 ; body of 'let'
 (!lambda (letlist body)
   (cons
@@ -130,10 +130,10 @@ In \cref{def-let} we show how it can be defined via \ild{lambda}.
       (map car letlist)
       body)
     (map cadr letlist)))
-\end{ildcode}
+\end{ildcode}\end{listingbox}
 \lstcaption{Definition of \ild{let}}\label{def-let}
 
-\begin{ildcode}
+\begin{listingbox}\begin{ildcode}
 ; this program
   ((!lambda (add1 forty-two)
       (add1 forty-two))
@@ -149,12 +149,12 @@ In \cref{def-let} we show how it can be defined via \ild{lambda}.
       (forty-two  42))
 
     (add1 forty-two))
-\end{ildcode}
+\end{ildcode}\end{listingbox}
 \lstcaption{Rewriting a \ild{lambda}-based scope binding to use \ild{let}}\label{let-example}
 To bind several names in sequence, where each binding may refer to the
 preceding ones, in \cref{def-letstar} we define \ild{let*} as a recursive
 macro function via \ild{Y}, similarly to \ild{map}.
-\begin{ildcode}
+\begin{listingbox}\begin{ildcode}
 ; body of 'let*'
 (Y (!lambda (let*)
   (!lambda (defs body)
@@ -164,7 +164,7 @@ macro function via \ild{Y}, similarly to \ild{map}.
         (lambda (list (caar defs))
           (let* (cdr defs) body))
         (cadr (car defs)))))))
-\end{ildcode}
+\end{ildcode}\end{listingbox}
 \lstcaption{Definition of \ild{let*}}\label{def-letstar}
 
 \subsection{Letrec}
@@ -183,7 +183,7 @@ operator for the letrec body
   \end{itemize}
 \end{itemize}
 
-\begin{ildcode}
+\begin{listingbox}\begin{ildcode}
 ; body of 'letrec'
 (!lambda (defs body)
   (!let*
@@ -199,7 +199,7 @@ operator for the letrec body
       apply
       body-operator
       (cons poly-fix bind-operators))))
-\end{ildcode}
+\end{ildcode}\end{listingbox}
 \lstcaption{Definition of letrec}\label{letrec-def}
 As defined in \cref{letrec-def}, \ild{letrec} has similar semantics
 to \code{letrec} in Scheme, which also requires that definition bodies

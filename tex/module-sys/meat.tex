@@ -101,7 +101,7 @@ for \ild{gensym} (\cref{side-effects}) only when they are insufficient.
 The example in \cref{early-return-map} illustrates early return from the
 recursive computation
 performed by \ild{map}.
-\begin{ildcode}
+\begin{listingbox}\begin{ildcode}
 (!fn try-map (f l)
   (call/cc (!lambda (return)
     (return (map
@@ -111,7 +111,7 @@ performed by \ild{map}.
             (make-fail
             (list 'fail-in-element x)))
           (f x))) l)))))
-\end{ildcode}
+\end{ildcode}\end{listingbox}
 \lstcaption{Early return from \ild{map}}\label{early-return-map}
 If \ild{f} returns failure for an item in the list, the subsequent items will not
 be processed.

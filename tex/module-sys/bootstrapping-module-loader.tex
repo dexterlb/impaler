@@ -4,7 +4,7 @@ In \cref{module-loader-outer} we construct a program called
 \ild{module-loader} that is able to process
 user programs organised in modules such as the one defined in
 \cref{example-module-fact}.
-\begin{ildcode}
+\begin{listingbox}\begin{ildcode}
 (!(eval (free-vars) (read-source
     "core/bootstrap/let.ild"))
     ( (host-bindings (free-vars))
@@ -17,7 +17,7 @@ user programs organised in modules such as the one defined in
         (kv-get func-name
           (load-module mod-name))
         args))))
-\end{ildcode}
+\end{ildcode}\end{listingbox}
 \lstcaption{Outermost structure of the module loader}\label{module-loader-outer}
 The outermost \ild{let}-expression makes the root environment
 (captured via \ildsf{free-vars}) and \ild{letrec} available to the
@@ -28,7 +28,7 @@ from its export list and applies it to the given arguments.
 The core helper is a function called \ild{eval-module},
 whose implementation we show in \cref{def-eval-module} while
 omitting technical details such as standard helpers
-(list operations, \ild{kv-*} functions for key/value lists, \ild{concat},
+(list and \ild{kv-*} operations, \ild{concat},
 \ild{lambda}, \ild{map}, \ild{if}, \ild{let*}).
 The \emph{eval-module} function:
 \begin{enumerate}
@@ -38,7 +38,7 @@ that contains all imports
 \item Calls \ild{letrec} (as an ordinary function) on these definition pairs and
 a body that generates a list of key-value pairs for the module exports.
 \end{enumerate}
-\begin{ildcode}
+\begin{listingbox}\begin{ildcode}
 ; ---- inside letrec block ----
 (load-module (!lambda (module-name)
   (eval-module (read-source module-name))))
@@ -63,7 +63,7 @@ a body that generates a list of key-value pairs for the module exports.
           exports))))
 
     (eval env (letrec def-items body)))))
-\end{ildcode}
+\end{ildcode}\end{listingbox}
 \lstcaption{Definitions of \ild{load-module} and \ild{eval-module}}\label{def-eval-module}
 The \ild{process-imports} helper (\cref{def-process-imports}) calls \ild{load-module} recursively on
 imported modules and then merges the resulting export lists. For the special
@@ -72,7 +72,7 @@ the host bindings (obtained via the outermost call to \ild{free-vars}) are
 used in place of an export list.
 We omit the implementation of \ild{process-import-items}, which merely
 picks the requested key-value pairs from the export lists.
-\begin{ildcode}
+\begin{listingbox}\begin{ildcode}
 ; ---- inside letrec block ----
 (process-imports (!lambda (import-list)
   (concat (map process-import import-list))))
@@ -86,18 +86,18 @@ picks the requested key-value pairs from the export lists.
     (process-import-items
       (load-module (car import-spec))
       (cdr import-spec)))))
-\end{ildcode}
+\end{ildcode}\end{listingbox}
 \lstcaption{Definition of \ild{process-imports}}\label{def-process-imports}
 Running a program
 such as the one in \cref{example-module-fact} is now a matter of passing its
 name and entrypoint to the module loader (shown in \cref{module-load-example}).
-\begin{ildcode}
+\begin{listingbox}\begin{ildcode}
 ((eval (free-vars) (read-source
   "core/bootstrap/module-loader.ild"))
 
   "demos/fact.ild"
   'main)
-\end{ildcode}
+\end{ildcode}\end{listingbox}
 \lstcaption{Executing the module loader on a user program}\label{module-load-example}
 The ILD interpreter and/or build system need not be concerned with any details
 about loading and importing modules and can be kept simple: all of the logic

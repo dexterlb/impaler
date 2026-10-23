@@ -3,7 +3,7 @@
 Instead of relying on a host implementation of \(\ildsym{poly-fix}\), we can
 define it as follows:
 
-\begin{ildcode}
+\begin{listingbox}\begin{ildcode}
 (!lambda l
   ((!lambda (x) (x x))
     (!lambda (p)
@@ -11,5 +11,5 @@ define it as follows:
         (!lambda args
           (apply (apply li (p p)) args)))
         l))))
-\end{ildcode}
+\end{ildcode}\end{listingbox}
 \lstcaption{Polyvariadic Y-combinator}\label{poly-fix-y}
