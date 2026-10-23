@@ -1,26 +1,30 @@
 \section{Bootstrapping the module loader}
 \label{module-loader}
-Starting in \cref{module-loader-outer} we construct a program called
+In \cref{module-loader-outer} we construct a program called
 \ild{module-loader} that is able to process
 user programs organised in modules such as the one defined in
 \cref{example-module-fact}.
 \begin{ildcode}
 (!(eval (free-vars) (read-source
     "core/bootstrap/let.ild"))
-  ( (host-bindings (free-vars))
-    (letrec (eval (free-vars) (read-source
-      "core/bootstrap/letrec.ild"))))
+    ( (host-bindings (free-vars))
+      (letrec (eval (free-vars) (read-source
+        "core/bootstrap/letrec.ild"))))
   (!letrec (
     ; <definitions of helpers>
-    ; <definition of module-loader>
-    )
-
-    module-loader))
+    (!lambda (mod-name func-name . args)
+      (apply
+        (kv-get func-name
+          (load-module mod-name))
+        args)))))
 \end{ildcode}
-\lstcaption{Outer scope bindings of the module loader}\label{module-loader-outer}
+\lstcaption{Outermost structure of the module loader}\label{module-loader-outer}
 The outermost \ild{let}-expression makes the root environment
 (captured via \ildsf{free-vars}) and \ild{letrec} available to the
-internal \ild{letrec} expression that defines everything else.
+internal \ild{letrec} expression.
+The module loader, when called with a module name,
+entrypoint function name and arguments, loads that module, picks the entrypoint function
+from its export list and applies it to the given arguments.
 The core helper is a function called \ild{eval-module},
 whose implementation we show in \cref{def-eval-module} while
 omitting technical details such as standard helpers
@@ -64,8 +68,10 @@ a body that generates a list of key-value pairs for the module exports.
 The \ild{process-imports} helper (\cref{def-process-imports}) calls \ild{load-module} recursively on
 imported modules and then merges the resulting export lists. For the special
 case when the \ild{host} keyword is used in place of a module name,
-the host bindings (obtained via an outermost call to \ild{free-vars}) are
+the host bindings (obtained via the outermost call to \ild{free-vars}) are
 used in place of an export list.
+We omit the implementation of \ild{process-import-items}, which merely
+picks the requested key-value pairs from the export lists.
 \begin{ildcode}
 ; ---- inside letrec block ----
 (process-imports (!lambda (import-list)
@@ -82,23 +88,6 @@ used in place of an export list.
       (cdr import-spec)))))
 \end{ildcode}
 \lstcaption{Definition of \ild{process-imports}}\label{def-process-imports}
-We omit the implementation of \ild{process-import-items}, which merely
-picks the requested key-value pairs from the export lists.
-
-Finally, we implement the function \ild{module-loader} itself, which, given a module name,
-entrypoint function name and arguments, loads that module, picks the entrypoint function
-from its export list and applies it to the given arguments (implementation in \cref{def-module-loader}).
-\begin{ildcode}
-; ---- inside letrec block ----
-(module-loader
-  (!lambda
-    (mod-name entry-func-name . args)
-    (apply
-      (kv-get entry-func-name
-        (load-module mod-name))
-      args)))
-\end{ildcode}
-\lstcaption{Definition of \ild{module-loader}}\label{def-module-loader}
 Running a program
 such as the one in \cref{example-module-fact} is now a matter of passing its
 name and entrypoint to the module loader (shown in \cref{module-load-example}).
