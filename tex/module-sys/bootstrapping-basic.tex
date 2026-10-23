@@ -161,8 +161,7 @@ macro function via \ild{Y}, similarly to \ild{map}.
     (!if (null? defs)
       body
       (list
-        (lambda
-          (list (caar defs))
+        (lambda (list (caar defs))
           (let* (cdr defs) body))
         (cadr (car defs)))))))
 \end{ildcode}
@@ -187,16 +186,15 @@ operator for the letrec body
 \begin{ildcode}
 ; body of 'letrec'
 (!lambda (defs body)
-  (!let* (
-    (names (map car defs))
-    (bind-operators
-      (map
-        (!lambda (def)
-          (lambda names (cadr def)))
-        defs))
-    (body-operator
-      (lambda names body)))
-
+  (!let*
+    ( (names (map car defs))
+      (bind-operators
+        (map
+          (!lambda (def)
+            (lambda names (cadr def)))
+          defs))
+      (body-operator
+        (lambda names body)))
     (list
       apply
       body-operator
