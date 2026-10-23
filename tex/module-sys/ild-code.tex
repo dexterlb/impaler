@@ -25,8 +25,7 @@ The helper \ild{fn}, implemented in \pathcode{"core/module-utils.ild"}, is shown
     (host
       (macroexpand quote))
     ("core/prelude.ild"
-      (lambda list))
-  )
+      (lambda list)))
   (defs
     '(fn (!lambda (name arg-spec body)
       (list quote
@@ -35,3 +34,6 @@ The helper \ild{fn}, implemented in \pathcode{"core/module-utils.ild"}, is shown
           (lambda arg-spec body)))))))
 \end{ildcode}\end{listingbox}
 \lstcaption{Example module \code{"core/module-utils.ild"}}\label{ild-code-module-utils}
+
+The entire library, together with a working ILD interpreter,
+is available in the ILD git repository~\cite{ild-repo}.
