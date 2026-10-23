@@ -31,10 +31,8 @@ that:
 \item Recursively processes imported modules and builds a binding environment \ild{env}
 that contains all imports
 \item Builds a list of name-body pairs from the definitions listed in the module
-\item Calls \ild{letrec} with these definition pairs and a body that generates a list
-of key-value pairs for the module exports. Note that unlike other places, where letrec
-is used as a macro, here it is used as a function (\cref{macro-function-duality}).
-\item Evaluates the resulting program under \ild{env}
+\item Calls \ild{letrec} (as an ordinary function) on these definition pairs and
+a body that generates a list of key-value pairs for the module exports.
 \end{enumerate}
 \begin{ildcode}
 ; ---- inside letrec block ----
