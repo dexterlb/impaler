@@ -4,7 +4,7 @@ Several design choices in ILD's semantics are worth noting:
 \begin{itemize}
 \item The syntax shorthands for the \ildsf{quote} and \ildsf{macroexpand}
 special forms (\cref{syntax}) desugar to the \ildsym{quote} and \ildsym{macroexpand}
-symbols instead of the \ildsf{quote} and \ildsf{macroexpand} special form objects.
+symbols instead of the respective \ildsf{quote} and \ildsf{macroexpand} special form objects.
 This restricts the parser output to simple S-expressions and allows the syntax to be
 overridden by the program, but requires the respective names to be bound in the local
 scope (also discussed in \cref{macro-function-duality}).
