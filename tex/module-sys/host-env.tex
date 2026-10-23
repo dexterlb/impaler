@@ -17,7 +17,7 @@ Formally, the aforementioned notation introducing \ildsym{foo} is shorthand for:
 \end{itemize}
 Informally, it means that the symbol \ildsym{foo} stands for the host value \ildhost{foo},
 which, when applied to arguments \(\vec{v}\), results in the term \(\omega\).
-Within \(\omega\)-terms, we use the marker \(\cpsret\) to denote the \emph{current continuation}.
+Within \(\omega\)-terms, we use the marker \(\cpsret\) to denote the \emph{current continuation}.\\
 For example, to introduce the function \ildhost{cons} under the symbol \ildsym{cons}
 in the root environment, we would write:
 \[ \defas{\ildapp{cons}{a}{d}}{E}{\cpsapp{\cpsret}{\ildpair{a}{d}}} \]
