@@ -1,4 +1,8 @@
-% Document-level setup.
+\makeatletter
+\if@ACM@review
+  \@ACM@anonymoustrue
+\fi
+\makeatother
 
 \usepackage{amsmath}
 \usepackage{amstext}
@@ -6,7 +10,6 @@
 \usepackage{listings}
 \usepackage{soul}
 
-% Cross-references: type-aware references via cleveref.
 \usepackage[nameinlink]{cleveref}
 \crefname{section}{Section}{Sections}
 \crefname{subsection}{Section}{Sections}
