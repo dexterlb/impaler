@@ -5,7 +5,7 @@ programs organised in modules like the one defined in
 \cref{example-module-fact}. We will present it in a top-down manner while
 omitting technical details such as the helper definitions
 (list operations, \ild{kv-*} functions for key/value lists, \ild{concat},
-\ild{lambda}, \ild{map}, \ild{if}, \ild{let*}, \ild{sym-item-pair}).
+\ild{lambda}, \ild{map}, \ild{if}, \ild{let*}).
 The outermost expression defining the module
 loader (shown in \cref{module-loader-outer}) makes the root environment
 (captured via \ildsf{free-vars}) and \ild{letrec} available to the
@@ -55,10 +55,12 @@ is used as a macro, here it is used as a function (\cref{macro-function-duality}
     (def-items (map eval-def defs)))
 
     (eval env
-      (letrec
-        def-items
+      (letrec def-items
         (cons list
-          (map sym-item-pair exports)))))))
+          (map
+            (!lambda (sym)
+              (list cons (list quote sym) sym))
+            exports)))))))
 \end{ildcode}
 \lstcaption{Definitions of \ild{load-module} and \ild{eval-module}}\label{def-eval-module}
 The \ild{process-imports} helper (\cref{def-process-imports}) calls \ild{load-module} recursively on

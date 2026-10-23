@@ -87,7 +87,7 @@
         (def-items (map eval-def defs)))
 
         (eval env
-          (letrec def-items (cons list (map sym-item-pair exports)))))))
+          (letrec def-items (cons list (map (!lambda (sym) (list cons (list quote sym) sym)) exports)))))))
 
     (process-imports (!lambda (import-list)
       (concat (map process-import import-list))))
@@ -115,9 +115,6 @@
         ; symbol pickers refer a single exported object
         (list (cons picker (kv-get picker items)))
         'not-implemented)))
-
-    (sym-item-pair (!lambda (sym)
-      (list cons (list quote sym) sym)))
 
     (module-loader (!lambda (entrypoint-module-name entrypoint-func-name . entrypoint-func-args)
       (apply
