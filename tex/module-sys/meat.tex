@@ -97,13 +97,10 @@ To support this claim, none of the macros defined in this paper introduce new
 symbols in the scope they are called in, and are thus immune to name clash issues.
 Nevertheless, it is up to the programmer to use these techniques, and to reach
 for \ild{gensym} (\cref{side-effects}) only when they are insufficient.
-
 \subsection{Complex control flow on top of CPS}
-ILD's semantics is built on CPS, similar to Scheme. This allows implementing
-popular non-linear control flow constructs such as try/catch, early return
-and coroutines in the language itself~\cite{r5rs}.
-The following example illustrates early return from the recursive computation
-performed by \ild{map}:
+The example in \cref{early-return-map} illustrates early return from the
+recursive computation
+performed by \ild{map}.
 \begin{ildcode}
 (!fn try-map (f l)
   (call/cc (!lambda (return)
@@ -115,6 +112,10 @@ performed by \ild{map}:
             (list 'fail-in-element x)))
           (f x))) l)))))
 \end{ildcode}
-\lstcaption{Early return from \ild{map}}
+\lstcaption{Early return from \ild{map}}\label{early-return-map}
 If \ild{f} returns failure for an item in the list, the subsequent items will not
 be processed.
+
+ILD's semantics is built on CPS, similar to Scheme. This allows implementing
+popular non-linear control flow constructs such as try/catch, early return
+and coroutines in the language itself~\cite{r5rs}.
