@@ -15,6 +15,7 @@ First, we define a macro called \ild{lambda} that will let us introduce new
 abstraction objects (\cref{abstraction}). We want expansion of the \ild{lambda}
 macro to result in a call to \ild{mk-lambda} given the current binding environment
 (\ild{free-vars}) and the quoted argument names and body (\cref{lambda-expansion-example}).
+\pagebreak % LAYOUT HACK, REMOVE LATER
 \begin{listingbox}\begin{ildcode}
 (!lambda (x y) (+ x y))
 ; should become
