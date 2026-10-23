@@ -10,13 +10,13 @@ user programs organised in modules such as the one defined in
     ( (host-bindings (free-vars))
       (letrec (eval (free-vars) (read-source
         "core/bootstrap/letrec.ild"))))
-  (!letrec (
-    ; <definitions of helpers>
+  (!letrec
+      ( <definitions of helpers> )
     (!lambda (mod-name func-name . args)
       (apply
         (kv-get func-name
           (load-module mod-name))
-        args)))))
+        args))))
 \end{ildcode}
 \lstcaption{Outermost structure of the module loader}\label{module-loader-outer}
 The outermost \ild{let}-expression makes the root environment

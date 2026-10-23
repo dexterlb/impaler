@@ -122,11 +122,6 @@
         (list (cons picker (kv-get picker items)))
         'not-implemented)))
 
-    (module-loader (!lambda (entrypoint-module-name entrypoint-func-name . entrypoint-func-args)
-      (apply
-        (kv-get entrypoint-func-name (load-module entrypoint-module-name))
-        entrypoint-func-args)))
-
     (concat (!lambda (l)
       (!if (null? l)
         l
@@ -140,4 +135,8 @@
   )
 
     ;finally, return the module loader
-    module-loader))
+    (!lambda (mod-name func-name . args)
+      (apply
+        (kv-get func-name
+          (load-module mod-name))
+        args))))
