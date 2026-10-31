@@ -138,7 +138,7 @@ right: #t
 \end{schemerepl}
 \lstcaption{The function evaluates both arguments}
 \end{frame}
-\begin{frame}[fragile]{Boolean AND as a macro}
+\begin{frame}[fragile]{Scheme macro example: Boolean AND}
 \begin{schemecode}
 (define-syntax and
   (syntax-rules ()
@@ -160,6 +160,25 @@ left: #f
 \lstcaption{Short-circuiting: the second argument is not evaluated}
 \end{frame}
 
+\begin{frame}[fragile]{LISP macro example: boolean AND}
+\begin{schemecode}
+(defmacro and (a b)
+  (cons 'if (cons a (cons b (cons nil nil)))))
+\end{schemecode}
+\lstcaption{An unhygienic Lisp version of ``and''}
+\vspace{1em}
+\begin{schemerepl}
+CL-USER> (and (trace 'left t) (trace 'right nil))
+LEFT: T
+RIGHT: NIL
+NIL
+
+CL-USER> (and (trace 'left nil) (trace 'right t))
+LEFT: NIL
+NIL
+\end{schemerepl}
+\lstcaption{Short-circuiting: the second argument is not evaluated}
+\end{frame}
 
 \section{The language ILD}
 
