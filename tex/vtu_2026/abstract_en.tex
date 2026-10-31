@@ -1,0 +1,75 @@
+\documentclass[12pt,a4paper]{amsart}
+
+\usepackage{amsmath,amssymb,amsfonts,amsthm}
+\usepackage{graphicx,color}
+\usepackage{fancyhdr}
+\usepackage[style=alphabetic]{biblatex}
+\addbibresource{references.bib}
+
+\newcommand\ds{\displaystyle}
+\newcommand\etal{et al.\xspace}
+
+\newcommand\lang{ILD }
+
+\fancyhf{}
+\fancyhead[C]{\textit{Spring Scientific Session FMI -- 2026}}
+
+% Title
+\title[ILD Module system]{\bf A module system for a minimalistic functional language}
+
+% Authors
+\author[A. Angelov]{Angel Angelov$^1$}
+\address{$^1$Faculty of Mathematics and Informatics, Sofia University}
+\email{angel@qtrp.org}
+% \thanks{$^1$The research of these authors was supported, in part, by the ...}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{conjecture}[theorem]{Conjecture}
+\theoremstyle{definition}
+\newtheorem{defn}[theorem]{Definition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{remark}[theorem]{Remark}
+
+\begin{document}
+
+\maketitle
+
+\thispagestyle{fancy}
+
+\section*{Abstract\\{\small\normalfont (Presenter \textit{Angel Angelov})}}
+
+\bigskip
+We define a minimal language called \lang that syntactically resembles LISP and
+Scheme. Functions and macros in \lang are indistinguishable; the distinction is
+made only at invocation. We show that the minimal features of \lang are
+sufficient to define a module system that is as expressive as existing module
+systems in Scheme~\cite{r6rs}.
+
+Well-established module systems for Scheme and Racket take extra care to handle
+compile-time code execution and imports and exports of macros
+\cite{module-system-for-scheme,submodules-in-racket}. In contrast, we
+demonstrate that such techniques are not needed for a language such as \lang
+because macros have runtime semantics and are effectively identical to
+functions.
+
+The complex metaprogramming constructs used to implement the proposed module
+system typically incur a significant performance penalty when combined with
+runtime semantics. We propose using partial evaluation to implicitly shift
+module resolution to compile time, achieving performance comparable to that of
+established module systems in other languages.
+\bigskip
+
+\noindent\textbf{Keywords:} % Maximum 6 keywords
+Functional, Lisp, Scheme, Partial evaluation
+\bigskip
+
+\pagebreak
+\thispagestyle{plain}
+\printbibliography[title={References}]
+
+\newpage\thispagestyle{empty}
+
+\end{document}

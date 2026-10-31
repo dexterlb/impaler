@@ -92,6 +92,7 @@
         latexTools = latex_tools.lib.mkLatexTools { inherit nixpkgs pkgs texPkgs extraBuildDeps; };
         fmiSpringSession2024 = (import ./fmi_spring_session_2024) { inherit pkgs latexTools; };
         fmiSpringSession2026 = (import ./fmi_spring_session_2026) { inherit pkgs latexTools; };
+        vtu2026 = (import ./vtu_2026) { inherit pkgs latexTools; };
         module-sys = (import ./module-sys) { inherit pkgs latexTools; };
         isesia = (import ./isesia) { inherit pkgs latexTools; };
         thesis = (import ./thesis) { inherit pkgs latexTools; };
@@ -100,6 +101,7 @@
         packages
           = fmiSpringSession2024.packages
           // fmiSpringSession2026.packages
+          // vtu2026.packages
           // isesia.packages
           // thesis.packages
           // module-sys.packages
@@ -118,7 +120,7 @@
               echo " - 'latex_builder watch foo.tex' to build automatically on file change."
             '';
           };
-        apps = fmiSpringSession2024.apps // fmiSpringSession2026.apps // isesia.apps // {
+        apps = vtu2026.apps // fmiSpringSession2024.apps // fmiSpringSession2026.apps // isesia.apps // {
           fmt = {
             type = "app";
             program = "${pkgs.writeShellApplication {
