@@ -4,7 +4,9 @@
 \maketitle
 \end{frame}
 
-\begin{frame}[fragile]{Background (the REPL)}
+\section{Background piece 1: the REPL}
+
+\begin{frame}[fragile]{The REPL}
 \begin{schemerepl}
 #;1> (+ 3 5)
 8
@@ -21,9 +23,10 @@ Error: unbound variable: circumference
 #;5> (circumference 42)
 263.89356
 \end{schemerepl}
+\lstcaption{Using the REPL in Scheme}
 \end{frame}
 
-\begin{frame}[fragile]{Background (Scheme)}
+\begin{frame}[fragile]{The REPL: Scheme programs}
 \begin{schemecode}
 (define (even? x)
   (if (= x 0)
@@ -35,7 +38,130 @@ Error: unbound variable: circumference
     #t
     (even? (- x 1))))
 \end{schemecode}
+\lstcaption{A program, e.g. \pathcode{even-odd.scm}}
+
+\begin{schemerepl}
+#;1> (load "even-odd.scm")
+
+#;2> (even? 42)
+#t
+\end{schemerepl}
+\lstcaption{Using a function defined by the program}
 \end{frame}
+
+\begin{frame}[fragile]{The REPL: Scheme programs}
+\begin{schemecode}
+(define (even? x)
+  (if (= x 0)
+    #t
+    (odd? (- x 1))))
+
+(define (odd? x)
+  (if (= x 1)
+    #t
+    (even? (- x 1))))
+
+(define (main)
+  (display "Number: ")
+  (let ((n (read)))
+    (display (if (even? n) "Even" "Odd"))
+    (newline)))
+
+(main)
+\end{schemecode}
+\lstcaption{A program that interacts with the user}
+\end{frame}
+
+\begin{frame}[fragile]{Static scoping}
+\begin{schemecode}
+(letrec
+  ( (even? (lambda (x)
+             (if (= x 0)
+               #t
+               (odd? (- x 1)))))
+
+    (odd? (lambda (x)
+            (if (= x 1)
+              #t
+              (even? (- x 1)))))
+
+    (main (lambda ()
+            (display "Number: ")
+            (let ((n (read)))
+              (display (if (even? n) "Even" "Odd"))
+              (newline)))))
+  (main))
+\end{schemecode}
+\lstcaption{The same program, statically-scoped}
+\end{frame}
+
+\section{Background piece 2: macros}
+
+\begin{frame}[fragile]{Tracing evaluation}
+In the following examples, we will use a \pathcode{trace} helper:
+\vspace{1em}
+\begin{schemecode}
+(define (trace name value)
+  (display name)
+  (display ": ")
+  (display value)
+  (newline)
+  value)
+\end{schemecode}
+\lstcaption{A \pathcode{trace} function helps us see what is evaluated}
+\vspace{1em}
+\begin{schemerepl}
+#;1> (trace 'value 42)
+value: 42
+42
+\end{schemerepl}
+\lstcaption{\pathcode{trace} prints its argument and returns it}
+\end{frame}
+
+\begin{frame}[fragile]{Functions}
+\begin{schemecode}
+(define (and a b)
+  (if a b #f))
+\end{schemecode}
+\lstcaption{Boolean AND as a function}
+\vspace{1em}
+\begin{schemerepl}
+#;1> (and (trace 'left #t) (trace 'right #f))
+left: #t
+right: #f
+#f
+
+#;2> (and (trace 'left #f) (trace 'right #t))
+left: #f
+right: #t
+#f
+\end{schemerepl}
+\lstcaption{The function evaluates both arguments}
+\end{frame}
+\begin{frame}[fragile]{Boolean AND as a macro}
+\begin{schemecode}
+(define-syntax and
+  (syntax-rules ()
+    ((and a b)
+     (if a b #f))))
+\end{schemecode}
+\lstcaption{Defining ``and'' as a macro}
+\vspace{1em}
+\begin{schemerepl}
+#;1> (and (trace 'left #t) (trace 'right #f))
+left: #t
+right: #f
+#f
+
+#;2> (and (trace 'left #f) (trace 'right #t))
+left: #f
+#f
+\end{schemerepl}
+\lstcaption{Short-circuiting: the second argument is not evaluated}
+\end{frame}
+
+
+\section{The language ILD}
 
 \begin{frame}[fragile]{Goals}
 \begin{itemize}

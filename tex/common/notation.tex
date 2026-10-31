@@ -166,7 +166,8 @@
 }
 \lstdefinelanguage{repl}{
   sensitive=true,
-  morecomment=[l]{\#},
+  commentstyle=\color{red},
+  comment=[s]{\#;}{>},
 }
 \lstdefinestyle{ildstyle}{
   basicstyle=\ttfamily\normalsize,
@@ -187,9 +188,7 @@
 }
 \lstnewenvironment{ildcode}[1][]{\lstset{style=ildstyle,language=ild#1}}{}
 \lstnewenvironment{schemecode}[1][]{\lstset{style=ildstyle,language=Lisp,#1}}{}
-\lstnewenvironment{schemerepl}[1][]{%
-  \lstset{style=ildstyle,language=repl,commentstyle=\color{red},#1}%
-}{}
+\lstnewenvironment{schemerepl}[1][]{\lstset{style=ildstyle,language=repl,#1}}{}
 
 \newenvironment{listingbox}{%
   \par\addvspace{10pt}\noindent
