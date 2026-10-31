@@ -72,6 +72,30 @@ Error: unbound variable: circumference
 \lstcaption{A program that interacts with the user}
 \end{frame}
 
+\begin{frame}[fragile]{Definitions are implicit mutations}
+\begin{schemecode}
+(set! even?
+  (lambda (x)
+    (if (= x 0)
+      #t
+      (odd? (- x 1)))))
+
+(set! odd?
+  (lambda (x)
+    (if (= x 1)
+      #t
+      (even? (- x 1)))))
+
+(set! main
+  (lambda ()
+    (display "Number: ")
+    (let ((n (read)))
+      (display (if (even? n) "Even" "Odd"))
+      (newline))))
+\end{schemecode}
+\lstcaption{We unmask ``define'' for what it really is: ``set!''}
+\end{frame}
+
 \begin{frame}[fragile]{Static scoping}
 \begin{schemecode}
 (letrec
@@ -93,6 +117,30 @@ Error: unbound variable: circumference
   (main))
 \end{schemecode}
 \lstcaption{The same program, statically-scoped}
+\end{frame}
+
+\begin{frame}{Mutating vs statically-scoped programs}
+\begin{columns}[T,onlytextwidth]
+\begin{column}{0.4\textwidth}
+\begin{itemize}
+\item Mutable environments
+\item Series of statements
+\item Mixes functional code and imperative constructs
+\end{itemize}
+\end{column}
+\begin{column}{0.02\textwidth}
+\centering
+\rule{0.4pt}{0.225\textheight}
+\end{column}
+\begin{column}{0.4\textwidth}
+\begin{itemize}
+\item Fully immutable
+\item Nested, statically-scoped expressions
+\item Declarative
+\item Purely functional
+\end{itemize}
+\end{column}
+\end{columns}
 \end{frame}
 
 \section{Background piece 2: macros}
@@ -178,6 +226,18 @@ LEFT: NIL
 NIL
 \end{schemerepl}
 \lstcaption{Short-circuiting: the second argument is not evaluated}
+\end{frame}
+
+\begin{frame}{Macros and static scoping}
+\begin{itemize}
+\item Macro expansion is a separate, pre-evaluation step
+\item \pathcode{defmacro} and \pathcode{define-syntax} have statement-like semantics in a global scope
+\begin{itemize}
+  \item Locally-scoped macro binding constructs exist but even then macros are in
+        a different namespace and scoping is a syntactic illusion
+\end{itemize}
+\item Macros are not first-class objects
+\end{itemize}
 \end{frame}
 
 \section{The language ILD}
