@@ -139,6 +139,21 @@
               '';
             }}/bin/fmt";
           };
+          latex-builder = {
+            type = "app";
+            program = "${pkgs.writeShellApplication {
+              name = "latex-builder";
+              runtimeInputs = latexTools.deps ++ [
+                pkgs.coreutils
+                pkgs.bash
+              ];
+              text = ''
+                # shellcheck source=/dev/null
+                . ${latexTools.latexShellInit}
+                exec latex_builder "''${@}"
+              '';
+            }}/bin/latex-builder";
+          };
         };
       }
     );
