@@ -90,24 +90,29 @@
         ];
 
         latexTools = latex_tools.lib.mkLatexTools { inherit nixpkgs pkgs texPkgs extraBuildDeps; };
-        fmiSpringSession2024 = (import ./fmi_spring_session_2024) { inherit pkgs latexTools; };
-        fmiSpringSession2026 = (import ./fmi_spring_session_2026) { inherit pkgs latexTools; };
-        vtu2026 = (import ./vtu_2026) { inherit pkgs latexTools; };
-        module-sys = (import ./module-sys) { inherit pkgs latexTools; };
-        isesia = (import ./isesia) { inherit pkgs latexTools; };
-        thesis = (import ./thesis) { inherit pkgs latexTools; };
+
+        docsDir = ./docs;
+        docsListing = builtins.readDir docsDir;
+        docNames = builtins.filter
+          (name:
+            docsListing.${name} == "directory"
+            && builtins.pathExists (docsDir + "/${name}/default.nix"))
+          (builtins.attrNames docsListing);
+        docs = builtins.listToAttrs (map
+          (name: {
+            inherit name;
+            value = import (docsDir + "/${name}") { inherit pkgs latexTools; };
+          })
+          docNames);
+        docsAttr = attr: builtins.foldl'
+          (acc: doc: acc // (doc.${attr} or { }))
+          { }
+          (builtins.attrValues docs);
       in
       {
-        packages
-          = fmiSpringSession2024.packages
-          // fmiSpringSession2026.packages
-          // vtu2026.packages
-          // isesia.packages
-          // thesis.packages
-          // module-sys.packages
-          // rec {
-            default = thesis.packages.thesis;
-          };
+        packages = docsAttr "packages" // {
+          default = docs.thesis.packages.thesis;
+        };
         devShell = pkgs.mkShell
           {
             packages = latexTools.deps ++ [ pkgs.tex-fmt ];
@@ -120,7 +125,7 @@
               echo " - 'latex_builder watch foo.tex' to build automatically on file change."
             '';
           };
-        apps = vtu2026.apps // fmiSpringSession2024.apps // fmiSpringSession2026.apps // isesia.apps // {
+        apps = docsAttr "apps" // {
           fmt = {
             type = "app";
             program = "${pkgs.writeShellApplication {
