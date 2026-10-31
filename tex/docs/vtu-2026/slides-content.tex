@@ -4,6 +4,22 @@
 \maketitle
 \end{frame}
 
+\begin{frame}[fragile]{Background (Scheme)}
+\begin{schemecode}
+(define (even? x)
+  (if (= x 0)
+    #t
+    (odd? (- x 1))))
+(define (odd? x)
+  (if (= x 1)
+    #t
+    (even? (- x 1))))
+\end{schemecode}
+\begin{itemize}
+    \item bla
+\end{itemize}
+\end{frame}
+
 \begin{frame}[fragile]{Goals}
 \begin{itemize}
     \item Minimality of the core language

@@ -89,7 +89,13 @@
           pkgs.python311Packages.pygments
         ];
 
-        latexTools = latex_tools.lib.mkLatexTools { inherit nixpkgs pkgs texPkgs extraBuildDeps; };
+        baseLatexTools = latex_tools.lib.mkLatexTools { inherit nixpkgs pkgs texPkgs extraBuildDeps; };
+        commonDir = ./common;
+        latexTools = baseLatexTools // {
+          buildLatex = params: (baseLatexTools.buildLatex params).overrideAttrs (_: {
+            TEXINPUTS = "${commonDir}:";
+          });
+        };
 
         docsDir = ./docs;
         docsListing = builtins.readDir docsDir;
@@ -119,6 +125,7 @@
             LOCALE_ARCHIVE = "${pkgs.glibcLocales}/lib/locale/locale-archive";
             shellHook = ''
               . ${latexTools.latexShellInit}
+              export TEXINPUTS="${commonDir}:''${TEXINPUTS-}"
 
               echo "for any latex file, you can use:"
               echo " - 'latex_builder build foo.tex' to build dist/foo.pdf"
@@ -150,6 +157,7 @@
               text = ''
                 # shellcheck source=/dev/null
                 . ${latexTools.latexShellInit}
+                export TEXINPUTS="${commonDir}:''${TEXINPUTS-}"
                 exec latex_builder "''${@}"
               '';
             }}/bin/latex-builder";

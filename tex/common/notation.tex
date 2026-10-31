@@ -148,7 +148,12 @@
   \colorbox{#1}{\usebox{\noteboxcontent}}\par\medskip
 }
 
-\newenvironment{note}{\topruleboxbegin}{\topruleboxend{notebg}}
+\makeatletter
+% beamer defines \note itself
+\@ifundefined{note}{%
+  \newenvironment{note}{\topruleboxbegin}{\topruleboxend{notebg}}%
+}{}
+\makeatother
 \newenvironment{notefixed}{\topruleboxbegin}{\topruleboxend{notefixedbg}}
 \newenvironment{commentbox}{\topruleboxbegin}{\topruleboxend{commentbg}}
 \newenvironment{reviewbox}{\leftruleboxbegin}{\leftruleboxend{reviewbg}}
@@ -188,8 +193,11 @@
 }
 
 \makeatletter
-\BeforeBeginEnvironment{ildcode}{\let\@vspace\@vspace@orig\let\@vspacer\@vspacer@orig}
-\BeforeBeginEnvironment{schemecode}{\let\@vspace\@vspace@orig\let\@vspacer\@vspacer@orig}
+% acmart patches \@vspace; undo that where the original is available
+\@ifundefined{@vspace@orig}{}{%
+  \BeforeBeginEnvironment{ildcode}{\let\@vspace\@vspace@orig\let\@vspacer\@vspacer@orig}%
+  \BeforeBeginEnvironment{schemecode}{\let\@vspace\@vspace@orig\let\@vspacer\@vspacer@orig}%
+}
 \makeatother
 
 \numberwithin{figure}{section}
