@@ -164,8 +164,11 @@
   morecomment=[l]{;},
   morestring=[b]",
 }
+\lstdefinelanguage{repl}{
+  sensitive=true,
+  morecomment=[l]{\#},
+}
 \lstdefinestyle{ildstyle}{
-  language=ild,
   basicstyle=\ttfamily\normalsize,
   keywordstyle=,
   commentstyle=\color{clistingcomment},
@@ -182,8 +185,11 @@
   keepspaces=true,
   showstringspaces=false,
 }
-\lstnewenvironment{ildcode}[1][]{\lstset{style=ildstyle,#1}}{}
+\lstnewenvironment{ildcode}[1][]{\lstset{style=ildstyle,language=ild#1}}{}
 \lstnewenvironment{schemecode}[1][]{\lstset{style=ildstyle,language=Lisp,#1}}{}
+\lstnewenvironment{schemerepl}[1][]{%
+  \lstset{style=ildstyle,language=repl,commentstyle=\color{red},#1}%
+}{}
 
 \newenvironment{listingbox}{%
   \par\addvspace{10pt}\noindent
