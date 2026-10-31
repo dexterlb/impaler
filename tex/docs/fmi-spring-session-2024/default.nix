@@ -5,7 +5,7 @@ in rec {
   packages.fmi-spring-session-2024-abstract = buildLatex {
     src = ./.;
     pkgname = "fmi-spring-session-2024-abstract";
-    latexFiles = "abstract_en.tex abstract_bg.tex";
+    latexFiles = "abstract-en.tex abstract-bg.tex";
   };
   packages.fmi-spring-session-2024-slides = buildLatex {
     src = ./.;
@@ -15,14 +15,14 @@ in rec {
   packages.fmi-spring-session-2024-slides-with-notes = buildLatex {
     src = ./.;
     pkgname = "fmi-spring-session-2024-slides-with-notes";
-    latexFiles = "slides_with_notes.tex";
+    latexFiles = "slides-with-notes.tex";
   };
   packages.fmi-spring-session-2024-slides-presenter = pkgs.writeTextFile
     {
       name = "present.sh";
       text = ''
         #!/usr/bin/env bash
-        ${pkgs.pympress}/bin/pympress ${packages.fmi-spring-session-2024-slides-with-notes}/slides_with_notes.pdf "''${@}"
+        ${pkgs.pympress}/bin/pympress ${packages.fmi-spring-session-2024-slides-with-notes}/slides-with-notes.pdf "''${@}"
       '';
       executable = true;
       destination = "/present.sh";

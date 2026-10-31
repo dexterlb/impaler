@@ -10,14 +10,14 @@ in rec {
   packages.isesia-slides-with-notes = buildLatex {
     src = ./.;
     pkgname = "isesia-slides-with-notes";
-    latexFiles = "slides_with_notes.tex";
+    latexFiles = "slides-with-notes.tex";
   };
   packages.isesia-slides-presenter = pkgs.writeTextFile
     {
       name = "present.sh";
       text = ''
         #!/usr/bin/env bash
-        ${pkgs.pympress}/bin/pympress ${packages.isesia-slides-with-notes}/slides_with_notes.pdf "''${@}"
+        ${pkgs.pympress}/bin/pympress ${packages.isesia-slides-with-notes}/slides-with-notes.pdf "''${@}"
       '';
       executable = true;
       destination = "/present.sh";

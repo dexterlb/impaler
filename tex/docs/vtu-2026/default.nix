@@ -5,7 +5,7 @@ in rec {
   packages.vtu-2026-abstract = buildLatex {
     src = ./.;
     pkgname = "vtu-2026-abstract";
-    latexFiles = "abstract_en.tex";
+    latexFiles = "abstract-en.tex";
   };
   packages.vtu-2026-slides = buildLatex {
     src = ./.;
@@ -15,13 +15,13 @@ in rec {
   packages.vtu-2026-slides-with-notes = buildLatex {
     src = ./.;
     pkgname = "vtu-2026-slides-with-notes";
-    latexFiles = "slides_with_notes.tex";
+    latexFiles = "slides-with-notes.tex";
   };
   packages.vtu-2026-slides-presenter = pkgs.writeShellApplication
     {
       name = "present.sh";
       text = ''
-        ${pkgs.pympress}/bin/pympress ${packages.vtu-2026-slides-with-notes}/slides_with_notes.pdf "''${@}"
+        ${pkgs.pympress}/bin/pympress ${packages.vtu-2026-slides-with-notes}/slides-with-notes.pdf "''${@}"
       '';
     };
   packages.vtu-2026-all = pkgs.stdenvNoCC.mkDerivation rec {
