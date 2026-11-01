@@ -256,7 +256,7 @@ NIL
 \end{itemize}
 \end{frame}
 
-\begin{frame}[fragile]{Example code in \lang}
+\begin{frame}[fragile]{Example high-level code in \lang}
 \begin{ildcode}
 (module
   (doc "this module calculates 5!")
@@ -290,30 +290,34 @@ NIL
 \end{frame}
 
 \begin{frame}[fragile]{Requirements for bootstrapping}
-Functions for manipulating basic data are assumed to be included in the initial environment:
+Functions and values assumed to be included in the initial environment:
 \begin{itemize}
-\item Lists: \linline|cons|, \linline|car|, \linline|cdr|, \linline|null?|
-\item Tests: \linline|symbol?|, \linline|pair?|, \linline|func?|, \linline|sym-eq?|
+\item Numbers: \linline|+|, \linline|*|, \linline|-|, \linline|/|, \linline|=|, \linline|<|, \linline|<=|, \linline|>=|
+\item Pairs: \linline|cons|, \linline|car|, \linline|cdr|
+\item Predicates: \linline|null?|, \linline|pair?|, \linline|symbol?|, \linline|string?|, \linline|func?|, \linline|fail?|
+\item Equality: \linline|sym-eq?|, \linline|str-eq?|
+\item Failure: \linline|make-fail|
 \item Booleans: \tinline|#t|, \tinline|#f|, \linline|bool-to-k|
-\item Functional: \linline|lambda|, \linline|eval|, \linline|apply|
-\item Extrinsic: \linline|read-source|
+\item Special forms: \linline|quote|, \linline|macroexpand|, \linline|free-vars|
+\item Abstractions: \linline|mk-lambda|, \linline|poly-fix|
+\item Interpreter: \linline|eval|, \linline|apply|, \linline|read-source|
 \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]{Macro execution in \lang}
 \begin{itemize}
     \item This code:
-      \begin{minted}{lisp}
-        (!if (= x 5)
-          "x is 5"
-          "x is not 5")
-      \end{minted}
-    \item Is syntax sugar for this code:
-      \begin{minted}{lisp}
-        (eval (free-vars) (if (quote (= x 5))
-          (quote "x is 5")
-          (quote "x is not 5")))
-      \end{minted}
+      \begin{ildcode}
+(!if (= x 5)
+  "x is 5"
+  "x is not 5")
+      \end{ildcode}
+    \item Expands to this code:
+      \begin{ildcode}
+(eval (free-vars) (if (quote (= x 5))
+  (quote "x is 5")
+  (quote "x is not 5")))
+      \end{ildcode}
     \item Macros are just functions that operate on code.
 \end{itemize}
 \end{frame}
@@ -321,12 +325,13 @@ Functions for manipulating basic data are assumed to be included in the initial 
 \begin{frame}[fragile]{Defining the building blocks of a module system}
 Bootstrapping can be done in a few tiers:
 \begin{itemize}
-    \item \linline|list|, \linline|if|
-    \item The simple \linline|Y| combinator (if not available)
-    \item \linline|map|
+    \item \linline|lambda|
+    \item Basic helpers: \linline|list|, \linline|cadr|, \linline|caar|
+    \item \linline|if| (via \linline|bool-to-k|)
+    \item \linline|map| (via \linline|poly-fix|)
     \item \linline|let|
-    \item The polyvariate \linline|Y| combinator (if not available)
-    \item \linline|letrec|
+    \item \linline|let*|
+    \item \linline|letrec| (via \linline|poly-fix|)
     \item Operations with key-value lists
     \item Module parsing
     \item Imports
@@ -334,24 +339,62 @@ Bootstrapping can be done in a few tiers:
 \end{frame}
 
 \begin{frame}[fragile]{Bootstrapping specific constructs}
-\begin{minted}{lisp}
-  ; definition of "map" without use of letrec
-  (Y (!lambda (map)
-      (!lambda (f l)
-        (!if (null? l)
-          l
-          (!if (pair? l)
-            (cons (f (car l)) (map f (cdr l)))
-            (make-fail (list 'not-a-list l)))))))))
+\begin{ildcode}
+; definition of "lambda"
+(mk-lambda
+  (free-vars)
+  '(arg-names body)
+  '(cons mk-lambda
+    (cons (cons free-vars '())
+      (cons (cons quote (cons arg-names '()))
+        (cons (cons quote (cons body '()))
+          '())))))
 
-  ; definition of "let"
-  (!lambda (letlist body)
-    (cons
-      (lambda (map car letlist) body)
-      (map cadr letlist)))))
-\end{minted}
+; definition of "Y" as a special case of poly-fix
+(!lambda (f) (car (poly-fix f)))
+\end{ildcode}
 \end{frame}
-\begin{frame}[fragile]{Core concepts}
+
+\begin{frame}[fragile]{Bootstrapping specific constructs}
+\begin{ildcode}
+; definition of "map" without use of letrec
+(Y (!lambda (map)
+  (!lambda (f l)
+    (!if (null? l)
+      l
+      (!if (pair? l)
+        (cons
+          (f (car l)) (map f (cdr l)))
+        (make-fail
+          (list 'not-a-list l)))))))
+
+; definition of "let"
+(!lambda (letlist body)
+  (cons
+    (lambda
+      (map car letlist)
+      body)
+    (map cadr letlist)))
+\end{ildcode}
+\end{frame}
+
+\begin{frame}[fragile]{Back to the module example}
+\begin{ildcode}
+(module
+  (doc "this module calculates 5!")
+  (exports main)
+  (imports
+    (host (macroexpand <= * +))
+    ("core/prelude.ild" (if))
+    ("core/module-utils.ild" (fn)))
+  (defs
+    (!fn main () (fact 5))
+
+    (!fn fact (x)
+      (!if (<= x 0)
+        1
+        (* x (fact (+ x -1)))))))
+\end{ildcode}
 \begin{itemize}
     \item Modules are converted to \linline|letrec| definitions that allow mutual recursion
     \item The result of evaluating these definitions is a key-value list of exported items

@@ -159,10 +159,17 @@
 \urlstyle{same}
 
 \input{notation.tex}
-\usepackage{minted}
-\setminted{linenos}
-\newmintinline[linline]{lisp}{}
-\newmintinline[tinline]{text}{}
+\lstdefinestyle{ildinline}{
+  basicstyle=\ttfamily,
+  keywordstyle=,
+  commentstyle=\color{clistingcomment},
+  stringstyle=\color{chost},
+  columns=fullflexible,
+  keepspaces=true,
+  showstringspaces=false,
+}
+\newcommand{\linline}{\lstinline[style=ildinline,language=ild]}
+\newcommand{\tinline}{\lstinline[style=ildinline]}
 
 \usepackage{enumitem}
 % restore Beamer's itemize settings since enumitem breaks them
