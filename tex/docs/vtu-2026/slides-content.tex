@@ -18,9 +18,10 @@
 
 #;4> (circumference 42)
 Error: unbound variable: circumference
-#;4> (define (circumference radius) (* 2 pi radius))
 
-#;5> (circumference 42)
+#;5> (define (circumference radius) (* 2 pi radius))
+
+#;6> (circumference 42)
 263.89356
 \end{schemerepl}
 \lstcaption{Using the REPL in Scheme}
@@ -234,72 +235,56 @@ NIL
 \item \pathcode{defmacro} and \pathcode{define-syntax} have statement-like semantics in a global scope
 \begin{itemize}
   \item Locally-scoped macro binding constructs exist but even then macros are in
-        a different namespace and scoping is a syntactic illusion
+        a different namespace from the rest of the program and scoping is a syntactic illusion
 \end{itemize}
 \item Macros are not first-class objects
 \end{itemize}
 \end{frame}
 
-\section{The language ILD}
+\section{The language \lang}
 
 \begin{frame}[fragile]{Goals}
 \begin{itemize}
+    \item First-class macros
+    \item Statically-scoped programs, including macro invocations
     \item Minimality of the core language
         \begin{itemize}
-            \item Only 3 special forms: \linline|quote|, and \linline|macroexpand| and \linline|cur-env|
+            \item Only 3 special forms: \linline|quote|, and \linline|macroexpand| and \linline|free-vars|
             \item Implement everything else in \lang itself
         \end{itemize}
-    \item Ease of implementing partial evaluation
     \item Expressiveness
-        \begin{itemize}
-            \item Full LISP-like macros: implement flow control, DSLs, custom syntax
-            \item Control over continuations: implement error handling, state machines, async execution
-        \end{itemize}
-\end{itemize}
-\end{frame}
-
-\begin{frame}[fragile]{\lang: Features}
-\begin{itemize}
-    \item Lisp-like
-        \begin{itemize}
-            \item Closures
-            \item Macros
-        \end{itemize}
-    \item Precise control over compile-time vs runtime execution
-        \begin{itemize}
-            \item Macro evaluation has ``runtime'' semantics: the macro body can make use of values defined in the runtime environment
-            \item Constant data, including macro execution, may be evaluated at compile time during PE
-        \end{itemize}
 \end{itemize}
 \end{frame}
 
 \begin{frame}[fragile]{Example code in \lang}
-\begin{minted}{lisp}
+\begin{ildcode}
 (module
-  (doc "this module calculates factorials")
+  (doc "this module calculates 5!")
   (exports main)
   (imports
-    (builtin
-      (mul add <= macroexpand
-        lambda quote))
-    ("core/prelude.l" (if const fn)))
+    (host (macroexpand <= * +))
+    ("core/prelude.ild" (if))
+    ("core/module-utils.ild" (fn)))
   (defs
-    (!const main (!lambda () (fact 5)))
+    (!fn main () (fact 5))
 
-    (!fn (fact x)
+    (!fn fact (x)
       (!if (<= x 0)
         1
-        (mul x (fact (add x -1)))))))
-\end{minted}
+        (* x (fact (+ x -1)))))))
+\end{ildcode}
 \end{frame}
 
 \begin{frame}[fragile]{Builtin special forms in \lang}
 \begin{itemize}
-  \item \linline|cur-env| -- introspect the environment at the callsite
+  \item \linline|free-vars| -- introspect the environment (frame) at the callsite
   \item \linline|quote| -- return the given expression without evaluating
+  \begin{itemize}
+    \item \linline|'<expr>| \(\mapsto\) \linline|(quote <expr>)|
+  \end{itemize}
   \item \linline|macroexpand| -- apply given macro to quoted arguments and then evaluate result
   \begin{itemize}
-    \item Syntax sugar is available (next slide)
+    \item \linline|(!<expr1> ... <exprN>)| \(\mapsto\) \linline|(macroexpand <expr1> ... <exprN>)|
   \end{itemize}
 \end{itemize}
 \end{frame}
@@ -325,7 +310,7 @@ Functions for manipulating basic data are assumed to be included in the initial 
       \end{minted}
     \item Is syntax sugar for this code:
       \begin{minted}{lisp}
-        (eval (cur-env) (if (quote (= x 5))
+        (eval (free-vars) (if (quote (= x 5))
           (quote "x is 5")
           (quote "x is not 5")))
       \end{minted}
