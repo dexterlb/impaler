@@ -383,6 +383,32 @@ Bootstrapping can be done in a few tiers:
 (module
   (doc "this module calculates 5!")
   (exports main)
+  (imports ...)
+  (defs
+    (!fn main () (fact 5))
+
+    (!fn fact (x)
+      (!if (<= x 0)
+        1
+        (* x (fact (+ x -1)))))))
+
+; becomes
+
+(!letrec
+    ( (main (!lambda () (fact 5)))
+      (fact (!lambda (x)
+              (!if (<= x 0)
+                1
+                (* x (fact (+ x -1)))))) )
+  (list (cons 'main main)))
+\end{ildcode}
+\end{frame}
+
+\begin{frame}[fragile]{Back to the module example}
+\begin{ildcode}
+(module
+  (doc "this module calculates 5!")
+  (exports main)
   (imports
     (host (macroexpand <= * +))
     ("core/prelude.ild" (if))
@@ -402,19 +428,27 @@ Bootstrapping can be done in a few tiers:
 \end{itemize}
 \end{frame}
 
+\begin{frame}{Conclusion}
+\begin{itemize}
+  \item The core of \lang is minimal and purely functional
+  \item Unlike traditional lisps, \lang programs are fully statically-scoped
+  \item All metaprogramming up to module loading and imports can be written in \lang itself
+\end{itemize}
+\end{frame}
+
 \begin{frame}[fragile]{Future research}
 \begin{itemize}
-    \item Partial evaluation of the module import process
-      \begin{itemize}
-        \item If \linline|read-source| can be evaluated as a constant during PE,
-        a module import declaration can be specialised to the key-value list
-        resulting from its evaluation
-      \end{itemize}
-    \item Additional features
-      \begin{itemize}
-        \item Declaration of constants in addition to functions
-        \item Module structure verification
-      \end{itemize}
+  \item Performance!
+    \begin{itemize}
+      \item Partial evaluation
+      \item Tail call optimisation
+      \item Persistent data structures
+    \end{itemize}
+  \item Features
+    \begin{itemize}
+      \item Quasiquote
+      \item Library improvements
+    \end{itemize}
 \end{itemize}
 \end{frame}
 
