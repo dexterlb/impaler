@@ -480,6 +480,8 @@ $\Rightarrow$
 In a similar fashion to how we defined letrec, we define the rest of the
 owl (the module loader) to allow us to convert such modules to letrecs
 }
+\begin{columns}[c,onlytextwidth]
+\begin{column}{0.66\textwidth}
 \begin{listingbox}\begin{ildcode}
 (module
   (doc "this module calculates 5!")
@@ -503,30 +505,20 @@ owl (the module loader) to allow us to convert such modules to letrecs
                 (* x (fact (+ x -1)))))) )
   (list (cons 'main main))))
 \end{ildcode}\end{listingbox}
-\end{frame}
-
-\begin{frame}[fragile]{Back to the module example}
-\begin{listingbox}\begin{ildcode}
-(module
-  (doc "this module calculates 5!")
-  (exports main)
-  (imports
-    (host (macroexpand <= * +))
-    ("core/prelude.ild" (if))
-    ("core/module-utils.ild" (fn)))
-  (defs
-    (!fn main () (fact 5))
-
-    (!fn fact (x)
-      (!if (<= x 0)
-        1
-        (* x (fact (+ x -1)))))))
-\end{ildcode}\end{listingbox}
-\begin{itemize}
-    \item Modules are converted to \linline|letrec| definitions that allow mutual recursion
-    \item The result of evaluating these definitions is a key-value list of exported items
-    \item Importing modules works by first evaluating them and then making their exports available in the new environment
-\end{itemize}
+\end{column}
+\begin{column}{0.28\textwidth}
+\par\vspace{1em}
+{\leftskip=1em\parindent=-1em\raggedright
+\noindent\usebeamertemplate{itemize item}~Modules are converted to \linline|letrec| definitions that allow mutual recursion\par}
+\vspace{1.5em}
+{\leftskip=1em\parindent=-1em\raggedright
+\noindent\usebeamertemplate{itemize item}~The result of evaluating these definitions is a key-value list of exported items\par}
+\vspace{1.5em}
+{\leftskip=1em\parindent=-1em\raggedright
+\noindent\usebeamertemplate{itemize item}~Importing modules works by first evaluating them and then making their exports available in the new environment\par}
+\vspace{1em}
+\end{column}
+\end{columns}
 \end{frame}
 
 \begin{frame}[fragile]{Using modular programs}
