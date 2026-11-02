@@ -7,7 +7,12 @@
 \section{Background piece 1: the REPL}
 
 \begin{frame}[fragile]{The REPL}
-\begin{schemerepl}
+\note{
+The first lisps were built with a REPL in mind: the program lives
+in the machine's memory and is incrementally grown by user statements
+such as define
+}
+\begin{listingbox}\begin{schemerepl}
 #;1> (+ 3 5)
 8
 
@@ -23,12 +28,17 @@ Error: unbound variable: circumference
 
 #;6> (circumference 42)
 263.89356
-\end{schemerepl}
+\end{schemerepl}\end{listingbox}
 \lstcaption{Using the REPL in Scheme}
 \end{frame}
 
 \begin{frame}[fragile]{The REPL: Scheme programs}
-\begin{schemecode}
+\note{
+Modern programming: we store the program as code on disk, and then
+evaluate it before starting the repl. Every time we modify the program,
+we start a new interpreter instance and forget the state of the old program.
+}
+\begin{listingbox}\begin{schemecode}
 (define (even? x)
   (if (= x 0)
     #t
@@ -38,20 +48,25 @@ Error: unbound variable: circumference
   (if (= x 1)
     #t
     (even? (- x 1))))
-\end{schemecode}
+\end{schemecode}\end{listingbox}
 \lstcaption{A program, e.g. \pathcode{even-odd.scm}}
-\vspace{1em}
-\begin{schemerepl}
+\begin{listingbox}\begin{schemerepl}
 #;1> (load "even-odd.scm")
 
 #;2> (even? 42)
 #t
-\end{schemerepl}
+\end{schemerepl}\end{listingbox}
 \lstcaption{Using a function defined by the program}
 \end{frame}
 
-\begin{frame}[fragile]{The REPL: Scheme programs}
-\begin{schemecode}
+\begin{frame}[fragile]{(Not) The REPL: Scheme programs}
+\note{
+Real-world programs do not use the REPL at all, and are evaluated once.
+However, LISP-like languages are still built with the
+``mutate a global env with statements''
+paradigm in mind.
+}
+\begin{listingbox}\begin{schemecode}
 (define (even? x)
   (if (= x 0)
     #t
@@ -69,12 +84,18 @@ Error: unbound variable: circumference
     (newline)))
 
 (main)
-\end{schemecode}
+\end{schemecode}\end{listingbox}
 \lstcaption{A program that interacts with the user}
 \end{frame}
 
 \begin{frame}[fragile]{Definitions are implicit mutations}
-\begin{schemecode}
+\note{
+...However, LISP-like languages, although \textbf{functional},
+are still built with the
+``mutate a global env with statements''
+paradigm in mind.
+}
+\begin{listingbox}\begin{schemecode}
 (set! even?
   (lambda (x)
     (if (= x 0)
@@ -93,12 +114,16 @@ Error: unbound variable: circumference
     (let ((n (read)))
       (display (if (even? n) "Even" "Odd"))
       (newline))))
-\end{schemecode}
+\end{schemecode}\end{listingbox}
 \lstcaption{We unmask ``define'' for what it really is: ``set!''}
 \end{frame}
 
 \begin{frame}[fragile]{Static scoping}
-\begin{schemecode}
+\note{
+This statically-scoped program resembles purely-functional
+languages more closely.
+}
+\begin{listingbox}\begin{schemecode}
 (letrec
   ( (even? (lambda (x)
              (if (= x 0)
@@ -116,7 +141,7 @@ Error: unbound variable: circumference
               (display (if (even? n) "Even" "Odd"))
               (newline)))))
   (main))
-\end{schemecode}
+\end{schemecode}\end{listingbox}
 \lstcaption{The same program, statically-scoped}
 \end{frame}
 
@@ -148,33 +173,36 @@ Error: unbound variable: circumference
 
 \begin{frame}[fragile]{Tracing evaluation}
 In the following examples, we will use a \pathcode{trace} helper:
-\vspace{1em}
-\begin{schemecode}
+\begin{listingbox}\begin{schemecode}
 (define (trace name value)
   (display name)
   (display ": ")
   (display value)
   (newline)
   value)
-\end{schemecode}
+\end{schemecode}\end{listingbox}
 \lstcaption{A \pathcode{trace} function helps us see what is evaluated}
-\vspace{1em}
-\begin{schemerepl}
+\begin{listingbox}\begin{schemerepl}
 #;1> (trace 'value 42)
 value: 42
 42
-\end{schemerepl}
+\end{schemerepl}\end{listingbox}
 \lstcaption{\pathcode{trace} prints its argument and returns it}
 \end{frame}
 
-\begin{frame}[fragile]{Functions}
-\begin{schemecode}
+\begin{frame}[fragile]{Scheme example: Boolean AND}
+\note{
+  This AND function returns the second argument if the first
+  is false, and false otherwise. Although ``if'' evals only
+  one branch, both arguments to ``and'' are evaled because it
+  is a function, duh.
+}
+\begin{listingbox}\begin{schemecode}
 (define (and a b)
   (if a b #f))
-\end{schemecode}
+\end{schemecode}\end{listingbox}
 \lstcaption{Boolean AND as a function}
-\vspace{1em}
-\begin{schemerepl}
+\begin{listingbox}\begin{schemerepl}
 #;1> (and (trace 'left #t) (trace 'right #f))
 left: #t
 right: #f
@@ -184,19 +212,23 @@ right: #f
 left: #f
 right: #t
 #f
-\end{schemerepl}
+\end{schemerepl}\end{listingbox}
 \lstcaption{The function evaluates both arguments}
 \end{frame}
 \begin{frame}[fragile]{Scheme macro example: Boolean AND}
-\begin{schemecode}
+\note{
+The macro does not eval arguments and just transforms the code
+before it is evaled. Tell the audience that \code{(and a b)}
+becomes \code{(if a b \#f)}
+}
+\begin{listingbox}\begin{schemecode}
 (define-syntax and
   (syntax-rules ()
     ((and a b)
      (if a b #f))))
-\end{schemecode}
+\end{schemecode}\end{listingbox}
 \lstcaption{Defining ``and'' as a macro}
-\vspace{1em}
-\begin{schemerepl}
+\begin{listingbox}\begin{schemerepl}
 #;1> (and (trace 'left #t) (trace 'right #f))
 left: #t
 right: #f
@@ -205,18 +237,23 @@ right: #f
 #;2> (and (trace 'left #f) (trace 'right #t))
 left: #f
 #f
-\end{schemerepl}
+\end{schemerepl}\end{listingbox}
 \lstcaption{Short-circuiting: the second argument is not evaluated}
 \end{frame}
 
 \begin{frame}[fragile]{LISP macro example: boolean AND}
-\begin{schemecode}
+\note{
+LISP macros are simply programs that return other programs.
+This approach is simpler and more flexible, but has drawbacks
+which we will not discuss here (hygiene).
+}
+\begin{listingbox}\begin{schemecode}
 (defmacro and (a b)
   (cons 'if (cons a (cons b (cons nil nil)))))
-\end{schemecode}
-\lstcaption{An unhygienic Lisp version of ``and''}
+\end{schemecode}\end{listingbox}
+\lstcaption{An unhygienic LISP version of ``and''}
 \vspace{1em}
-\begin{schemerepl}
+\begin{listingbox}\begin{schemerepl}
 CL-USER> (and (trace 'left t) (trace 'right nil))
 LEFT: T
 RIGHT: NIL
@@ -225,7 +262,7 @@ NIL
 CL-USER> (and (trace 'left nil) (trace 'right t))
 LEFT: NIL
 NIL
-\end{schemerepl}
+\end{schemerepl}\end{listingbox}
 \lstcaption{Short-circuiting: the second argument is not evaluated}
 \end{frame}
 
@@ -257,7 +294,12 @@ NIL
 \end{frame}
 
 \begin{frame}[fragile]{Example high-level code in \lang}
-\begin{ildcode}
+\note{
+Notice the defs block: it says ``here are the definitions''.
+It syntactically resembles the list of defines but semantically
+it is statically scoped because of how it is interpreted (we will see later).
+}
+\begin{listingbox}\begin{ildcode}
 (module
   (doc "this module calculates 5!")
   (exports main)
@@ -272,7 +314,7 @@ NIL
       (!if (<= x 0)
         1
         (* x (fact (+ x -1)))))))
-\end{ildcode}
+\end{ildcode}\end{listingbox}
 \end{frame}
 
 \begin{frame}[fragile]{Builtin special forms in \lang}
@@ -305,21 +347,25 @@ Functions and values assumed to be included in the initial environment:
 \end{frame}
 
 \begin{frame}[fragile]{Macro execution in \lang}
+\note{
 \begin{itemize}
-    \item This code:
-      \begin{ildcode}
+\item There is no separate macro expansion step.
+\item ``runtime'' macro semantics
+\end{itemize}
+}
+This code:
+\begin{listingbox}\begin{ildcode}
 (!if (= x 5)
   "x is 5"
   "x is not 5")
-      \end{ildcode}
-    \item Expands to this code:
-      \begin{ildcode}
+\end{ildcode}\end{listingbox}
+Is semantically equivalent to:
+\begin{listingbox}\begin{ildcode}
 (eval (free-vars) (if (quote (= x 5))
   (quote "x is 5")
   (quote "x is not 5")))
-      \end{ildcode}
-    \item Macros are just functions that operate on code.
-\end{itemize}
+\end{ildcode}\end{listingbox}
+Macros are just functions that operate on code.
 \end{frame}
 
 \begin{frame}[fragile]{Defining the building blocks of a module system}
@@ -339,7 +385,7 @@ Bootstrapping can be done in a few tiers:
 \end{frame}
 
 \begin{frame}[fragile]{Bootstrapping specific constructs}
-\begin{ildcode}
+\begin{listingbox}\begin{ildcode}
 ; definition of "lambda"
 (mk-lambda
   (free-vars)
@@ -352,11 +398,15 @@ Bootstrapping can be done in a few tiers:
 
 ; definition of "Y" as a special case of poly-fix
 (!lambda (f) (car (poly-fix f)))
-\end{ildcode}
+\end{ildcode}\end{listingbox}
 \end{frame}
 
 \begin{frame}[fragile]{Bootstrapping specific constructs}
-\begin{ildcode}
+\note{
+We will use ``map'' in the implementation of ``letrec'',
+so we need to define it via ``Y''
+}
+\begin{listingbox}\begin{ildcode}
 ; definition of "map" without use of letrec
 (Y (!lambda (map)
   (!lambda (f l)
@@ -367,7 +417,18 @@ Bootstrapping can be done in a few tiers:
           (f (car l)) (map f (cdr l)))
         (make-fail
           (list 'not-a-list l)))))))
+\end{ildcode}\end{listingbox}
+\end{frame}
 
+\begin{frame}[fragile]{Bootstrapping specific constructs}
+\note{
+\begin{itemize}
+\item ``let'' is transformed to \textbf{the result} of a lambda expression
+\item here we use ``lambda'' as a regular function - discuss!
+\end{itemize}
+}
+We can now define ``let'':
+\begin{listingbox}\begin{ildcode}
 ; definition of "let"
 (!lambda (letlist body)
   (cons
@@ -375,11 +436,47 @@ Bootstrapping can be done in a few tiers:
       (map car letlist)
       body)
     (map cadr letlist)))
-\end{ildcode}
+\end{ildcode}\end{listingbox}
+
+Which, when evaluated, lets us write familiar ``let'' expressions:
+\begin{columns}[c,onlytextwidth]
+\begin{column}{0.45\textwidth}
+\begin{listingbox}\begin{ildcode}
+(!let (
+    (x 5)
+    (y 10))
+  (+ x y))
+\end{ildcode}\end{listingbox}
+\vspace{2pt}
+\par\noindent\hfill\rotatebox{90}{$\approx$}\hfill\null\par
+\begin{listingbox}\begin{ildcode}
+((!lambda (x y)
+    (+ x y))
+  5 10)
+\end{ildcode}\end{listingbox}
+\end{column}
+\begin{column}{0.06\textwidth}
+\centering
+$\Rightarrow$
+\end{column}
+\begin{column}{0.45\textwidth}
+\begin{listingbox}\begin{ildcode}
+((mk-lambda
+    (free-vars)
+    '(x y)
+    '(+ x y))
+  5 10)
+\end{ildcode}\end{listingbox}
+\end{column}
+\end{columns}
 \end{frame}
 
 \begin{frame}[fragile]{Back to the module example}
-\begin{ildcode}
+\note{
+In a similar fashion to how we defined letrec, we define the rest of the
+owl (the module loader) to allow us to convert such modules to letrecs
+}
+\begin{listingbox}\begin{ildcode}
 (module
   (doc "this module calculates 5!")
   (exports main)
@@ -391,21 +488,21 @@ Bootstrapping can be done in a few tiers:
       (!if (<= x 0)
         1
         (* x (fact (+ x -1)))))))
-
-; becomes
-
-(!letrec
+\end{ildcode}\end{listingbox}
+\par\noindent\hfill\rotatebox{-90}{$\Rightarrow$}\hfill\null\par
+\begin{listingbox}\begin{ildcode}
+(eval <env containing imports> (letrec
     ( (main (!lambda () (fact 5)))
       (fact (!lambda (x)
               (!if (<= x 0)
                 1
                 (* x (fact (+ x -1)))))) )
-  (list (cons 'main main)))
-\end{ildcode}
+  (list (cons 'main main))))
+\end{ildcode}\end{listingbox}
 \end{frame}
 
 \begin{frame}[fragile]{Back to the module example}
-\begin{ildcode}
+\begin{listingbox}\begin{ildcode}
 (module
   (doc "this module calculates 5!")
   (exports main)
@@ -420,12 +517,29 @@ Bootstrapping can be done in a few tiers:
       (!if (<= x 0)
         1
         (* x (fact (+ x -1)))))))
-\end{ildcode}
+\end{ildcode}\end{listingbox}
 \begin{itemize}
     \item Modules are converted to \linline|letrec| definitions that allow mutual recursion
     \item The result of evaluating these definitions is a key-value list of exported items
     \item Importing modules works by first evaluating them and then making their exports available in the new environment
 \end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Using modular programs}
+\note{
+The ILD evaluator contains no magic for supporting modules.
+To execute the example program, we simply evaluate the module loader
+and apply it to the program filename and the entrypoint function name,
+and it does all the work.
+}
+\begin{listingbox}\begin{ildcode}
+((eval (free-vars) (read-source
+  "core/bootstrap/module-loader.ild"))
+
+  "demos/fact.ild"
+  'main)
+\end{ildcode}\end{listingbox}
+\lstcaption{Executing the module loader on a user program}
 \end{frame}
 
 \begin{frame}{Conclusion}
