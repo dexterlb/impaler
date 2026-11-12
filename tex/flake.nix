@@ -94,6 +94,7 @@
         latexTools = baseLatexTools // {
           buildLatex = params: (baseLatexTools.buildLatex params).overrideAttrs (_: {
             TEXINPUTS = "${commonDir}:";
+            BIBINPUTS = "${commonDir}:";
           });
         };
 
@@ -126,6 +127,7 @@
             shellHook = ''
               . ${latexTools.latexShellInit}
               export TEXINPUTS="${commonDir}:''${TEXINPUTS-}"
+              export BIBINPUTS="${commonDir}:''${BIBINPUTS-}"
 
               echo "for any latex file, you can use:"
               echo " - 'latex_builder build foo.tex' to build dist/foo.pdf"
@@ -158,6 +160,7 @@
                 # shellcheck source=/dev/null
                 . ${latexTools.latexShellInit}
                 export TEXINPUTS="${commonDir}:''${TEXINPUTS-}"
+                export BIBINPUTS="${commonDir}:''${BIBINPUTS-}"
                 exec latex_builder "''${@}"
               '';
             }}/bin/latex-builder";
