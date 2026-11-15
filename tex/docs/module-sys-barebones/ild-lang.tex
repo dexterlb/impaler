@@ -55,7 +55,7 @@ evaluate to themselves:
 \[
   \denot{e}{v} = v
 \]
-Unquoted lists (also known as \emph{combinations}) are evaluated according to the following rules:
+Proper lists (also known as \emph{combinations}) are evaluated according to the following rules:
 \[
   \begin{gathered}
   \denot{e}{\ildlist{h}{\alpha_1}{\dots}{\alpha_n}} = \\
@@ -95,7 +95,7 @@ such as the lambda macro (\cref{lambda-macro}).
   \]
 \subsubsection{Macro expansion}
 \label{macroexpand-mechanism}
-Macros in ILD are plain functions that assume their arguments
+Macros in ILD are plain functions (\(\varphi \in \ildsetHostFunc\)) that assume their arguments
 are program fragments. We refer to such functions as \emph{macro functions}.
 To invoke a function as a macro, the special form
 \ildsf{macroexpand} is used at the callsite:
@@ -104,7 +104,7 @@ To invoke a function as a macro, the special form
   \qquad
   \\
   \denotsf{e}{\ildsf{macroexpand}}{\varphi}{\alpha_1}{\dots}{\alpha_n}
-  = \denot{e}{\ildlist{\denot{e}{\varphi}}{\alpha_1}{\dots}{\alpha_n}}
+  = \denot{e}{\denotapply{\varphi}{\alpha_1}{\dots}{\alpha_n}}
   \end{gathered}
 \]
 an expression
@@ -117,6 +117,10 @@ proceeds from the outermost call inward, similarly to macro semantics
 in most LISP dialects with unhygienic macro systems~\cite{steele-gabriel-evolution,kohlbecker1986syntactic}.
 The advantages and disadvantages of callsite-triggered macros are further
 discussed in \cref{macro-function-duality}.
+\subsubsection{Improper constructs}
+All \(\ildsetVal\)-cases that are not listed in the previous sections evaluate
+to a \(\ildfailbare\). This includes the empty list, non-list pairs and special forms
+applied to a wrong number of operands.
 
 \subsection{Semantics (CPS, will remove)}
 \label{semantics-cps}
