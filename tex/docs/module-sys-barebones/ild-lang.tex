@@ -47,6 +47,44 @@ In addition, the parser of ILD is augmented with the following syntactic shortha
 We also introduce a set of computation terms (\(\ildsetComp\)) that facilitate
 the operational semantics. The complete syntax is shown in \cref{syntax-grammar}.
 
+\subsection{Semantics (non-CPS)}
+\label{direct-semantics}
+
+Symbols (\( s \in \ildsetSym \)) are looked up in the binding environment:
+\[
+  \denot{e}{s} = \begin{cases}
+      v & e = \ildlist{\dots}{\ildpair{s}{v}}{\dots} \\
+      \ildfail{\text{unbound symbol}} & e \neq \ildlist{\dots}{\ildpair{s}{v}}{\dots} \\
+    \end{cases}
+\]
+Values that are neither symbols nor pairs (\(v \in \ildsetSF \cup \ildsetHost \cup \ildsetFail\))
+evaluate to themselves:
+\[
+  \denot{e}{v} = v
+\]
+Unquoted lists (also known as \emph{combinations}) are evaluated depending on the
+value the head of the list evaluates to:
+\[
+  \begin{gathered}
+  \denot{e}{\ildlist{h}{\alpha_1}{\dots}{\alpha_n}} = \\
+  = \begin{cases}
+      \denotsf{e}{\denot{e}{h}}{\alpha_1}{\dots}{\alpha_n} & \denot{e}{h} \in \ildsetSF \\
+      \denotapply{\denot{e}{h}}{\denot{e}{\alpha_1}}{\dots}{\denot{e}{\alpha_n}} & \denot{e}{h} \in \ildsetHostFunc \\
+      \ildfail{\text{cannot apply }\denot{e}{h}} & \text{otherwise} \\
+    \end{cases}
+  \end{gathered}
+\]
+Special forms are applied according to the following rules:
+\[
+  \denotsf{e}{\ildsf{quote}}{\alpha} = \alpha
+  \qquad
+  \denotsf{e}{\ildsf{free-vars}} = e
+\]
+\[
+  \denotsf{e}{\ildsf{macroexpand}}{\varphi}{\alpha_1}{\dots}{\alpha_n}
+  = \denot{e}{\ildlist{\denot{e}{\varphi}}{\alpha_1}{\dots}{\alpha_n}}
+\]
+
 \subsection{Semantics}
 \label{semantics}
 We define the semantics of ILD in terms of a CPS calculus based on

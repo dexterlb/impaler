@@ -70,6 +70,17 @@
 \def\spacedlist@go#1#2{#2\spacedlist@loop{#1}}
 \def\spacedlist@loop#1{\@ifnextchar\bgroup{\spacedlist@item{#1}}{#1}}
 \def\spacedlist@item#1#2{\ #2\spacedlist@loop{#1}}
+
+% \semicolonlist[<tail>]{<item>}{<item>}... : variadic; separates the first item
+% from the rest with a `;' and the rest with `,', then expands <tail> once no
+% further brace group follows.
+\newcommand{\semicolonlist}{\@ifnextchar[{\semicolonlist@tail}{\semicolonlist@tail[]}}
+\def\semicolonlist@tail[#1]{\semicolonlist@go{#1}}
+\def\semicolonlist@go#1#2{#2\semicolonlist@headloop{#1}}
+\def\semicolonlist@headloop#1{\@ifnextchar\bgroup{\semicolonlist@headitem{#1}}{#1}}
+\def\semicolonlist@headitem#1#2{;#2\semicolonlist@tailloop{#1}}
+\def\semicolonlist@tailloop#1{\@ifnextchar\bgroup{\semicolonlist@tailitem{#1}}{#1}}
+\def\semicolonlist@tailitem#1#2{,#2\semicolonlist@tailloop{#1}}
 \makeatother
 
 \newcommand{\ildlist}[1]{\left(\spacedlist[\right)]{#1}}
@@ -85,11 +96,16 @@
 \newcommand{\cpsabstr}[2]{\ildlist{\lambda\,#1\,.\, #2}}
 \newcommand{\cpsapp}[2]{\ildlist{#1\ #2}}
 
-%--- Semantic relations -----------------------------------------------------
+%--- Operational semantics ---------------------------------------------------
 \newcommand{\evalsto}[2]{#1 \to #2}
 \newcommand{\evalstobr}[2]{\begin{gathered}#1\\ \to #2\end{gathered}}
 \newcommand{\defas}[3]{#1 \mathrel{\overset{\scriptstyle #2}{\rightsquigarrow}} #3}
 \newcommand{\step}[3]{\dfrac{#1}{#2 \to #3}}
+
+%--- Denotational semantics -------------------------------------------------
+\newcommand{\denot}[2]{\left[\!\left[ #2 \right]\!\right]_{#1}}
+\newcommand{\denotapply}[1]{\interopword{apply}\left(\semicolonlist[\right)]{#1}}
+\newcommand{\denotsf}[2]{\interopword{sf}_{#1}\left(\semicolonlist[\right)]{#2}}
 
 % --- Layout helpers ---------------------------------------------------------
 \newcommand{\steprow}[1]{\par\medskip\centerline{\(\displaystyle #1\)}\par\medskip}

@@ -1,14 +1,13 @@
-\documentclass[sigplan,nonacm,review]{acmart}
+\documentclass[sigplan,nonacm]{acmart}
 
 \input{macros/paper.tex}
 \input{notation.tex}
 
+\newcommand\lang{ILD }
+
 \begin{document}
 
-\title{
-  Implementing a module system in a statically-scoped LISP with
-  callsite-triggered macro expansion
-}
+\title{A module system for a minimalistic functional language}
 
 \author{Angel Angelov}
 \affiliation{%
@@ -23,7 +22,7 @@
 
 \maketitle
 
-\input{ild-intro.tex}
+\input{intro.tex}
 \input{ild-lang.tex}
 \input{host-env.tex}
 \input{bootstrapping-basic.tex}
