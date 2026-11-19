@@ -77,8 +77,8 @@ and library functions (\(\ildsetHost\)). We split the semantics of ILD into:
   \item Host environment functions (\(\ildsetHostFunc\))
 \end{itemize}
 We write
-\[ \denotapply{f}{\alpha_1}{\dots}{\alpha_n} = x \]
-to mean that a host environment function \(f \in \ildsetHostFunc\) results in the
+\[ \denotapply{\ildhost{f}}{\alpha_1}{\dots}{\alpha_n} = x \]
+to mean that a host environment function \(\ildhost{f} \in \ildsetHostFunc\) results in the
 value \(x \in \ildsetVal\) when \emph{applied} to the arguments \(\alpha_1 \dots \alpha_n\).
 A small host environment,
 sufficient for writing nontrivial programs, is discussed in \cref{root-env}.
