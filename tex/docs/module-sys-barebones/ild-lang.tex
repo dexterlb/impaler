@@ -74,10 +74,14 @@ ILD is designed to be embedded in a host environment that provides a set of data
 and library functions (\(\ildsetHost\)). We split the semantics of ILD into:
 \begin{itemize}
   \item Base language, whose semantics are shown in this section
-  \item FFI semantics of the host environment (\(\ildsetHostFunc\)) via
-    the function \(\interopword{apply}\). A small host environment, sufficient
-    for writing nontrivial programs, is discussed in \cref{root-env}.
+  \item Host environment functions (\(\ildsetHostFunc\))
 \end{itemize}
+We write
+\[ \denotapply{f}{\alpha_1}{\dots}{\alpha_n} = x \]
+to mean that a host environment function \(f \in \ildsetHostFunc\) results in the
+value \(x \in \ildsetVal\) when \emph{applied} to the arguments \(\alpha_1 \dots \alpha_n\).
+A small host environment,
+sufficient for writing nontrivial programs, is discussed in \cref{root-env}.
 \subsubsection{The quote special form}
 The \(\ildsf{quote}\) special form returns its argument without evaluating it.
   \[
