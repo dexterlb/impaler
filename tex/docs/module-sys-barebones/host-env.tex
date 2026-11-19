@@ -36,7 +36,7 @@ operations on S-expressions, are also provided through the FFI (\(\ildsetHostFun
     \(\ildsym{symbol?}\), \(\ildsym{string?}\), \(\ildsym{func?}\),
     \(\ildsym{fail?}\)
   \item Equality: \(\ildapp{sym-eq?}{s_1}{s_2}\), \(\ildapp{str-eq?}{s_1}{s_2}\)
-  \item Failure: \(\defas{\ildapp{make-fail}{v}}{E}{\cpsapp{\cpsret}{\ildfail{v}}}\)
+  \item Failure: \(\denotdefas{\denotapply{\ildsym{make-fail}}{v}}{E}{\ildfail{v}}\)
 \end{itemize}
 Unlike Scheme or LISP, ILD's immutable nature makes it hard to build cyclic
 objects; this can be remedied by externally providing data structures,
@@ -68,7 +68,7 @@ a list of formal parameters \(P\) and a body expression
 the formal parameters by the actual parameters in the local binding environment,
 and then evaluating the body in the resulting environment:
 \begin{gather*}
-  \evalstobr{\interop{apply}{C}{\ildabstr{e}{P = \ildlist{p_1}{p_2}{\dots}{p_n}}{\beta}}{a_1}{a_2}{\dots}{a_n}}{\interop{eval}{C}{e'}{\beta}\text{,}}
+  \denotapply{\ildabstr{e}{P = \ildlist{p_1}{p_2}{\dots}{p_n}}{\beta}}{a_1}{a_2}{\dots}{a_n} = \denot{e'}{\beta}
   \\
   \text{where } e' = \spacedlist{e}{\subst{p_1}{a_1}}{\subst{p_2}{a_2}}{\dots}{\subst{p_n}{a_n}}
 \end{gather*}
@@ -78,7 +78,7 @@ for \(m < n\), or \(P = {r}\) or \(P = \ildpair{()}{r} \) for \(m = 0\) require 
   e' = \spacedlist{e}{\subst{p_1}{a_1}}{\subst{p_2}{a_2}}{\dots}{\subst{p_m}{a_m}}{\subst{r}{\ildlist{a_{m+1}}{\dots}{a_{n}}}}
 \end{gather*}
 To let programs build such \(\ildsetAbstr\)-objects, we provide a data constructor:
-\[ \defas{\ildapp{mk-lambda}{e}{P}{B}}{E}{\cpsapp{\cpsret}{\ildabstr{e}{P}{B}}} \]
+\[ \denotdefas{\denotapply{\ildsym{mk-lambda}}{e}{P}{B}}{E}{\ildabstr{e}{P}{B}} \]
 
 \subsubsection{Branching}\label{branching}
 The boolean datatype is of no use on its own without a function that
@@ -86,13 +86,11 @@ distinguishes between its values. Thus, we provide
 the \ildsym{bool-to-k} function that transforms a boolean into
 an argument selector:
 \[
-  \defas{\ildapp{bool-to-k}{b}}{E}{
-    \cpsapp{\cpsret}{
+  \denotdefas{\denotapply{\ildsym{bool-to-k}}{b}}{E}{
       \begin{cases}
         \ildabstr{()}{\ildlist{x}{y}}{x} & b = \ildhost{t} \\
         \ildabstr{()}{\ildlist{x}{y}}{y} & b = \ildhost{f} \\
       \end{cases}
-    }
   }
 \]
 This allows the base language to delegate branching entirely to the host
@@ -104,15 +102,14 @@ function can then be used to build higher-level branching primitives
 
 We provide a low-level operator \ildsym{poly-fix} for constructing
 mutually-recursive functions:
-\[ \defas{\ildapp{poly-fix}{\Gamma_1}{\Gamma_2}{\dots}{\Gamma_n}}{E}{\cpsapp{\cpsret}{\ildlist{\ildconst{f}{1}}{\ildconst{f}{2}}{\dots}{\ildconst{f}{n}}}} \]
+\[ \denotdefas{\denotapply{\ildsym{poly-fix}}{\Gamma_1}{\Gamma_2}{\dots}{\Gamma_n}}{E}{\ildlist{\ildconst{f}{1}}{\ildconst{f}{2}}{\dots}{\ildconst{f}{n}}} \]
 When evaluated, \ildsym{poly-fix} introduces the functional objects \(\ildconst{f}{1}, \dots, \ildconst{f}{n}\) whose semantics are:
-\begin{gather*}
-  \evalstobr
-    {\interop{apply}{C}{\ildconst{f}{i}}{a_1}{\dots}{a_k}}
-    {\interop{apply}{C'}{\Gamma_i}{\ildconst{f}{1}}{\ildconst{f}{2}}{\dots}{\ildconst{f}{n}}}
-  \\
-  \text{where } C' = \cpsabstr{{f_i}'}{\interop{apply}{C}{{f_i}'}{a_1}{\dots}{a_k}}
-\end{gather*}
+\[
+  \denotapply{\ildconst{f}{i}}{a_1}{\dots}{a_k}
+  = \denotapply{f_i}{a_1}{\dots}{a_k}
+\]
+where \( f_1 \dots f_i \) are intermediate recursion results of the fixed point:
+\[ f_i = \denotapply{\Gamma_i}{\ildconst{f}{1}}{\ildconst{f}{2}}{\dots}{\ildconst{f}{n}} \]
 Note that \ildsym{poly-fix} is not formally necessary: instead, one may
 opt to use an implementation of the Y-combinator written in ILD itself
 (\cref{poly-fix-Y}). This, however, would be impractical due to exponential
@@ -127,23 +124,10 @@ space and time complexity.
 \subsubsection{Interpreter access}
 It is practical to allow programs to call into the interpreter:
 \begin{gather*}
-  \defas{\ildapp{apply}{f}{\ildlist{a_1}{\dots}{a_n}}}{E}{\interop{apply}{\cpsret}{f}{a_1}{\dots}{a_n}}\\
-  \defas{\ildapp{eval}{e}{v}}{E}{\interop{eval}{\cpsret}{e}{v}}
+  \denotdefas{\denotapply{\ildsym{apply}}{f}{\ildlist{a_1}{\dots}{a_n}}}{E}{\denotapply{f}{a_1}{\dots}{a_n}}\\
+  \denotdefas{\denotapply{\ildsym{eval}}{e}{v}}{E}{\denot{v}{e}}
 \end{gather*}
 Furthermore, to allow programs to reference other programs, we provide
 a host function \ildsym{read-source} that retrieves a program by name.
 In real-life implementations, \(\ildapp{read-source}{p}\) will read
 the file whose path is \(p\), parse its contents and return the resulting value.
-
-\subsubsection{First-class continuations}
-\label{first-class-continuations}
-
-To allow ILD programs to implement complex control flow, we define
-a host function \(\ildsym{call/cc}\) that passes the current continuation as a
-first-class value to a given callable, and a rule to consume such reified
-continuations by discarding the current continuation:
-\begin{gather*}
-  \defas{\ildapp{call/cc}{f}}{E}{\interop{apply}{\cpsret}{f}{\ildcont{\cpsret}}}
-  \\
-  \evalsto{\interop{apply}{C}{\ildcont{C'}}{v}}{\cpsapp{C'}{v}}
-\end{gather*}

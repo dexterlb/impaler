@@ -10,8 +10,7 @@
 \(\ildsetSF\) & \(:=\) & \(\ildsf{free-vars} \mid \ildsf{quote} \mid \ildsf{macroexpand}\) & Special forms \\
 \(\ildsetFail\) & \(:=\) & \(\ildfail{\ildsetVal}\) & Failure objects, each carrying a context value \\
 \(\ildsetHost\) & \(:=\) & \(\ildsetNum \mid \ildsetBool \mid \ildsetStr \mid \ildsetHostFunc \mid \dots\) & Host values and \\
-\(\ildsetHostFunc\) & \(:=\) & \(\ildsetAbstr \mid \ildhost{+} \mid \ildhost{cons} \mid\) & host functions, opaque \\
- & & \(\ildhost{apply} \mid \ildhost{call/cc} \mid \dots\) & to the base language, \cref{embedding} \\
+\(\ildsetHostFunc\) & \(:=\) & \(\ildsetAbstr \mid \ildhost{+} \mid \ildhost{cons} \mid \ildhost{apply} \mid \ildhost{eval} \mid \dots\) & host functions, \cref{embedding} \\
 \(\ildsetNum\) & \(\in\) & \emph{numbers} & \\
 \(\ildsetBool\) & \(:=\) & \(\ildhost{t} \mid \ildhost{f}\) & \\
 \(\ildsetStr\) & \(\in\) & \emph{strings} & \\

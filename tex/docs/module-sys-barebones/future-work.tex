@@ -43,14 +43,7 @@ more features.
 \subsubsection{State management}
 \label{side-effects}
 The host environment presented in this paper is purely functional and makes no
-provision for user-managed state. However, for general-purpose applications,
-ILD must be embedded in an impure environment that allows state management and
-IO. The CPS calculus of ILD can be extended to model any monadic effect system~\cite[Section 3.3]{wadler}. This includes side effects like IO, and functions
-like \(\ildsym{gensym}\):%
-\[
-\defas{\ildapp{gensym}{s}}{E}{\cpsapp{\cpsret}{\text{a fresh symbol whose
-prefix is } s}}
-\]
+provision for user-managed state.
 
 Other functional languages that feature fully-immutable data employ different
 methods of handling state, IO and other side effects:
