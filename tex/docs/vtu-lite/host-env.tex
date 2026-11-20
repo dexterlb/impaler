@@ -35,21 +35,15 @@ operations on S-expressions, are also provided through the FFI (\(\ildsetHostFun
   \item Comparison: \(\ildsym{=}\), \(\ildsym{<}\),
     \(\ildsym{>}\), \(\ildsym{<=}\), \(\ildsym{>=}\)
   \item Pairs: \(\ildsym{cons}\), \(\ildsym{car}\), \(\ildsym{cdr}\)
-  \item Value type predicates:\\ \(\ildsym{null?}\), \(\ildsym{pair?}\),
+  \item Value type predicates: \(\ildsym{null?}\), \(\ildsym{pair?}\),
     \(\ildsym{symbol?}\), \(\ildsym{string?}\), \(\ildsym{func?}\),
     \(\ildsym{fail?}\)
   \item Equality: \(\ildapp{sym-eq?}{s_1}{s_2}\), \(\ildapp{str-eq?}{s_1}{s_2}\)
   \item Failure: \(\denotdefas{\denotapply{\ildsym{make-fail}}{v}}{E}{\ildfail{v}}\)
 \end{itemize}
-Unlike Scheme or LISP, ILD's immutable nature makes it hard to build cyclic
-objects; this can be remedied by externally providing data structures,
-either higher-level (like graphs) or lower-level (like indexed arrays).
-This, however, is outside the scope of this paper.
 
-\subsubsection{First-class special forms}
-To avoid name capture issues (\cref{hygiene-discussion}) and keep the parser
-minimal, ILD special forms are not keywords, and are instead
-provided as bindings in the root environment.
+\subsubsection{Special forms}
+Access to the special forms is provided via symbols in the root environment:
 \begin{equation}
   \begin{array}{@{}l@{}}
     E = ( \\
@@ -119,16 +113,6 @@ where \( f_1 \dots f_i \) are intermediate recursion results of the fixed point:
 \begin{equation}
   f_i = \denotapply{\Gamma_i}{\ildconst{f}{1}}{\ildconst{f}{2}}{\dots}{\ildconst{f}{n}}
 \end{equation}
-Note that \ildsym{poly-fix} is not formally necessary: instead, one may
-opt to use an implementation of the Y-combinator written in ILD itself
-(\cref{poly-fix-Y}). This, however, would be impractical due to exponential
-space and time complexity.
-
-% A stronger definition of \(#f_1, ..., #f_n\) would be \(#f_i = Gamma_i (#f_1, ..., #f_n)\),
-% but this leads to divergence problems when the language has strict (non-lazy) semantics.
-% Indeed, other strictly-evaluated languages, like Scheme, only support the weaker version
-% of the recursion operator: `letrec` in Scheme does not allow non-functional right-hand
-% sides. Lazy languages like Haskell and Nix do not have this problem.
 
 \subsubsection{Interpreter access}
 It is practical to allow programs to call into the interpreter:
