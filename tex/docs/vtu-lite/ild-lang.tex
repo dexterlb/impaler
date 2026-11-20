@@ -19,8 +19,8 @@
  & & \(\ildsetStr \mid \ildsetNum \mid \ildsetBool\) & \\
 \(\ildsetList\) & \(:=\) & \(() \mid \ildpair{\ildsetVal}{\ildsetList}\) & S-expression \emph{lists} \\
 \(\ildsetEnv\) & \(:=\) & \(() \mid \ildpair{\ildpair{\ildsetSym}{\ildsetVal}}{\ildsetEnv}\) & Binding environments\footnote{We assume keys are restricted to be unique (\cref{semantics}). Furthermore, performant implementations will use other representations of binding environments.} (K/V lists) \\
-\(\ildsetAbstr\) & \(:=\) & \(\ildabstr{\ildsetEnv}{\ildsetParList}{\ildsetVal}\) & Abstraction terms, \cref{abstraction} \\
-\(\ildsetParList\) & \(:=\) & \(() \mid \ildsetSym \mid \ildpair{\ildsetSym}{\ildsetParList}\) & Param lists (lists of symbols with optional catch-all tail) \\
+\(\ildsetAbstr\) & \(:=\) & \(\ildabstr{\ildsetEnv}{\ildsetSymList}{\ildsetVal}\) & Abstraction terms, \cref{abstraction} \\
+\(\ildsetSymList\) & \(:=\) & \(() \mid \ildpair{\ildsetSym}{\ildsetSymList}\) & Symbol lists (parameters, argument lists) \\
 \end{tabular}}
 \end{cfig}
 

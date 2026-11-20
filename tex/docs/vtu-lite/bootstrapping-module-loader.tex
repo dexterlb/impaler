@@ -12,7 +12,7 @@ user programs organised in modules such as the one defined in
         "core/bootstrap/letrec.ild"))))
   (!letrec
       ( <definitions of helpers> )
-    (!lambda (mod-name func-name . args)
+    (!lambda (mod-name func-name args)
       (apply
         (kv-get func-name
           (load-module mod-name))
@@ -23,7 +23,7 @@ The outermost \ild{let}-expression makes the root environment
 (captured via \ildsf{free-vars}) and \ild{letrec} available to the
 internal \ild{letrec} expression.
 The module loader, when called with a module name,
-entrypoint function name and arguments, loads that module, picks the entrypoint function
+entrypoint function name and a list of arguments, loads that module, picks the entrypoint function
 from its export list and applies it to the given arguments.
 The core helper is a function called \ild{eval-module},
 whose implementation we show in \cref{def-eval-module} while
@@ -96,7 +96,8 @@ name and entrypoint to the module loader (shown in \cref{module-load-example}).
   "core/bootstrap/module-loader.ild"))
 
   "demos/fact.ild"
-  'main)
+  'main
+  '())
 \end{ildcode}\end{listingbox}
 \lstcaption{Executing the module loader on a user program}\label{module-load-example}
 The ILD interpreter and/or build system need not be concerned with any details

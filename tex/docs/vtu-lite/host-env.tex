@@ -35,6 +35,7 @@ operations on S-expressions, are also provided through the FFI (\(\ildsetHostFun
   \item Comparison: \(\ildsym{=}\), \(\ildsym{<}\),
     \(\ildsym{>}\), \(\ildsym{<=}\), \(\ildsym{>=}\)
   \item Pairs: \(\ildsym{cons}\), \(\ildsym{car}\), \(\ildsym{cdr}\)
+  \item Constructor for lists: \(\ildapp{list}{x_1}{\dots}{x_n}\)
   \item Value type predicates: \(\ildsym{null?}\), \(\ildsym{pair?}\),
     \(\ildsym{symbol?}\), \(\ildsym{string?}\), \(\ildsym{func?}\),
     \(\ildsym{fail?}\)
@@ -60,20 +61,24 @@ Access to the special forms is provided via symbols in the root environment:
 \label{abstraction}
 User-introduced functional objects in the host environment are
 represented as \(\ildsetAbstr\)-terms. Each such term carries a binding environment \(e\),
-a list of formal parameters \(P\) and a body expression
-\(\beta\), and is \emph{applied} by substituting (\cref{env-substitution})
-the formal parameters by the actual parameters in the local binding environment,
+a list of formal parameters \(P \in \ildsetSymList\) and a body expression
+\(\beta\), and is \emph{applied} by substituting the formal parameters by the
+actual parameters in the local binding environment,
 and then evaluating the body in the resulting environment:
 \begin{equation}\begin{gathered}
   \denotapply{\ildabstr{e}{P = \ildlist{p_1}{p_2}{\dots}{p_n}}{\beta}}{a_1}{a_2}{\dots}{a_n} = \denot{e'}{\beta}
   \\
   \text{where } e' = \spacedlist{e}{\subst{p_1}{a_1}}{\subst{p_2}{a_2}}{\dots}{\subst{p_n}{a_n}}
 \end{gathered}\end{equation}
-Variadic functions with \(P = \ildpair{\ildlist{p_1}{p_2}{\dots}{p_m}}{r}\)
-for \(m < n\), or \(P = {r}\) or \(P = \ildpair{()}{r} \) for \(m = 0\) require a similar rule where:
-\begin{equation}\begin{gathered}
-  e' = \spacedlist{e}{\subst{p_1}{a_1}}{\subst{p_2}{a_2}}{\dots}{\subst{p_m}{a_m}}{\subst{r}{\ildlist{a_{m+1}}{\dots}{a_{n}}}}
-\end{gathered}\end{equation}
+Formally, parameter substitution in a binding environment \(e\subst{x}{v}\) is defined as:
+\begin{equation}
+  e \subst{x}{v} =
+  \begin{cases}
+    \ildpair{\ildpair{x}{v}}{()} & e = () \\
+    \ildpair{\ildpair{x}{v}}{e'} & e = \ildpair{\ildpair{x}{w}}{e'} \\
+    \ildpair{\ildpair{y}{w}}{e' \subst{x}{v}} & e = \ildpair{\ildpair{y}{w}}{e'} \land y \neq x
+  \end{cases}
+\end{equation}
 To let programs build such \(\ildsetAbstr\)-objects, we provide a data constructor:
 \begin{equation}
   \denotdefas{\denotapply{\ildsym{mk-lambda}}{e}{P}{B}}{E}{\ildabstr{e}{P}{B}}

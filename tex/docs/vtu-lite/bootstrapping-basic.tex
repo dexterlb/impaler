@@ -71,7 +71,6 @@ To keep the code succinct, we store these definitions in separate bootstrap
 source files and introduce them in scope with the same technique as the
 \ild{lambda} macro.
 \begin{listingbox}\begin{ildcode}
-(!lambda args args)         ; body of 'list'
 (!lambda (p) (car (cdr p))) ; body of 'cadr'
 (!lambda (p) (car (car p))) ; body of 'caar'
 
