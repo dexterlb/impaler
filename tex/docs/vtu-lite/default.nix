@@ -2,9 +2,9 @@
 let
   buildLatex = latexTools.buildLatex;
 in rec {
-  packages.module-sys-barebones-paper = buildLatex {
+  packages.vtu-lite-paper = buildLatex {
     src = ./.;
-    pkgname = "module-sys-barebones-paper";
+    pkgname = "vtu-lite-paper";
     latexFiles = "main.tex";
   };
 }

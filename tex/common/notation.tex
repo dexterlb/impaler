@@ -239,6 +239,7 @@
 \makeatother
 
 % full-width spans
+\providecommand{\Description}[1]{}
 \newenvironment{cfig}[4]{%
   \begin{figure*}[t]
   \centering
@@ -253,4 +254,20 @@
   \addtocounter{figure}{-1}%
   \caption{\cfigcaption}%
   \end{figure*}%
+}
+\newenvironment{ctab}[3]{%
+  \begin{table*}[t]
+  \centering
+  \Description{#3}%
+  \def\ctabname{#1}%
+  \def\ctabcaption{#2}%
+  \refstepcounter{table}%
+  \edef\ctabprintnum{\csname thetable\endcsname}%
+  \def\thetable{\ctabprintnum}%
+  \addtocounter{table}{-1}%
+  \captionsetup{name={\ctabname},labelsep=colon,position=above,%
+    justification=raggedleft,singlelinecheck=false}%
+  \caption{\ctabcaption}%
+}{%
+  \end{table*}%
 }

@@ -1,7 +1,9 @@
 \makeatletter
-\if@ACM@review
-  \@ACM@anonymoustrue
-\fi
+\@ifundefined{@ACM@review}{}{%
+  \if@ACM@review
+    \@ACM@anonymoustrue
+  \fi
+}
 \makeatother
 
 \usepackage{amsmath}

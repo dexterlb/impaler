@@ -4,8 +4,9 @@ In this section we discuss the application of first-class macros with callsite-t
 as implemented in ILD, and implications regarding immutability. Features of
 similar languages are compared in \cref{lang-comparison}.
 
-\begin{cfig}{Table}{table}{Feature comparison of similar languages}{Table comparing features}
+\begin{ctab}{Table}{Feature comparison of similar languages}{Table comparing features}
 \label{lang-comparison}
+{\small
 \begin{tabular}{llcccll}
 \toprule
 & Immutable & & \multicolumn{4}{c}{Macros} \\
@@ -22,8 +23,8 @@ Kraken~\cite{fexpr-pe} & yes & one & fexprs & yes & runtime & bind time \\
 Kernel~\cite{kernel-report} & no & one & fexprs & yes & runtime & bind time \\
 ILD & yes & three & unhygienic & yes & runtime & callsite \\
 \bottomrule
-\end{tabular}
-\end{cfig}
+\end{tabular}}
+\end{ctab}
 
 \subsection{Callsite-triggered first-class macros}
 \label{macro-function-duality}

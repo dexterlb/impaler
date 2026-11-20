@@ -1,0 +1,17 @@
+\begin{abstract}
+We define a minimal language \lang that resembles Lisp and Scheme. Functions
+and macros in \lang are indistinguishable; the distinction is made only at
+invocation. We show that these minimal features suffice to define a module
+system as expressive as existing ones for Scheme.
+
+Established module systems handle compile-time code execution and the importing
+and exporting of macros with extra care. In contrast, we demonstrate that such
+techniques are unnecessary for a language such as \lang because macros have
+runtime semantics and are effectively identical to functions.
+
+The metaprogramming constructs used to implement the proposed module system
+incur a performance penalty when combined with runtime semantics. We propose
+using partial evaluation to shift module resolution implicitly to compile time,
+achieving performance comparable to established module systems in other
+languages.
+\end{abstract}
