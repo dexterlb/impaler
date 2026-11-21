@@ -70,25 +70,3 @@ This paper makes the following contributions:
     (\cref{module-loader}).
   \item We discuss ILD's metaprogramming capabilities (\cref{discussion}).
 \end{enumerate}
-An example program, written in ILD and making use of the library presented
-later in this paper, is shown in
-\cref{example-module-fact}.
-Macro calls are denoted with the \ild{!}-notation,
-further discussed in \cref{syntax}.
-\begin{listingbox}\begin{ildcode}
-(module
-  (doc "this module calculates 5!")
-  (exports main)
-  (imports
-    (host (macroexpand <= * +))
-    ("core/prelude.ild" (if))
-    ("core/module-utils.ild" (fn)))
-  (defs
-    (!fn main () (fact 5))
-
-    (!fn fact (x)
-      (!if (<= x 0)
-        1
-        (* x (fact (+ x -1)))))))
-\end{ildcode}\end{listingbox}
-\lstcaption{Example module \code{"demos/fact.ild"}}\label{example-module-fact}
