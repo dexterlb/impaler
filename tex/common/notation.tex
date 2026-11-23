@@ -259,6 +259,23 @@
   \caption{\cfigcaption}%
   \end{figure*}%
 }
+\newenvironment{cfighere}[4]{%
+  \par\medskip
+  \begin{center}
+  \Description{#4}%
+  \def\cfigname{#1}%
+  \def\cfigcaption{#3}%
+  \refstepcounter{#2}%
+  \edef\cfigprintnum{\csname the#2\endcsname}%
+}{%
+  \par\medskip
+  \captionsetup[figure]{name={\cfigname},labelsep=colon}%
+  \def\thefigure{\cfigprintnum}%
+  \addtocounter{figure}{-1}%
+  \captionof{figure}{\cfigcaption}%
+  \end{center}%
+  \par\medskip
+}
 \newenvironment{ctab}[3]{%
   \begin{table*}[t]
   \centering
