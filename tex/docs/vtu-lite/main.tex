@@ -17,6 +17,24 @@
 \input{macros/paper.tex}
 \input{notation.tex}
 
+\makeatletter
+\renewenvironment{listingbox}{%
+  \par\addvspace{16pt}%
+  \begingroup\centering
+  \begin{minipage}{0.8\textwidth}%
+}{%
+  \end{minipage}\par\endgroup
+}
+\renewcommand{\lstcaption}[1]{%
+  \par\nobreak\vskip\smallskipamount
+  {\centering\begin{minipage}{0.8\textwidth}%
+  \refstepcounter{listing}\textbf{Listing \thelisting:} #1\par
+  \end{minipage}\par}%
+  \vskip\medskipamount
+  \@afterindentfalse\@afterheading
+}
+\makeatother
+
 \newif\ifblindreview
 \blindreviewtrue
 
