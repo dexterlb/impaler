@@ -8,6 +8,10 @@ In this section, we present a reference standard library
 of such constructs, culminating in \ild{letrec}.
 Keeping that complexity out of the core language makes it simple and portable
 to different host environments.
+\begin{note}
+  Rewrite: ILD is not embedded in a host environment. Say ``portable across
+  implementations'' (or equivalent).
+\end{note}
 
 \subsection{Lambda}
 \label{lambda-macro}
@@ -15,6 +19,10 @@ First, we define a macro called \ild{lambda} that will let us introduce new
 abstraction objects (\cref{abstraction}). We want expansion of the \ild{lambda}
 macro to result in a call to \ild{mk-lambda} given the current binding environment
 (\ild{free-vars}) and the quoted argument names and body (\cref{lambda-expansion-example}).
+\begin{note}
+  Rewrite: ``abstraction objects'' \(\to\) ``abstraction function objects''
+  (\(\ildsetAbstrFunc\)).
+\end{note}
 \begin{listingbox}\begin{ildcode}
 (!lambda (x y) (+ x y))
 ; should become
@@ -23,7 +31,7 @@ macro to result in a call to \ild{mk-lambda} given the current binding environme
 \end{ildcode}\end{listingbox}
 \lstcaption{Example expansion for \ild{!lambda} expression}\label{lambda-expansion-example}
 A possible implementation of the \ild{lambda} macro is provided in \cref{lambda-macro-def}:
-The outer call to \ild{mk-lambda} introduces a new \(\ildsetAbstr\)-object
+The outer call to \ild{mk-lambda} introduces a new \(\ildsetAbstrFunc\)-object
 carrying the current binding environment
 % \footnote{
 %   The \ild{(free-vars)} closure given to the host \ild{mk-lambda} can be replaced
@@ -59,6 +67,9 @@ to obtain the expression it expands to, which is useful when writing macros
 that generate \ild{(!lambda <args> <body>)} expressions.
 We can now implement branching via the \ildhost{bool-to-k} host
 function (\cref{branching}).
+\begin{note}
+  Rewrite: ``host function'' \(\to\) ``builtin function''.
+\end{note}
 To avoid evaluating both branches, we delay the evaluation of
 each branch until the condition is known by wrapping it in a 0-argument
 function, and force the selected branch afterwards:

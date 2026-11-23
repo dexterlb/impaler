@@ -1,10 +1,19 @@
 \subsection{A minimal host environment}
 \label{root-env}
+\begin{note}
+  Rewrite the section title and the text that follows: there is no host
+  environment. Describe a set of builtin functions and the root binding
+  environment instead.
+\end{note}
 
 The base language, as defined in \cref{semantics}, cannot express useful programs on its own. In this section we constrain
-\(\ildsetHost\) to contain data structures, functions and constants that allow implementing nontrivial
+\(\ildsetVal\) to contain data structures, functions and constants that allow implementing nontrivial
 programs. To make these values available to programs, we also define a root binding environment \(E\)
 that is used for the outermost eval.
+\begin{note}
+  Rewrite: do not constrain \(\ildsetVal\). State that the following builtin
+  values are made available in the root environment \(E\).
+\end{note}
 
 We will use the following notation
 to define the semantics of the host functions:
@@ -13,10 +22,14 @@ to define the semantics of the host functions:
 \end{equation}
 Formally, the aforementioned notation introducing \ildsym{foo} is shorthand for:
 \begin{itemize}
-  \item \(\ildhost{foo} \in \ildsetHostFunc\) -- introduce a \(\ildhost{foo}\) \emph{host function}
+  \item \(\ildhost{foo} \in \ildsetBuiltinFunc\) -- introduce a \(\ildhost{foo}\) \emph{host function}
   \item \( \denotapply{\ildhost{foo}}{x_1}{\dots}{x_n} = y \) -- assert that \(\ildhost{foo}\) applied to \(x_1, \dots, x_n\) results in \( y \)
   \item \(E = \ildlist{\dots}{\ildpair{\ildsym{foo}}{\ildhost{foo}}}{\dots}\) -- assert that the symbol \(\ildsym{foo}\) stands for the host value \(\ildhost{foo}\) in the root environment \(E\)
 \end{itemize}
+\begin{note}
+  Rewrite: remove ``host function'' and ``host value'' terminology; use
+  ``builtin function'' and ``value''.
+\end{note}
 For example, to introduce the function \ildhost{cons} under the symbol \ildsym{cons}
 in the root environment, we would write:
 \begin{equation}
@@ -26,9 +39,13 @@ in the root environment, we would write:
 \subsubsection{Basic data structures}
 ILD's FFI semantics allows externally providing any data structure to ILD programs.
 The base environment presented here provides numbers, booleans and strings
-(\(\ildsetNum, \ildsetBool, \ildsetStr \subset \ildsetHost\)), and is sufficient
+(\(\ildsetNum, \ildsetBool, \ildsetStr \subset \ildsetVal\)), and is sufficient
 for demonstrating expressivity. Standard functions on such values, as well as
-operations on S-expressions, are also provided through the FFI (\(\ildsetHostFunc\)):
+operations on S-expressions, are also provided through the FFI (\(\ildsetBuiltinFunc\)):
+\begin{note}
+  Rewrite: there is no FFI or host environment. Say that numbers, booleans and
+  strings are ordinary values, and that the listed functions are builtins.
+\end{note}
 \begin{itemize}
   \item Arithmetic: \(\ildapp{+}{x_1}{\dots}{x_n}\), \(\ildapp{*}{x_1}{\dots}{x_n}\),
     \(\ildapp{-}{x}{y}\), \(\ildapp{/}{x}{y}\)
@@ -60,7 +77,7 @@ Access to the special forms is provided via symbols in the root environment:
 \subsubsection{\texorpdfstring{\(\lambda\)-abstractions}{lambda-abstractions}}
 \label{abstraction}
 User-introduced functional objects in the host environment are
-represented as \(\ildsetAbstr\)-terms. Each such term carries a binding environment \(e\),
+represented as \(\ildsetAbstrFunc\)-terms. Each such term carries a binding environment \(e\),
 a list of formal parameters \(P \in \ildsetSymList\) and a body expression
 \(\beta\), and is \emph{applied} by substituting the formal parameters by the
 actual parameters in the local binding environment,
@@ -70,6 +87,10 @@ and then evaluating the body in the resulting environment:
   \\
   \text{where } e' = \spacedlist{e}{\subst{p_1}{a_1}}{\subst{p_2}{a_2}}{\dots}{\subst{p_n}{a_n}}
 \end{gathered}\end{equation}
+\begin{note}
+  Rewrite: user-introduced functions are not ``in the host environment''. Say
+  ``function objects'' and refer to \(\ildsetAbstrFunc\) terms.
+\end{note}
 Formally, parameter substitution in a binding environment \(e\subst{x}{v}\) is defined as:
 \begin{equation}
   e \subst{x}{v} =
@@ -79,7 +100,7 @@ Formally, parameter substitution in a binding environment \(e\subst{x}{v}\) is d
     \ildpair{\ildpair{y}{w}}{e' \subst{x}{v}} & e = \ildpair{\ildpair{y}{w}}{e'} \land y \neq x
   \end{cases}
 \end{equation}
-To let programs build such \(\ildsetAbstr\)-objects, we provide a data constructor:
+To let programs build such \(\ildsetAbstrFunc\)-objects, we provide a data constructor:
 \begin{equation}
   \denotdefas{\denotapply{\ildsym{mk-lambda}}{e}{P}{B}}{E}{\ildabstr{e}{P}{B}}
 \end{equation}
@@ -101,6 +122,10 @@ This allows the base language to delegate branching entirely to the host
 implementation of the boolean datatype. The \ildsym{bool-to-k}
 function can then be used to build higher-level branching primitives
 (e.g. \cref{if}).
+\begin{note}
+  Rewrite: there is no host implementation; say ``builtin definition'' or
+  ``library implementation''.
+\end{note}
 
 \subsubsection{A recursion operator}
 
@@ -129,3 +154,6 @@ Furthermore, to allow programs to reference other programs, we provide
 a host function \ildsym{read-source} that retrieves a program by name.
 In real-life implementations, \(\ildapp{read-source}{p}\) will read
 the file whose path is \(p\), parse its contents and return the resulting value.
+\begin{note}
+  Rewrite: ``host function'' \(\to\) ``builtin function''.
+\end{note}

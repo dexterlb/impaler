@@ -40,10 +40,16 @@ resolve module imports without duplicates.
 The \emph{base language} presented in this paper is considered feature-complete. However,
 much can be gained by extending the \emph{host environment} and libraries with
 more features.
+\begin{note}
+  Rewrite: ``host environment'' \(\to\) ``set of builtins'' (or equivalent).
+\end{note}
 \subsubsection{State management}
 \label{side-effects}
 The host environment presented in this paper is purely functional and makes no
 provision for user-managed state.
+\begin{note}
+  Rewrite: ``The builtin set presented in this paper is purely functional...''
+\end{note}
 
 Other functional languages that feature fully-immutable data employ different
 methods of handling state, IO and other side effects:
@@ -63,6 +69,10 @@ methods of handling state, IO and other side effects:
     environment~\cite{hudak-frp,elm-async-frp}.
 \end{itemize}
 Embedding ILD in environments that provide similar practical features is worth exploring.
+\begin{note}
+  Rewrite: replace ``called by the host environment'' with ``called by the
+  runtime'', and rephrase the final sentence to avoid the embedding concept.
+\end{note}
 
 \subsubsection{Quasiquote}
 ILD's \ildsf{quote} special form yields the given program without

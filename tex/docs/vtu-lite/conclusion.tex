@@ -13,3 +13,7 @@ macro expansion phase. The macros in this paper make use of this runtime
 semantics to emit values instead of keywords, which avoids name capture and
 leakage without hygiene machinery. In the future we aim to improve performance
 by employing partial evaluation as an optimisation step.
+\begin{note}
+  Rewrite: there are no ``host functions'' provided via an FFI. Say ``a set of
+  builtin functions and data structures''.
+\end{note}
