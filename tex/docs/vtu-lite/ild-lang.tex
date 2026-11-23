@@ -14,7 +14,7 @@ are a subset of the internal syntax \(\ildsetVal\).
 \(\ildsetSF\) & \(:=\) & \(\ildsf{free-vars} \mid \ildsf{quote} \mid \ildsf{macroexpand}\) & Special forms \\
 \(\ildsetFail\) & \(:=\) & \(\ildfail{\ildsetVal}\) & Failure objects, each carrying a context value \\
 \(\ildsetFunc\) & \(:=\) & \(\ildsetBuiltinFunc \mid \ildsetAbstrFunc\) & Ordinary functions \\
-\(\ildsetBuiltinFunc\) & \(:=\) & \(\ildhost{+} \mid \ildhost{cons} \mid \ildhost{apply} \mid \ildhost{eval} \mid \dots\) & Builtin functions, \cref{root-env} \\
+\(\ildsetBuiltinFunc\) & \(:=\) & \(\ildhost{+} \mid \ildhost{cons} \mid \ildhost{apply} \mid \ildhost{eval} \mid \dots\) & Builtin functions, \cref{builtin-funcs} \\
 \(\ildsetAbstrFunc\) & \(:=\) & \(\ildabstr{\ildsetEnv}{\ildsetSymList}{\ildsetVal}\) & Abstraction terms, \cref{abstraction} \\
 \(\ildsetNum\) & \(\in\) & \emph{numbers} & \\
 \(\ildsetBool\) & \(:=\) & \(\ildhost{t} \mid \ildhost{f}\) & \\
@@ -149,11 +149,11 @@ Formally, parameter substitution in a binding environment \(e\subst{x}{v}\) is d
     \ildpair{\ildpair{y}{w}}{e' \subst{x}{v}} & e = \ildpair{\ildpair{y}{w}}{e'} \land y \neq x
   \end{cases}
 \end{equation}
-Such functional objects are created via the \(\ildsym{mk-lambda}\) constructor (\cref{root-env})
+Such functional objects are created via the \(\ildsym{mk-lambda}\) constructor (\cref{builtin-funcs})
 and then used for \ild{lambda}-expressions (\cref{lambda-macro}).
 
 \subsection{Builtin functions}
-\label{root-env}
+\label{builtin-funcs}
 The ILD interpreter and root environment provide a set of builtin functions
 in order for ILD programs to be able to operate on the builtin data structures:
 (\(\ildsetNum\), \(\ildsetBool\), \(\ildsetStr\)),
