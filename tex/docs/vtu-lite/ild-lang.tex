@@ -75,7 +75,12 @@ In order for ILD programs to be able to access special forms (\(\ildsetSF\)) and
     \quad \ildpair{\ildsym{macroexpand}}{\ildsf{macroexpand}} \\
     \quad \ildpair{\ildsym{free-vars}}{\ildsf{free-vars}} \\
     \vspace{1em}
-    \quad \ildpair{\ildsym{cons}}{\ildconst{cons}} \\ % MTODO: add some more examples; also, this line has a bug ("Argument of \spacedlist@loop has an extra }")
+    \quad \ildpair{\ildsym{cons}}{\ildhost{cons}} \\
+    \quad \ildpair{\ildsym{car}}{\ildhost{car}} \\
+    \quad \ildpair{\ildsym{cdr}}{\ildhost{cdr}} \\
+    \quad \ildpair{\ildsym{+}}{\ildhost{+}} \\
+    \quad \ildpair{\ildsym{make-fail}}{\ildhost{make-fail}} \\
+    \quad \ildpair{\ildsym{read-source}}{\ildhost{read-source}} \\
     \quad \dots
     )
   \end{array}
@@ -116,21 +121,26 @@ in most LISP dialects with unhygienic macro systems~\cite{steele-gabriel-evoluti
 The advantages and disadvantages of callsite-triggered macros are further
 discussed in \cref{macro-function-duality}.
 \subsection{Builtin functions}
+\label{root-env}
 The ILD interpreter and root environment provide a set of builtin functions
 in order for ILD programs to be able to operate on the builtin data structures:
-(\(\ildsetNum\), \(\ildsetBool\)),  % MTODO: add the rest
-\begin{itemize} % MTODO: do not use ildsym, use ildconst instead. Do not use denotdefas
-  \item Arithmetic: \(\ildapp{+}{x_1}{\dots}{x_n}\), \(\ildapp{*}{x_1}{\dots}{x_n}\),
-    \(\ildapp{-}{x}{y}\), \(\ildapp{/}{x}{y}\)
-  \item Comparison: \(\ildsym{=}\), \(\ildsym{<}\),
-    \(\ildsym{>}\), \(\ildsym{<=}\), \(\ildsym{>=}\)
-  \item Pairs: \(\ildsym{cons}\), \(\ildsym{car}\), \(\ildsym{cdr}\)  % MTODO: spell these out in a nested list, e.g. what does apply(#cons, ...) result in
-  \item Constructor for lists: \(\ildapp{list}{x_1}{\dots}{x_n}\)
-  \item Value type predicates: \(\ildsym{null?}\), \(\ildsym{pair?}\),
-    \(\ildsym{symbol?}\), \(\ildsym{string?}\), \(\ildsym{func?}\),
-    \(\ildsym{fail?}\)
-  \item Equality: \(\ildapp{sym-eq?}{s_1}{s_2}\), \(\ildapp{str-eq?}{s_1}{s_2}\)
-  \item Failure: \(\denotdefas{\denotapply{\ildsym{make-fail}}{v}}{E}{\ildfail{v}}\)
+(\(\ildsetNum\), \(\ildsetBool\), \(\ildsetStr\)),
+\begin{itemize}
+  \item Arithmetic: \(\ildhost{+}\), \(\ildhost{*}\), \(\ildhost{-}\), \(\ildhost{/}\)
+  \item Comparison: \(\ildhost{=}\), \(\ildhost{<}\),
+    \(\ildhost{>}\), \(\ildhost{<=}\), \(\ildhost{>=}\)
+  \item Pairs:
+    \begin{itemize}
+      \item \(\denotapply{\ildhost{cons}}{a}{d} = \ildpair{a}{d}\)
+      \item \(\denotapply{\ildhost{car}}{\ildpair{a}{d}} = a\)
+      \item \(\denotapply{\ildhost{cdr}}{\ildpair{a}{d}} = d\)
+    \end{itemize}
+  \item Constructor for lists: \(\ildhost{list}\)
+  \item Value type predicates: \(\ildhost{null?}\), \(\ildhost{pair?}\),
+    \(\ildhost{symbol?}\), \(\ildhost{string?}\), \(\ildhost{func?}\),
+    \(\ildhost{fail?}\)
+  \item Equality: \(\denotapply{\ildhost{sym-eq?}}{s_1}{s_2}\), \(\denotapply{\ildhost{str-eq?}}{s_1}{s_2}\)
+  \item Failure: \(\denotapply{\ildhost{make-fail}}{v} = \ildfail{v}\)
 \end{itemize}
 
 \subsubsection{Branching}\label{branching}
