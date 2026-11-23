@@ -16,13 +16,9 @@ to different host environments.
 \subsection{Lambda}
 \label{lambda-macro}
 First, we define a macro called \ild{lambda} that will let us introduce new
-abstraction objects (\cref{abstraction}). We want expansion of the \ild{lambda}
+user-defined functions (\cref{abstraction}). We want expansion of the \ild{lambda}
 macro to result in a call to \ild{mk-lambda} given the current binding environment
 (\ild{free-vars}) and the quoted argument names and body (\cref{lambda-expansion-example}).
-\begin{note}
-  Rewrite: ``abstraction objects'' \(\to\) ``abstraction function objects''
-  (\(\ildsetAbstrFunc\)).
-\end{note}
 \begin{listingbox}\begin{ildcode}
 (!lambda (x y) (+ x y))
 ; should become
@@ -31,7 +27,7 @@ macro to result in a call to \ild{mk-lambda} given the current binding environme
 \end{ildcode}\end{listingbox}
 \lstcaption{Example expansion for \ild{!lambda} expression}\label{lambda-expansion-example}
 A possible implementation of the \ild{lambda} macro is provided in \cref{lambda-macro-def}:
-The outer call to \ild{mk-lambda} introduces a new \(\ildsetAbstrFunc\)-object
+The outer call to \ild{mk-lambda} introduces a new \(\ildsetUserFunc\)-object
 carrying the current binding environment
 % \footnote{
 %   The \ild{(free-vars)} closure given to the host \ild{mk-lambda} can be replaced

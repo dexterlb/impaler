@@ -13,9 +13,9 @@ are a subset of the internal syntax \(\ildsetVal\).
 \(\ildsetSexp\) & \(:=\) & \(() \mid \ildpair{\ildsetVal}{\ildsetVal}\) & S-expressions \\
 \(\ildsetSF\) & \(:=\) & \(\ildsf{free-vars} \mid \ildsf{quote} \mid \ildsf{macroexpand}\) & Special forms \\
 \(\ildsetFail\) & \(:=\) & \(\ildfail{\ildsetVal}\) & Failure objects, each carrying a context value \\
-\(\ildsetFunc\) & \(:=\) & \(\ildsetBuiltinFunc \mid \ildsetAbstrFunc\) & Ordinary functions \\
+\(\ildsetFunc\) & \(:=\) & \(\ildsetBuiltinFunc \mid \ildsetUserFunc\) & Ordinary functions \\
 \(\ildsetBuiltinFunc\) & \(:=\) & \(\ildhost{+} \mid \ildhost{cons} \mid \ildhost{apply} \mid \ildhost{eval} \mid \dots\) & Builtin functions, \cref{builtin-funcs} \\
-\(\ildsetAbstrFunc\) & \(:=\) & \(\ildabstr{\ildsetEnv}{\ildsetSymList}{\ildsetVal}\) & Abstraction terms, \cref{abstraction} \\
+\(\ildsetUserFunc\) & \(:=\) & \(\ildabstr{\ildsetEnv}{\ildsetSymList}{\ildsetVal}\) & User-defined functions, \cref{abstraction} \\
 \(\ildsetNum\) & \(\in\) & \emph{numbers} & \\
 \(\ildsetBool\) & \(:=\) & \(\ildhost{t} \mid \ildhost{f}\) & \\
 \(\ildsetStr\) & \(\in\) & \emph{strings} & \\
@@ -66,7 +66,7 @@ Proper lists (also known as \emph{combinations}) are evaluated according to the 
   \end{gathered}
 \end{equation}
 Depending on whether the combination head evaluates to a special form (\(\ildsetSF\))
-or an ordinary function (\(\ildsetFunc = \ildsetBuiltinFunc \cup \ildsetAbstrFunc \)),
+or an ordinary function (\(\ildsetFunc = \ildsetBuiltinFunc \cup \ildsetUserFunc \)),
 it is \emph{applied} via either \(\interopword{sf}\) or \(\interopword{apply}\) respectively.
 Ordinary function application and the special forms are outlined in the following sections.
 In order for ILD programs to be able to access special forms (\(\ildsetSF\)) and builtin functions
@@ -130,7 +130,7 @@ discussed in \cref{macro-function-duality}.
 \subsection{User-defined functions}
 \label{abstraction}
 User-introduced functional objects are
-represented as \(\ildsetAbstrFunc\)-terms. Each such term carries a binding environment \(e\),
+represented as \(\ildsetUserFunc\)-terms. Each such term carries a binding environment \(e\),
 a list of formal parameters \(P \in \ildsetSymList\) and a body expression
 \(\beta\), and is \emph{applied} by substituting the formal parameters by the
 actual parameters in the local binding environment,
