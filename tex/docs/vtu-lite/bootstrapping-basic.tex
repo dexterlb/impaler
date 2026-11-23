@@ -43,33 +43,9 @@ expands to an expression embedding \ildhost{mk-lambda} in its head.
           '())))))
 \end{ildcode}\end{listingbox}
 \lstcaption{Implementation of the lambda macro}\label{lambda-macro-def}
-Embedding the values of \ild{mk-lambda}, \ild{free-vars} and \ild{quote}
-avoids name shadowing problems traditionally encountered with unhygienic
-macro systems (\cref{hygiene-discussion}).
-
-This definition can then be wrapped in another call of \ild{mk-lambda} in order to expose
-it under a \ild{lambda} name usable from the scoped body. Supposing that
-this definition is stored as an ILD program called \pathcode{core/bootstrap/lambda-macro.ild},
-we recall it twice (once to define \ild{lambda} and once to pass itself as the
-value of \ild{lambda}). Such a wrapper is shown in \cref{lambda-wrap}.
-\begin{listingbox}\begin{ildcode}
-((!(eval (free-vars)
-    (read-source
-      "core/bootstrap/lambda-macro.ild"))
- (lambda)
-  ...) ; body that may use the lambda macro
-  ; body of 'lambda'
-  (eval (free-vars)
-    (read-source
-      "core/bootstrap/lambda-macro.ild")))
-\end{ildcode}\end{listingbox}
-\lstcaption{Outermost usage of the lambda macro}\label{lambda-wrap}
 
 \subsection{Basic utilities}
 We define helper utilities in a scope where the \ild{lambda} macro is present.
-To keep the code succinct, we store these definitions in separate bootstrap
-source files and introduce them in scope with the same technique as the
-\ild{lambda} macro.
 \begin{listingbox}\begin{ildcode}
 (!lambda (p) (car (cdr p))) ; body of 'cadr'
 (!lambda (p) (car (car p))) ; body of 'caar'
@@ -101,7 +77,7 @@ function, and force the selected branch afterwards:
 \end{ildcode}\end{listingbox}
 \lstcaption{Definition of the \ild{if} macro}\label{if}
 Since \ild{letrec} is not available at this point in the bootstrap process,
-in \cref{def-map} we define \ild{map} via \ild{Y}.
+recursive functions such as \ild{map} can be defined via \ild{Y}:
 \begin{listingbox}\begin{ildcode}
 ; body of 'map'
 (Y (!lambda (map)
@@ -116,90 +92,9 @@ in \cref{def-map} we define \ild{map} via \ild{Y}.
 \end{ildcode}\end{listingbox}
 \lstcaption{Definition of the \ild{map} function}\label{def-map}
 
-\subsubsection{Let}
-The binding construct \ild{let} is simply a more ergonomic way
-of writing a \ild{lambda} expression applied to a list of body expressions
-(example in \cref{let-example}).
-In \cref{def-let} we show how it can be defined via \ild{lambda}.
-\begin{listingbox}\begin{ildcode}
-; body of 'let'
-(!lambda (letlist body)
-  (cons
-    (lambda
-      (map car letlist)
-      body)
-    (map cadr letlist)))
-\end{ildcode}\end{listingbox}
-\lstcaption{Definition of \ild{let}}\label{def-let}
-
-\begin{listingbox}\begin{ildcode}
-; this program
-  ((!lambda (add1 forty-two)
-      (add1 forty-two))
-
-      (!lambda (x)
-        (add x 1)) ; definition of add1
-      42)          ; definition of forty-two
-
-; can now be written as
-  (!let (
-      (add1 (!lambda (x)
-              (add x 1)))
-      (forty-two  42))
-
-    (add1 forty-two))
-\end{ildcode}\end{listingbox}
-\lstcaption{Rewriting a \ild{lambda} scope binding to use \ild{let}}\label{let-example}
-To bind several names in sequence, where each binding may refer to the
-preceding ones, in \cref{def-letstar} we define \ild{let*} as a recursive
-macro function via \ild{Y}, similarly to \ild{map}.
-\begin{listingbox}\begin{ildcode}
-; body of 'let*'
-(Y (!lambda (let*)
-  (!lambda (defs body)
-    (!if (null? defs)
-      body
-      (list
-        (lambda (list (caar defs))
-          (let* (cdr defs) body))
-        (cadr (car defs)))))))
-\end{ildcode}\end{listingbox}
-\lstcaption{Definition of \ild{let*}}\label{def-letstar}
-
 \subsection{Letrec}
 \label{letrec}
-The low-level primitive for building mutually-recursive functions is
-\ildsym{poly-fix}. To provide convenient high-level syntax for this purpose,
-in \cref{letrec-def} we define \ild{letrec} as a macro that:
-\begin{itemize}
-\item Builds a list of higher-order operators
-from the familiar name/body pair syntax, and one extra
-operator for the letrec body
-\item Generates an expression that:
-  \begin{itemize}
-  \item Obtains a list of resulting recursive functions, one for each definition, via \ildsf{poly-fix}
-  \item Applies the body operator to that list of functions
-  \end{itemize}
-\end{itemize}
 
-\begin{listingbox}\begin{ildcode}
-; body of 'letrec'
-(!lambda (defs body)
-  (!let*
-    ( (names (map car defs))
-      (bind-operators
-        (map
-          (!lambda (def)
-            (lambda names (cadr def)))
-          defs))
-      (body-operator
-        (lambda names body)))
-    (list
-      apply
-      body-operator
-      (cons poly-fix bind-operators))))
-\end{ildcode}\end{listingbox}
-\lstcaption{Definition of letrec}\label{letrec-def}
-As defined in \cref{letrec-def}, \ild{letrec} has similar semantics
-to \code{letrec} in Scheme, which also requires that definition bodies
-can be evaluated without referencing the other bindings~\cite{r5rs}.
+\begin{note}
+simple explanation of letrec goes here, with an example
+\end{note}
