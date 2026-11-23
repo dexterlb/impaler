@@ -1,6 +1,4 @@
-\section{The language ILD}
-
-\subsection{Syntax}
+\section{Syntax of ILD}
 \label{syntax}
 \begin{cfig}{Grammar}{grammar}{Syntax of ILD}{BNF definition of the ILD syntax}\label{syntax-grammar}
 {\footnotesize
@@ -38,10 +36,9 @@ In addition, the parser of ILD is augmented with the following syntactic shortha
     \ild{(macroexpand <expr1> ... <exprN>)}
 \end{itemize}
 
-\subsection{Semantics}
+\section{Semantics of ILD}
 \label{semantics}
 
-\subsubsection{Base cases}
 Symbols (\( s \in \ildsetSym \)) are looked up in the binding environment:
 \begin{equation}
   \denot{e}{s} = \begin{cases}
@@ -65,45 +62,26 @@ Proper lists (also known as \emph{combinations}) are evaluated according to the 
     \end{cases}
   \end{gathered}
 \end{equation}
-Depending on whether the combination head evaluates to a special form or an ordinary
-host function, it is \emph{applied} via either \(\interopword{sf}\) or \(\interopword{apply}\).
-ILD is a simple language that supports only three special forms.
-Ordinary host function application and the special forms are outlined in the following sections.
-\begin{note}
-  Rewrite: ILD has no host environment and therefore no ``host functions''.
-  Say ``builtin functions'' instead, and refer to builtin function application
-  rather than host function application.
-\end{note}
-\subsubsection{Ordinary functions and embedding}
-\label{embedding}
-\begin{note}
-  Rewrite the section title and label: drop the embedding/host-environment
-  concept and describe ordinary builtin function application instead.
-\end{note}
-ILD is designed to be embedded in a host environment that provides a set of data structures
-and library functions (\(\ildsetVal\)). We split the semantics of ILD into:
-\begin{itemize}
-  \item Base language, whose semantics are shown in this section
-  \item Host environment functions (\(\ildsetBuiltinFunc\))
-\end{itemize}
-\begin{note}
-  Rewrite: there is no embedding in a host environment. Replace ``host
-  environment functions'' with ``builtin functions'', which are ordinary
-  values in \(\ildsetVal\).
-\end{note}
-We write
+Depending on whether the combination head evaluates to a special form (\(\ildsetSF\))
+or an ordinary function (\(\ildsetFunc = \ildsetBuiltinFunc \cup \ildsetAbstrFunc \)),
+it is \emph{applied} via either \(\interopword{sf}\) or \(\interopword{apply}\) respectively.
+Ordinary function application and the special forms are outlined in the following sections.
+In order for ILD programs to be able to access special forms (\(\ildsetSF\)) and builtin functions
+(\(\ildsetBuiltinFunc\)), symbols that resolve to them are provided in the root environment \(E\):
 \begin{equation}
-  \denotapply{\ildhost{f}}{\alpha_1}{\dots}{\alpha_n} = x
+  \begin{array}{@{}l@{}}
+    E = ( \\
+    \quad \ildpair{\ildsym{quote}}{\ildsf{quote}} \\
+    \quad \ildpair{\ildsym{macroexpand}}{\ildsf{macroexpand}} \\
+    \quad \ildpair{\ildsym{free-vars}}{\ildsf{free-vars}} \\
+    \vspace{1em}
+    \quad \ildpair{\ildsym{cons}}{\ildconst{cons}} \\ % MTODO: add some more examples; also, this line has a bug ("Argument of \spacedlist@loop has an extra }")
+    \quad \dots
+    )
+  \end{array}
 \end{equation}
-to mean that a host environment function \(\ildhost{f} \in \ildsetBuiltinFunc\) results in the
-value \(x \in \ildsetVal\) when \emph{applied} to the arguments \(\alpha_1 \dots \alpha_n\).
-A small host environment,
-sufficient for writing nontrivial programs, is discussed in \cref{root-env}.
-\begin{note}
-  Rewrite: say ``builtin function'' instead of ``host environment function'',
-  and replace ``a small host environment'' with a reference to the builtins
-  defined in \cref{root-env}.
-\end{note}
+
+\subsection{Special forms}
 \subsubsection{The quote special form}
 The \(\ildsf{quote}\) special form returns its argument without evaluating it.
 \begin{equation}
@@ -137,7 +115,96 @@ proceeds from the outermost call inward, similarly to macro semantics
 in most LISP dialects with unhygienic macro systems~\cite{steele-gabriel-evolution,kohlbecker1986syntactic}.
 The advantages and disadvantages of callsite-triggered macros are further
 discussed in \cref{macro-function-duality}.
-\subsubsection{Improper constructs}
+\subsection{Builtin functions}
+The ILD interpreter and root environment provide a set of builtin functions
+in order for ILD programs to be able to operate on the builtin data structures:
+(\(\ildsetNum\), \(\ildsetBool\)),  % MTODO: add the rest
+\begin{itemize} % MTODO: do not use ildsym, use ildconst instead. Do not use denotdefas
+  \item Arithmetic: \(\ildapp{+}{x_1}{\dots}{x_n}\), \(\ildapp{*}{x_1}{\dots}{x_n}\),
+    \(\ildapp{-}{x}{y}\), \(\ildapp{/}{x}{y}\)
+  \item Comparison: \(\ildsym{=}\), \(\ildsym{<}\),
+    \(\ildsym{>}\), \(\ildsym{<=}\), \(\ildsym{>=}\)
+  \item Pairs: \(\ildsym{cons}\), \(\ildsym{car}\), \(\ildsym{cdr}\)  % MTODO: spell these out in a nested list, e.g. what does apply(#cons, ...) result in
+  \item Constructor for lists: \(\ildapp{list}{x_1}{\dots}{x_n}\)
+  \item Value type predicates: \(\ildsym{null?}\), \(\ildsym{pair?}\),
+    \(\ildsym{symbol?}\), \(\ildsym{string?}\), \(\ildsym{func?}\),
+    \(\ildsym{fail?}\)
+  \item Equality: \(\ildapp{sym-eq?}{s_1}{s_2}\), \(\ildapp{str-eq?}{s_1}{s_2}\)
+  \item Failure: \(\denotdefas{\denotapply{\ildsym{make-fail}}{v}}{E}{\ildfail{v}}\)
+\end{itemize}
+
+\subsubsection{Branching}\label{branching}
+The boolean datatype is of no use on its own without a function that
+distinguishes between its values. Thus, we provide
+the \ildsym{bool-to-k} function that transforms a boolean into
+an argument selector:
+\begin{equation}
+  \denotdefas{\denotapply{\ildsym{bool-to-k}}{b}}{E}{
+      \begin{cases}
+        \ildabstr{()}{\ildlist{x}{y}}{x} & b = \ildhost{t} \\
+        \ildabstr{()}{\ildlist{x}{y}}{y} & b = \ildhost{f} \\
+      \end{cases}
+  }
+\end{equation}
+The \ildsym{bool-to-k}
+function can then be used to build higher-level branching primitives
+(e.g. \cref{if}).
+
+\subsubsection{A recursion operator}
+We provide a low-level operator \ildsym{poly-fix} for constructing
+mutually-recursive functions:
+\begin{equation}
+  \denotdefas{\denotapply{\ildsym{poly-fix}}{\Gamma_1}{\Gamma_2}{\dots}{\Gamma_n}}{E}{\ildlist{\ildconst{f}{1}}{\ildconst{f}{2}}{\dots}{\ildconst{f}{n}}}
+\end{equation}
+When evaluated, \ildsym{poly-fix} introduces the functional objects \(\ildconst{f}{1}, \dots, \ildconst{f}{n}\) whose semantics are:
+\begin{equation}
+  \denotapply{\ildconst{f}{i}}{a_1}{\dots}{a_k}
+  = \denotapply{f_i}{a_1}{\dots}{a_k}
+\end{equation}
+where \( f_1 \dots f_i \) are intermediate recursion results of the fixed point:
+\begin{equation}
+  f_i = \denotapply{\Gamma_i}{\ildconst{f}{1}}{\ildconst{f}{2}}{\dots}{\ildconst{f}{n}}
+\end{equation}
+
+\subsubsection{Interpreter access}
+It is practical to allow programs to call into the interpreter:
+\begin{equation}\begin{gathered}
+  \denotdefas{\denotapply{\ildsym{apply}}{f}{\ildlist{a_1}{\dots}{a_n}}}{E}{\denotapply{f}{a_1}{\dots}{a_n}}\\
+  \denotdefas{\denotapply{\ildsym{eval}}{e}{v}}{E}{\denot{v}{e}}
+\end{gathered}\end{equation}
+Furthermore, to allow programs to reference other programs, we provide
+a builtin function \ildsym{read-source} that retrieves a program by name.
+In real-life implementations, \(\ildapp{read-source}{p}\) will read
+the file whose path is \(p\), parse its contents and return the resulting value.
+
+\subsection{User-defined functions}
+\label{abstraction}
+User-introduced functional objects are
+represented as \(\ildsetAbstrFunc\)-terms. Each such term carries a binding environment \(e\),
+a list of formal parameters \(P \in \ildsetSymList\) and a body expression
+\(\beta\), and is \emph{applied} by substituting the formal parameters by the
+actual parameters in the local binding environment,
+and then evaluating the body in the resulting environment:
+\begin{equation}\begin{gathered}
+  \denotapply{\ildabstr{e}{P = \ildlist{p_1}{p_2}{\dots}{p_n}}{\beta}}{a_1}{a_2}{\dots}{a_n} = \denot{e'}{\beta}
+  \\
+  \text{where } e' = \spacedlist{e}{\subst{p_1}{a_1}}{\subst{p_2}{a_2}}{\dots}{\subst{p_n}{a_n}}
+\end{gathered}\end{equation}
+Formally, parameter substitution in a binding environment \(e\subst{x}{v}\) is defined as:
+\begin{equation}
+  e \subst{x}{v} =
+  \begin{cases}
+    \ildpair{\ildpair{x}{v}}{()} & e = () \\
+    \ildpair{\ildpair{x}{v}}{e'} & e = \ildpair{\ildpair{x}{w}}{e'} \\
+    \ildpair{\ildpair{y}{w}}{e' \subst{x}{v}} & e = \ildpair{\ildpair{y}{w}}{e'} \land y \neq x
+  \end{cases}
+\end{equation}
+To let programs build such \(\ildsetAbstrFunc\)-objects, we provide a data constructor:
+\begin{equation}
+  \denotdefas{\denotapply{\ildsym{mk-lambda}}{e}{P}{B}}{E}{\ildabstr{e}{P}{B}}
+\end{equation}
+
+\subsection{Improper constructs}
 All \(\ildsetVal\)-cases that are not listed in the previous sections evaluate
 to a \(\ildfailbare\). This includes the empty list, non-list pairs and special forms
 applied to a wrong number of operands.
