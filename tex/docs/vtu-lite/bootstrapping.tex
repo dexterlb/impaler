@@ -42,6 +42,23 @@ expands to an expression embedding \ildhost{mk-lambda} in its head.
           '())))))
 \end{ildcode}\end{listingbox}
 \lstcaption{Implementation of the lambda macro}\label{lambda-macro-def}
+This definition can then be wrapped in another call to \ild{mk-lambda} in order to expose
+it under a \ild{lambda} name usable from the scoped body. Supposing that
+this definition is stored as an ILD program called \pathcode{core/bootstrap/lambda-macro.ild},
+we recall it twice (once to define \ild{lambda} and once to pass itself as the
+value of \ild{lambda}):
+\begin{listingbox}\begin{ildcode}
+((!(eval (free-vars)
+    (read-source
+      "core/bootstrap/lambda-macro.ild"))
+ (lambda)
+  ...) ; body that may use the lambda macro
+  ; body of 'lambda'
+  (eval (free-vars)
+    (read-source
+      "core/bootstrap/lambda-macro.ild")))
+\end{ildcode}\end{listingbox}
+\lstcaption{Outermost usage of the lambda macro}\label{lambda-wrap}
 
 \subsection{Basic utilities}
 We define helper utilities in a scope where the \ild{lambda} macro is present.

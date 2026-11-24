@@ -28,8 +28,9 @@
 }
 \renewcommand{\lstcaption}[1]{%
   \par\nobreak\vskip\smallskipamount
+  \refstepcounter{listing}%
   {\centering\begin{minipage}{0.8\textwidth}%
-  \refstepcounter{listing}\textbf{Listing \thelisting:} #1\par
+  \textbf{Listing \thelisting:} #1\par
   \end{minipage}\par}%
   \vskip\medskipamount
   \@afterindentfalse\@afterheading

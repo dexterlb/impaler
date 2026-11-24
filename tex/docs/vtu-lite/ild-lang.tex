@@ -225,8 +225,9 @@ a builtin function \ildhost{read-source} that retrieves a program by name.
 In real-life implementations, \(\ildapp{read-source}{p}\) will read
 the file whose path is \(p\), parse its contents and return the resulting value.
 \begin{note}
-  Remove \ildhost{read-source}, also from the root environment \(E\): it is only
-  used by the module loader, which is no longer part of the paper.
+  \ildhost{read-source} is now only used to load the bootstrap source file in
+  \cref{lambda-macro}; it is no longer used by a module loader. Keep it if the
+  lambda wrapper example stays.
 \end{note}
 
 \subsection{Improper constructs}
