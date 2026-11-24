@@ -1,24 +1,25 @@
 \section{Bootstrapping basic constructs}
 \label{bootstrapping-basic}
+
+\begin{note}
+can this section be shortened further?
+\end{note}
+
 The base syntax of ILD is insufficient for writing nontrivial programs
-in a succinct way. However, its \(\ildsf{macroexpand}\) facility allows
+directly. However, its \(\ildsf{macroexpand}\) facility allows
 extending the syntax with arbitrary metaprogramming constructs, which can
 be built incrementally.
-In this section, we present a reference standard library
+In this section, we present a standard library
 of such constructs, culminating in \ild{letrec}.
 Keeping that complexity out of the core language makes it simple and portable
-to different host environments.
-\begin{note}
-  Rewrite: ILD is not embedded in a host environment. Say ``portable across
-  implementations'' (or equivalent).
-\end{note}
+across implementations.
 
 \subsection{Lambda}
 \label{lambda-macro}
 First, we define a macro called \ild{lambda} that will let us introduce new
 user-defined functions (\cref{abstraction}). We want expansion of the \ild{lambda}
 macro to result in a call to \ild{mk-lambda} given the current binding environment
-(\ild{free-vars}) and the quoted argument names and body (\cref{lambda-expansion-example}).
+(\ild{free-vars}) and the quoted argument names and body (\cref{lambda-expansion-example}):
 \begin{listingbox}\begin{ildcode}
 (!lambda (x y) (+ x y))
 ; should become
@@ -26,14 +27,8 @@ macro to result in a call to \ild{mk-lambda} given the current binding environme
   (quote (+ x y)))
 \end{ildcode}\end{listingbox}
 \lstcaption{Example expansion for \ild{!lambda} expression}\label{lambda-expansion-example}
-A possible implementation of the \ild{lambda} macro is provided in \cref{lambda-macro-def}:
 The outer call to \ild{mk-lambda} introduces a new \(\ildsetUserFunc\)-object
 carrying the current binding environment
-% \footnote{
-%   The \ild{(free-vars)} closure given to the host \ild{mk-lambda} can be replaced
-%   by a closure that contains only \ild{cons}, \ild{mk-lambda}, \ild{quote} and \ild{free-vars},
-%   since those are the only bindings used by the body of the macro.
-% }
 and a body. The body then, when called, in turn
 expands to an expression embedding \ildhost{mk-lambda} in its head.
 \begin{listingbox}\begin{ildcode}
@@ -61,11 +56,8 @@ We define helper utilities in a scope where the \ild{lambda} macro is present.
 Since \ild{lambda} is an ordinary function, it can also be called directly
 to obtain the expression it expands to, which is useful when writing macros
 that generate \ild{(!lambda <args> <body>)} expressions.
-We can now implement branching via the \ildhost{bool-to-k} host
-function (\cref{branching}).
-\begin{note}
-  Rewrite: ``host function'' \(\to\) ``builtin function''.
-\end{note}
+We can now implement branching via the builtin function
+\ildhost{bool-to-k}.
 To avoid evaluating both branches, we delay the evaluation of
 each branch until the condition is known by wrapping it in a 0-argument
 function, and force the selected branch afterwards:
@@ -101,7 +93,26 @@ recursive functions such as \ild{map} can be defined via \ild{Y}:
 
 \subsection{Letrec}
 \label{letrec}
-
-\begin{note}
-simple explanation of letrec goes here, with an example
-\end{note}
+With these building blocks we can define a
+macro called \ild{letrec} that transforms a list of (possibly mutually-recursive)
+function definitions into a call to \(\ildsym{poly-fix}\):
+\begin{listingbox}\begin{ildcode}
+(!letrec (
+    (even? (!lambda (n)
+      (!if (= n 0) #t (odd? (- n 1)))))
+    (odd? (!lambda (n)
+      (!if (= n 0) #f (even? (- n 1)))))
+    (main (!lambda () (even? 42))))
+  (main))
+; becomes
+(apply
+  (!lambda (even? odd? main) (main))
+  (poly-fix
+    (!lambda (even? odd? main)
+      (!if (= n 0) #t (odd? (- n 1))))
+    (!lambda (even? odd? main)
+      (!if (= n 0) #f (even? (- n 1))))
+    (!lambda (even? odd? main) (even? 42))))
+\end{ildcode}\end{listingbox}
+\lstcaption{A \ild{letrec} example and its expansion into a \ild{poly-fix} application}\label{letrec-expansion}
+The implementation of \ild{letrec} is merely technical and is omitted.
