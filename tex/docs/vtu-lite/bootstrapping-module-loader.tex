@@ -1,4 +1,4 @@
-\section{Bootstrapping the module loader}
+\section{A module loader}
 \label{module-loader}
 The language features described up to this point let us build a program
 called a \emph{module-loader} that is able to process user programs
@@ -44,8 +44,10 @@ equivalent to the following expression:
     (cons '<= <=)
     (cons '* *)
     (cons '+ +)
-    (cons 'if (kv-get 'if (load-module "core/prelude.ild")))
-    (cons 'fn (kv-get 'fn (load-module "core/module-utils.ild"))))
+    (cons 'if
+      (kv-get 'if (load-module "core/prelude.ild")))
+    (cons 'fn
+      (kv-get 'fn (load-module "core/module-utils.ild"))))
 
   (!letrec (
     (main (!lambda () (fact 5)))
