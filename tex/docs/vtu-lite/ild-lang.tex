@@ -1,8 +1,9 @@
 \section{Syntax of ILD}
 \label{syntax}
 
+
 We define ILD as a homoiconic language where parseable programs (\(\ildsetProg\))
-are a subset of the internal syntax \(\ildsetVal\).
+are a subset of the internal syntax (tangible values) \(\ildsetVal\).
 
 \begin{cfighere}{Grammar}{grammar}{Syntax of ILD}{BNF definition of the ILD syntax}\label{syntax-grammar}
 {\footnotesize
@@ -41,6 +42,10 @@ In addition, the parser of ILD is augmented with the following syntactic shortha
 
 \section{Semantics of ILD}
 \label{semantics}
+We define the semantics of ILD expressions via the notation \(\denot{e}{\cdot}\),
+where \(e\) is the binding environment and the dot stands for any expression:
+\(\denot{e}{v}\) stands for ``evaluating the value \(v\) in the binding environment
+\(e\)''.
 
 Symbols (\( s \in \ildsetSym \)) are looked up in the binding environment:
 \begin{equation}
