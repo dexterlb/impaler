@@ -49,6 +49,11 @@ desirable features:
   \item Expressive macro system
   \item Minimal core language: Features such as named functions and modules come from libraries instead of being built into the core language
 \end{itemize}
+\begin{note}
+  Reword: the paper no longer demonstrates a module system. Drop ``modular
+  programs'' from the paragraph above and ``modules'' from the
+  minimal-core-language bullet.
+\end{note}
 
 The concept of statically-scoped programs combined with first-class macros has
 been studied in prior work on fexpr-based languages such as Kernel~\cite{kernel-report,fexpr-shutt}.
@@ -66,10 +71,14 @@ This paper makes the following contributions:
   \item We demonstrate expressiveness of
     this system by building a library function called a \emph{module
     loader}, which allows user programs to be structured in modular subprograms
-    while retaining the property that the whole program is statically-scoped
-    (\cref{module-loader}).
+    while retaining the property that the whole program is statically-scoped.
   \item We discuss ILD's metaprogramming capabilities (\cref{discussion}).
 \end{enumerate}
+\begin{note}
+  Drop contribution 4: the module-loader section is removed, so the paper no
+  longer demonstrates a module system. The title and abstract must change
+  accordingly.
+\end{note}
 \begin{note}
   Rewrite contribution 2: there is no host environment. Say that we define a
   set of builtin functions and a root binding environment (\cref{root-env}).

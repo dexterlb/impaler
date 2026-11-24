@@ -224,6 +224,10 @@ Furthermore, to allow programs to reference other programs, we provide
 a builtin function \ildhost{read-source} that retrieves a program by name.
 In real-life implementations, \(\ildapp{read-source}{p}\) will read
 the file whose path is \(p\), parse its contents and return the resulting value.
+\begin{note}
+  Remove \ildhost{read-source}, also from the root environment \(E\): it is only
+  used by the module loader, which is no longer part of the paper.
+\end{note}
 
 \subsection{Improper constructs}
 All \(\ildsetVal\)-cases that are not listed in the previous sections evaluate
