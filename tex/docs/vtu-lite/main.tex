@@ -99,7 +99,7 @@
 
 \begin{center}
   {\fontsize{14}{17}\selectfont\bfseries
-    A Module System for a Minimalistic Functional Language\par}
+    A minimalistic, Statically-scoped, Purely-functional LISP\par}
   \ifblindreview\else
     \vspace{6pt}
     {\normalsize Angel Angelov\par}
@@ -108,23 +108,16 @@
     {\normalsize \texttt{angelpa1@uni-sofia.bg}\par}
   \fi
 \end{center}
-\begin{note}
-  Retitle: the paper no longer presents a module system. It is about
-  bootstrapping constructs up to \ild{letrec} in a minimalistic functional
-  language.
-\end{note}
 \vspace{6pt}
 
 \input{abstract.tex}
-\keywords{functional programming, Lisp, macros,
+\keywords{functional programming, LISP, macros,
   bootstrapping, static scoping}
 
 \input{intro.tex}
 \input{ild-lang.tex}
 \input{bootstrapping.tex}
 \input{meat.tex}
-\input{future-work.tex}
-\input{conclusion.tex}
 
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{refs}

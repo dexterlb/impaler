@@ -1,8 +1,5 @@
-\section{Discussion}
+\section{Conclusion}
 The language ILD, presented in this paper, combines the following features:
-\begin{note}
-extend!
-\end{note}
 \begin{itemize}
 \item Extremely simple to implement
 \item Full immutability
@@ -10,3 +7,22 @@ extend!
 \item Metaprogramming by using ordinary functions as macros
 \item Expressive
 \end{itemize}
+Callsite-triggered expansion of ordinary functions as first-class macros
+allows extending the language with ergonomic constructs,
+resulting in minimally-verbose statically-scoped programs while keeping
+the core language immutable and purely-functional. Macros being ordinary first-class
+functions called at runtime allows for a simple evaluator with no separate
+macro expansion phase.
+
+\subsection{Future work}
+Performing macro expansion at runtime incurs a significant performance cost.
+This limitation has been studied in programming languages that use \emph{fexprs}
+for runtime metaprogramming~\cite{kernel-report}. Research has demonstrated
+that partial evaluation used as an optimisation pass can greatly reduce that
+overhead~\cite{fexpr-pe}. Even though ILD's macro expansion is triggered at the
+callsite rather than using fexprs, we believe that these ideas can be adapted
+to ILD as well.
+
+In addition, ILD can be extended with more features that would make it useful
+as a general-purpose programming language, namely side effects and IO and more advanced
+data structures.
