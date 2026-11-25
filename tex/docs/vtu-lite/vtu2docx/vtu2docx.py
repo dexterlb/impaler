@@ -618,10 +618,11 @@ def merge_style(st: dict, **kw) -> dict:
 
 
 class Converter:
-    def __init__(self, src: Source, template: Path, drop_notes: bool):
+    def __init__(self, src: Source, template: Path, drop_notes: bool, math_drop_pt: float = 1.5):
         self.src = src
         self.template = template
         self.drop_notes = drop_notes
+        self.math_drop_pt = math_drop_pt
         self.labels: dict[str, tuple[str, str]] = {}
         self.blocks: list[dict] = []
         self.jobs: list[Job] = []
@@ -1887,7 +1888,7 @@ class DocxWriter:
         rid, docpr = self.add_image(rendered.png)
         w, h, d = rendered.width_pt, rendered.height_pt, rendered.depth_pt
         cx, cy = int(round(w * EMU_PER_PT)), int(round(h * EMU_PER_PT))
-        off_y = int(round((hline_pt - (h - d)) * EMU_PER_PT))
+        off_y = int(round((hline_pt - (h - d) + self.conv.math_drop_pt) * EMU_PER_PT))
         spacer = self.ensure_spacer()
         sdocpr = self.next_docpr
         self.next_docpr += 1
@@ -1922,7 +1923,7 @@ class DocxWriter:
         return "".join(out)
 
     @staticmethod
-    def ppr(style: dict | None = None, first_line: int = 567, jc: str = "both", keep: bool = False,
+    def ppr(style: dict | None = None, first_line: int = 0, jc: str = "both", keep: bool = False,
             outline: int | None = None, tabs: str = "", left: int | None = None, hanging: int | None = None,
             no_indent: bool = False) -> str:
         style = style or {}
@@ -2127,6 +2128,8 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--cache", default=None, help="directory for cached rendered images")
     ap.add_argument("--no-blind", action="store_true", help="keep author names and the About the Author section")
     ap.add_argument("--drop-notes", action="store_true", help="omit editorial note boxes")
+    ap.add_argument("--math-drop-pt", type=float, default=1.5,
+                    help="extra downward shift for inline maths, in points (default: 1.5)")
     ap.add_argument("--keep-temp", action="store_true")
     ap.add_argument("--dry-run", action="store_true", help="parse only, do not render images or write a docx")
     ap.add_argument("--quiet", action="store_true")
@@ -2138,7 +2141,7 @@ def main(argv: list[str]) -> int:
         search.insert(0, Path(args.common).resolve())
 
     src = Source(paper, search, blind_override=False if args.no_blind else None)
-    conv = Converter(src, Path(args.template), args.drop_notes)
+    conv = Converter(src, Path(args.template), args.drop_notes, args.math_drop_pt)
     conv.parse()
     conv.load_bibliography()
     conv.emit()
