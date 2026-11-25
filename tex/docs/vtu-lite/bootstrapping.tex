@@ -1,10 +1,8 @@
 \section{Bootstrapping basic constructs}
 \label{bootstrapping-basic}
-
 \begin{note}
 can this section be shortened further?
 \end{note}
-
 The base syntax of ILD is insufficient for writing nontrivial programs
 directly. However, its \(\ildsf{macroexpand}\) facility allows
 extending the syntax with arbitrary metaprogramming constructs, which can
@@ -13,7 +11,6 @@ In this section, we present a standard library
 of such constructs, culminating in \ild{letrec}.
 Keeping that complexity out of the core language makes it simple and portable
 across implementations.
-
 \subsection{Lambda}
 \label{lambda-macro}
 First, we define a macro called \ild{lambda} that will let us introduce new
@@ -59,7 +56,6 @@ value of \ild{lambda}):
       "core/bootstrap/lambda-macro.ild")))
 \end{ildcode}\end{listingbox}
 \lstcaption{Outermost usage of the lambda macro}\label{lambda-wrap}
-
 \subsection{Basic utilities}
 We define helper utilities in a scope where the \ild{lambda} macro is present.
 \begin{listingbox}\begin{ildcode}
@@ -107,7 +103,6 @@ recursive functions such as \ild{map} can be defined via \ild{Y}:
           (list 'not-a-list l)))))))
 \end{ildcode}\end{listingbox}
 \lstcaption{Definition of the \ild{map} function}\label{def-map}
-
 \subsection{Letrec}
 \label{letrec}
 With these building blocks we can define a

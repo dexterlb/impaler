@@ -1,10 +1,7 @@
 \section{Syntax of ILD}
 \label{syntax}
-
-
 We define ILD as a homoiconic language where parseable programs (\(\ildsetProg\))
 are a subset of the internal syntax (tangible values) \(\ildsetVal\).
-
 \begin{cfighere}{Grammar}{grammar}{Syntax of ILD}{BNF definition of the ILD syntax}\label{syntax-grammar}
 {\footnotesize
 \begin{tabular}{r@{\;}c@{\;}l@{\qquad}l}
@@ -27,7 +24,6 @@ are a subset of the internal syntax (tangible values) \(\ildsetVal\).
 \(\ildsetSymList\) & \(:=\) & \(() \mid \ildpair{\ildsetSym}{\ildsetSymList}\) & Symbol lists (parameters, argument lists) \\
 \end{tabular}}
 \end{cfighere}
-
 Source code is parsed as
 standard S-expressions. Throughout this paper, we use the \(\ildlist{a_1}{a_2}{\dots}{a_n}\)
 syntax to denote S-expression lists, i.e. the nested pairs
@@ -39,7 +35,6 @@ In addition, the parser of ILD is augmented with the following syntactic shortha
     \ild{(!<expr1> ... <exprN>)} \(\Mapsto\) \\
     \ild{(macroexpand <expr1> ... <exprN>)}
 \end{itemize}
-
 \section{Semantics of ILD}
 \label{semantics}
 We define the semantics of ILD expressions via the notation \(\denot{e}{\cdot}\),
@@ -93,11 +88,9 @@ In order for ILD programs to be able to access special forms (\(\ildsetSF\)) and
     \hspace{1em})
   \end{array}
 \end{equation}
-
 \subsection{Special forms}
 Applying a special form is done on the \textbf{unevaluated} arguments of the combination.
 Unlike Scheme or Common LISP, ILD is a simple language with only three special forms.
-
 \subsubsection{The quote special form}
 The \(\ildsf{quote}\) special form returns its argument without evaluating it.
 \begin{equation}
@@ -129,7 +122,6 @@ passed to it as data and transform it arbitrarily; the resulting program is then
 evaluated in turn. Macro expansion, being a regular evaluation step,
 proceeds from the outermost call inward, similarly to macro semantics
 in most LISP dialects with unhygienic macro systems~\cite{steele-gabriel-evolution,kohlbecker1986syntactic}.
-
 \subsection{User-defined functions}
 \label{abstraction}
 User-introduced functional objects are
@@ -154,7 +146,6 @@ Formally, parameter substitution in a binding environment \(e\subst{x}{v}\) is d
 \end{equation}
 Such functional objects are created via the \(\ildsym{mk-lambda}\) constructor (\cref{builtin-funcs})
 and then used for \ild{lambda}-expressions (\cref{lambda-macro}).
-
 \subsection{Builtin functions}
 \label{builtin-funcs}
 The ILD interpreter and root environment provide a set of builtin functions
@@ -179,7 +170,6 @@ in order for ILD programs to be able to operate on the builtin data structures:
   \item Equality: \(\denotapply{\ildhost{sym-eq?}}{s_1}{s_2}\), \(\denotapply{\ildhost{str-eq?}}{s_1}{s_2}\)
   \item Failure: \(\denotapply{\ildhost{make-fail}}{v} = \ildfail{v}\)
 \end{itemize}
-
 \subsubsection{Branching}\label{branching}
 The boolean datatype is of no use on its own without a function that
 distinguishes between its values. Thus, we provide
@@ -195,7 +185,6 @@ an argument selector:
 The \ildhost{bool-to-k}
 function can then be used to build higher-level branching primitives
 (e.g. \cref{if}).
-
 \subsubsection{A recursion operator}
 We provide a low-level operator \ildhost{poly-fix} for constructing
 mutually-recursive functions:
@@ -211,7 +200,6 @@ where \( f_1 \dots f_i \) are intermediate recursion results of the fixed point:
 \begin{equation}
   f_i = \denotapply{\Gamma_i}{\ildconst{f}{1}}{\ildconst{f}{2}}{\dots}{\ildconst{f}{n}}
 \end{equation}
-
 \subsubsection{Interpreter access}
 It is practical to allow programs to call into the interpreter:
 \begin{equation}\begin{gathered}
@@ -222,7 +210,6 @@ Furthermore, to allow programs to reference other programs, we provide
 a builtin function \ildhost{read-source} that retrieves a program by name.
 In real-life implementations, \(\ildapp{read-source}{p}\) will read
 the file whose path is \(p\), parse its contents and return the resulting value.
-
 \subsection{Improper constructs}
 All \(\ildsetVal\)-cases that are not listed in the previous sections evaluate
 to a \(\ildfailbare\). This includes the empty list, non-list pairs and special forms
