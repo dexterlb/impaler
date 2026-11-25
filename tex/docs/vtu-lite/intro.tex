@@ -1,85 +1,20 @@
 \section{Introduction}
 \label{introduction}
+Even though programming languages such as Scheme and LISP dialects
+are considered functional, programs in these languages
+have traditionally been constructed as series of statements
+that operate on mutable data structures.~\cite{steele-gabriel-evolution,sicp}
 
-Traditionally, LISP and similar programming languages have been designed with a
-REPL in mind: the program lives as data in the memory of the machine and parts
-of the program (functions, named values) are available in a global namespace
-(\emph{environment}). The user interacts with the program by entering
-expressions (which may refer to objects in the global environment) in a
-terminal. Each expression is Read, Evaluated, and the result is then Printed.
-To extend the program, the user may enter expressions
-(\emph{statements}) that \emph{mutate} the environment and the objects reachable
-through it. Programs can then be optionally persisted to storage
-and recalled upon request~\cite{sexp,steele-gabriel-evolution}.
+To adhere more closely to the functional paradigm, we present a LISP-like
+programming language, called ILD, whose programs are \emph{fully immutable} and
+\emph{statically-scoped} (the whole program is a single immutable expression rather
+than a series of mutating statements). Languages with these features have been
+extensively researched -- however, most of them do not support
+the versatile metaprogramming features that are facillitated by
+macros in classic LISP and Scheme.% MTODO: propose programming languages to cite to back this claim
+ILD does not sacrifice expressiveness of metaprogramming by featuring
+macro expansion of ordinary functions by using a special form at the callsite.
 
-Modern programming languages deviate from that paradigm by storing the whole
-program as text (code) ahead of time, and then evaluating the entire program
-before it starts interacting with the user or the outside world.
-However, languages like LISP, Scheme or Racket are
-still centred around the model of a mutable global environment%
-~\cite{steele-gabriel-evolution},
-which complicates the evaluator and makes the language difficult to reason about and
-optimise. Mutual recursion in Scheme is achieved
-by explicit mutation~\cite[Chapter 4.1.6]{sicp}, and even programming languages
-like Clojure or LFE, whose core data structures are immutable, organise
-nontrivial programs as sequences of environment-mutating
-statements~\cite{clojure-hist,lfe-reference}.
-These languages do support programs written as a single expression without
-mutating a global environment (we will refer to such programs as
-\emph{statically-scoped}~\cite{kernel-report}).
-However, despite being supported, statically-scoped programs are
-in practice second-class citizens, because the language tooling and module systems
-are centred around the global environment.
-Another core mechanic of such ("LISP-like") programming languages is
-\emph{macro expansion} – extending syntax via custom transformations called
-\emph{macros}. The meta-language of macros has only limited facilities for local
-scope definitions (discussed in \cref{macro-function-duality}).
-For these reasons, statically-scoped programs written without mutation are
-difficult to modularise and extend.
-
-As an alternative, we design a LISP-like programming language, called ILD, that
-has minimal core syntax and requires no mutation in order to express
-nontrivial, modular programs. To this end, we employ a
-metaprogramming system based on first-class, \emph{callsite-triggered}
-macro expansion, allowing us to build arbitrarily complex domain-specific or
-general-purpose syntax in ILD itself. Specifically, we target the following
-desirable features:
-\begin{itemize}
-  \item Statically-scoped programs: A program is an expression rather than a series of environment-mutating statements
-  \item Expressive macro system
-  \item Minimal core language: Features such as named functions and modules come from libraries instead of being built into the core language
-\end{itemize}
-\begin{note}
-  Reword: the paper no longer demonstrates a module system. Drop ``modular
-  programs'' from the paragraph above and ``modules'' from the
-  minimal-core-language bullet.
-\end{note}
-
-The concept of statically-scoped programs combined with first-class macros has
-been studied in prior work on fexpr-based languages such as Kernel~\cite{kernel-report,fexpr-shutt}.
-The relationship between that work and the techniques presented here is
-discussed further in \cref{fexpr-comparison}.
-A feature comparison of similar languages is shown in \cref{lang-comparison}.
-
-This paper makes the following contributions:
-\begin{enumerate}
-  \item We present the syntax (\cref{syntax}) and semantics (\cref{semantics}) of the ILD core language.
-  \item We construct a small \emph{host environment} of data structures and functions,
-  useful as a foundation for general-purpose programs (\cref{root-env}).
-  \item We bootstrap a library of functional programming primitives such as \ild{lambda},
-  \ild{if}, \ild{letrec}, etc (\cref{bootstrapping-basic}).
-  \item We demonstrate expressiveness of
-    this system by building a library function called a \emph{module
-    loader}, which allows user programs to be structured in modular subprograms
-    while retaining the property that the whole program is statically-scoped.
-  \item We discuss ILD's metaprogramming capabilities (\cref{discussion}).
-\end{enumerate}
-\begin{note}
-  Drop contribution 4: the module-loader section is removed, so the paper no
-  longer demonstrates a module system. The title and abstract must change
-  accordingly.
-\end{note}
-\begin{note}
-  Rewrite contribution 2: there is no host environment. Say that we define a
-  set of builtin functions and a root binding environment (\cref{root-env}).
-\end{note}
+In this paper, we present the syntax and semantics of ILD and then
+bootstrap commonly-used functions and macros such as \ild{lambda},
+\ild{map} and \ild{letrec} in ILD itself.
