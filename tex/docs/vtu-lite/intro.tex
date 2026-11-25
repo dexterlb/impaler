@@ -9,10 +9,12 @@ To adhere more closely to the functional paradigm, we present a LISP-like
 programming language, called ILD, whose programs are \emph{fully immutable} and
 \emph{statically-scoped} (the whole program is a single immutable expression rather
 than a series of mutating statements). Languages with these features have been
-extensively researched -- however, most of them do not support
-the versatile metaprogramming features that are facillitated by
-macros in classic LISP and Scheme.% MTODO: propose programming languages to cite to back this claim
-ILD does not sacrifice expressiveness of metaprogramming by featuring
+extensively researched -- however, most of them
+do not support the versatile metaprogramming features that are facilitated by
+macros in classic LISP and Scheme, or sacrifice static scoping for programs
+that use macros. One such example is Lispkit Lisp~\cite{lispkit-lisp}.
+ILD does not sacrifice expressiveness of metaprogramming while retaining
+immutability and static scoping by featuring
 macro expansion of ordinary functions by using a special form at the callsite.
 
 In this paper, we present the syntax and semantics of ILD and then
