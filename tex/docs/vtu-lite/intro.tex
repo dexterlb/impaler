@@ -1,12 +1,13 @@
 \section{Introduction}
 \label{introduction}
 Even though programming languages such as Scheme and LISP dialects
-are considered functional, programs in these languages
-have traditionally been constructed as series of statements
+are considered functional, they are not \emph{purely} functional
+in the sense that programs in these languages
+usually consist of series of statements
 that operate on mutable data structures.~\cite{steele-gabriel-evolution,sicp}
 
 To adhere more closely to the functional paradigm, we present a LISP-like
-programming language, called ILD, whose programs are \emph{fully immutable} and
+purely-functional programming language, called ILD, whose programs are \emph{fully immutable} and
 \emph{statically-scoped} (the whole program is a single immutable expression rather
 than a series of mutating statements). Languages with these features have been
 extensively researched -- however, most of them

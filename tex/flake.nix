@@ -30,7 +30,7 @@
           "fontspec"
           "libertine"
           "geometry" "titling" "mathabx" "csquotes"
-          "standalone" "cleveref" "ebproof"
+          "standalone" "cleveref" "ebproof" "preview"
           "appendix"
           "svn-prov"
           "luatex85"
@@ -122,7 +122,7 @@
         };
         devShell = pkgs.mkShell
           {
-            packages = latexTools.deps ++ [ pkgs.tex-fmt ];
+            packages = latexTools.deps ++ [ pkgs.tex-fmt pkgs.python3 pkgs.poppler-utils ];
             LOCALE_ARCHIVE = "${pkgs.glibcLocales}/lib/locale/locale-archive";
             shellHook = ''
               . ${latexTools.latexShellInit}

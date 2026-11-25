@@ -7,4 +7,10 @@ in rec {
     pkgname = "vtu-lite-paper";
     latexFiles = "main.tex";
   };
+
+  packages.vtu-lite-docx = pkgs.callPackage ./vtu2docx {
+    src = ./.;
+    common = ../../common;
+    inherit latexTools;
+  };
 }
