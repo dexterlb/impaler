@@ -1,7 +1,19 @@
 \section{Syntax of ILD}
 \label{syntax}
+% PAPER-REVIEW[PR-STYLE-0003] pass=style state=open
+% Issue: The same set Val is called "the internal syntax", "tangible values" (this sentence) and "Observable values" (Grammar 2.1). The three terms suggest three different notions.
+% Evidence: "a subset of the internal syntax (tangible values) \ildsetVal" vs. grammar annotation "Observable values".
+% Proposal: Choose one term and use it in both places, e.g. "a subset of the set of values \ildsetVal (Grammar 2.1)", with "Values" as the grammar annotation.
+% Reason: Consistent terminology for the central semantic domain.
+% END-PAPER-REVIEW[PR-STYLE-0003]
 We define ILD as a homoiconic language where parseable programs (\(\ildsetProg\))
 are a subset of the internal syntax (tangible values) \(\ildsetVal\).
+% PAPER-REVIEW[PR-TECHNICAL-0005] pass=technical state=open
+% Issue (demonstrated, rendering): The footnote on "Binding environments" in Grammar 2.1 is never typeset, so its assumption (unique keys) and the remark on other representations are missing from the PDF.
+% Evidence: The PDF from latexmk -lualatex (2026-11-26) shows the superscript marker, but pdftotext finds no "We assume keys are restricted to be unique". Standard tabular, here inside cfighere/center, drops \footnote text. Eq. (1) ("e = (... (s . v) ...)") and eq. (9) rely on this assumption.
+% Proposal: Use \footnotemark inside the tabular and \footnotetext{...} after \end{cfighere}, or move the two sentences into the prose after the grammar. Also say that eq. (9) preserves uniqueness, which is what makes the assumption hold for environments built by application.
+% Reason: An assumption the semantics depends on is currently invisible to readers. Check the vtu2docx output as well.
+% END-PAPER-REVIEW[PR-TECHNICAL-0005]
 \begin{cfighere}{Grammar}{grammar}{Syntax of ILD}{BNF definition of the ILD syntax}\label{syntax-grammar}
 {\footnotesize
 \begin{tabular}{r@{\;}c@{\;}l@{\qquad}l}
@@ -24,6 +36,12 @@ are a subset of the internal syntax (tangible values) \(\ildsetVal\).
 \(\ildsetSymList\) & \(:=\) & \(() \mid \ildpair{\ildsetSym}{\ildsetSymList}\) & Symbol lists (parameters, argument lists) \\
 \end{tabular}}
 \end{cfighere}
+% PAPER-REVIEW[PR-LANGUAGE-0003] pass=language state=open
+% Issue: "i.e." and "e.g." followed by a normal space are typeset with inter-sentence spacing (visible gap in the PDF, e.g. "(e.g.  Listing 4.5)").
+% Evidence: "i.e. the nested pairs" (this paragraph); "constructed via e.g. \ild{lambda}" (§3.3 list); "(e.g. \cref{if})" (§3.3.1).
+% Proposal: Write "i.e.,~"/"e.g.,~" or "e.g.\ ", or add \frenchspacing to the preamble. Check that vtu2docx handles the chosen form before applying.
+% Reason: Typographic correctness of the PDF submission; not applied directly because the Word converter's handling of "\ " was not verified.
+% END-PAPER-REVIEW[PR-LANGUAGE-0003]
 Source code is parsed as
 standard S-expressions. Throughout this paper, we use the \(\ildlist{a_1}{a_2}{\dots}{a_n}\)
 syntax to denote S-expression lists, i.e. the nested pairs
@@ -38,8 +56,8 @@ In addition, the parser of ILD is augmented with the following syntactic shortha
 \section{Semantics of ILD}
 \label{semantics}
 We define the semantics of ILD expressions via the \(\denot{}{\cdot}\) notation:
-\(\denot{e}{v}\) stands for ``evaluating the value \(v\) in the binding environment
-\(e\)''.
+\(\denot{e}{v}\) stands for “evaluating the value \(v\) in the binding environment
+\(e\)”.
 
 Symbols (\( s \in \ildsetSym \)) are looked up in the binding environment:
 \begin{equation}
@@ -48,6 +66,12 @@ Symbols (\( s \in \ildsetSym \)) are looked up in the binding environment:
       \ildfail{\text{unbound symbol}} & e \neq \ildlist{\dots}{\ildpair{s}{v}}{\dots} \\
     \end{cases}
 \end{equation}
+% PAPER-REVIEW[PR-TECHNICAL-0004] pass=technical state=open
+% Issue (minor inconsistency): The prose says every value that is neither a symbol nor a pair evaluates to itself. The empty list () is neither, yet §3.4 says it evaluates to #fail. The set in parentheses correctly excludes ().
+% Evidence: "Values that are neither symbols nor pairs (...) evaluate to themselves" vs. §3.4 "This includes the empty list".
+% Proposal: "Values other than symbols, pairs and the empty list (...) evaluate to themselves", or "Atoms other than symbols and () ...".
+% Reason: The prose and the formula should define the same case split.
+% END-PAPER-REVIEW[PR-TECHNICAL-0004]
 Values that are neither symbols nor pairs (\(v \in \ildsetSF \cup \ildsetFail \cup \ildsetNum \cup \ildsetBool \cup \ildsetStr \cup \ildsetFunc\))
 evaluate to themselves:
 \begin{equation}
@@ -88,6 +112,12 @@ In order for ILD programs to be able to access special forms (\(\ildsetSF\)) and
   \end{array}
 \end{equation}
 \subsection{Special forms}
+% PAPER-REVIEW[PR-STYLE-0002] pass=style state=open
+% Issue: "Unlike Scheme or Common LISP, ILD is a simple language with only three special forms" implies that Scheme and Common Lisp are not simple languages, which is probably not the intended contrast.
+% Evidence: The contrast intended is the number of special forms.
+% Proposal: "Unlike Scheme or Common LISP, which define many special forms, ILD has only three."
+% Reason: The comparison should be limited to what is actually being compared.
+% END-PAPER-REVIEW[PR-STYLE-0002]
 Applying a special form is done on the \textbf{unevaluated} arguments of the combination.
 Unlike Scheme or Common LISP, ILD is a simple language with only three special forms.
 \subsubsection{The quote special form}
@@ -105,6 +135,12 @@ such as the lambda macro (\cref{lambda-macro}).
 \end{equation}
 \subsubsection{Macro expansion}
 \label{macroexpand-mechanism}
+% PAPER-REVIEW[PR-TECHNICAL-0007] pass=technical state=open
+% Issue (claim not demonstrated; question for the author): The paper's central claim, that ILD keeps static scoping in programs that use macros, is asserted but never argued, and the semantics seems to qualify it.
+% Evidence: Claim: intro.tex ¶2 ("does not sacrifice expressiveness of metaprogramming while retaining immutability and static scoping"), the title, and the conclusion ("statically-scoped programs"). Mechanism: eq. (7) evaluates a macro's output in the caller's environment e, and this section compares the behaviour to unhygienic macro systems, so a symbol introduced by an expansion resolves in the caller's scope. The lambda and if macros avoid this only because they splice values (#mk-lambda, special-form values) instead of symbols (Listings 4.2 and 4.5), a discipline the paper never states. Environments are also first-class data: free-vars exposes e, and mk-lambda and eval accept any Env value.
+% Proposal: (a) Define "statically scoped" for ILD precisely (e.g. every symbol in a function body resolves in the closure's environment extended with the parameters, eq. (8); there is no dynamic binding). (b) State value-splicing as the means by which macros avoid depending on the caller's bindings, and say what it does not guarantee (hygiene: a macro-introduced binder can still capture user identifiers). (c) Either argue that first-class environments (free-vars, mk-lambda, eval) do not break the property, or qualify the claim.
+% Reason: This is what distinguishes ILD from Lispkit Lisp and from unhygienic Lisps; reviewers will look for the argument here. Related: PR-STRUCTURE-0004, PR-TECHNICAL-0010.
+% END-PAPER-REVIEW[PR-TECHNICAL-0007]
 Macros in ILD are plain functions (\(\varphi \in \ildsetFunc\)) that assume their arguments
 are program fragments. We refer to such functions as \emph{macro functions}.
 To invoke a function as a macro, the special form
@@ -113,7 +149,7 @@ To invoke a function as a macro, the special form
   \denotsf{e}{\ildsf{macroexpand}}{\varphi}{\vec{\alpha}}
   = \denot{e}{\denotapply{\denot{e}{\varphi}}{\vec{\alpha}}}
 \end{equation}
-an expression
+An expression
 \(\ildlist{\ildsf{macroexpand}}{\varphi}{\alpha_1}{\alpha_2}{\dots}{\alpha_n}\)
 evaluates just \(\varphi\) and then passes the
 \textbf{unevaluated} arguments to it. This allows the macro function to treat the subprogram
@@ -123,6 +159,12 @@ proceeds from the outermost call inward, similarly to macro semantics
 in most LISP dialects with unhygienic macro systems~\cite{steele-gabriel-evolution,kohlbecker1986syntactic}.
 \subsection{User-defined functions}
 \label{abstraction}
+% PAPER-REVIEW[PR-TECHNICAL-0012] pass=technical state=open
+% Issue (notation): \subst{x}{v} renders as x stacked over v. The widespread substitution notation [v/x] reads "v replaces x", so e[p_1 over a_1] in eq. (8) is easily read backwards ("p_1 replaces a_1"). The body is also named β in eq. (8) but B in §3.3 (mk-lambda).
+% Evidence: Eqs. (8)-(9); §3.3 "apply(#mk-lambda; e, P, B)".
+% Proposal: Use an unambiguous binding notation such as e[x ↦ v] (or e[v/x] with one sentence fixing the convention), and use one letter for the body.
+% Reason: Avoids a likely misreading of the core application rule.
+% END-PAPER-REVIEW[PR-TECHNICAL-0012]
 User-introduced functional objects are
 represented as \(\ildsetUserFunc\)-terms. Each such term carries a binding environment \(e\),
 a list of formal parameters \(P \in \ildsetSymList\) and a body expression
@@ -148,8 +190,8 @@ and then used for \ild{lambda}-expressions (\cref{lambda-macro}).
 \subsection{Builtin functions}
 \label{builtin-funcs}
 The ILD interpreter and root environment provide a set of builtin functions
-in order for ILD programs to be able to operate on the builtin data structures:
-(\(\ildsetNum\), \(\ildsetBool\), \(\ildsetStr\)),
+in order for ILD programs to be able to operate on the builtin data structures
+(\(\ildsetNum\), \(\ildsetBool\), \(\ildsetStr\)):
 \begin{itemize}
   \item Arithmetic: \(\ildhost{+}\), \(\ildhost{*}\), \(\ildhost{-}\), \(\ildhost{/}\)
   \item Comparison: \(\ildhost{=}\), \(\ildhost{<}\),
@@ -185,6 +227,12 @@ The \ildhost{bool-to-k}
 function can then be used to build higher-level branching primitives
 (e.g. \cref{if}).
 \subsubsection{A recursion operator}
+% PAPER-REVIEW[PR-TECHNICAL-0003] pass=technical state=open
+% Issue: The poly-fix definition has an index error and an unexplained step, and its notation collides with the boolean #f.
+% Evidence: (a) "where f_1 \dots f_i are intermediate recursion results" should run to f_n. (b) "intermediate recursion results of the fixed point" does not say why eqs. (12)-(13) are well founded: each #f_i is an opaque host object that, when applied, unfolds Γ_i once with all #f_j as arguments. That is why the definition terminates under the call-by-value evaluation of eq. (3), provided each Γ_i returns a function. (c) \ildconst{f}{i} renders as "#f_1", while \ildhost{f} ("#f") is the false boolean in Grammar 2.1 and eq. (10).
+% Proposal: Use f_1 \dots f_n. Replace the phrase with an explicit sentence along the lines of (b), and state the requirement that each Γ_i returns a function. Rename the host objects (e.g. #r_i or #fix_i).
+% Reason: poly-fix is the only source of recursion in the language and the basis of Y and letrec.
+% END-PAPER-REVIEW[PR-TECHNICAL-0003]
 We provide a low-level operator \ildhost{poly-fix} for constructing
 mutually-recursive functions:
 \begin{equation}
@@ -200,16 +248,34 @@ where \( f_1 \dots f_i \) are intermediate recursion results of the fixed point:
   f_i = \denotapply{\Gamma_i}{\ildconst{f}{1}}{\ildconst{f}{2}}{\dots}{\ildconst{f}{n}}
 \end{equation}
 \subsubsection{Interpreter access}
+% PAPER-REVIEW[PR-TECHNICAL-0002] pass=technical state=open
+% Issue (demonstrated inconsistency): The equation for #eval swaps expression and environment: apply(#eval; e, v) = \denot{v}{e} renders as ⟦e⟧_v, i.e. "evaluate e in environment v".
+% Evidence: §3 defines ⟦v⟧_e as evaluating v in environment e (\denot{e}{v}). Listing 4.3 calls (eval (free-vars) (read-source ...)) with the environment first and the program second.
+% Proposal: Write \denot{e}{v} on the right-hand side, i.e. ⟦v⟧_e. Optionally use the letters ε/φ or env/expr to avoid reusing v and e.
+% Reason: eval is used in the central bootstrapping step (Listing 4.3).
+% END-PAPER-REVIEW[PR-TECHNICAL-0002]
 It is practical to allow programs to call into the interpreter:
 \begin{equation}\begin{gathered}
   \denotapply{\ildhost{apply}}{f}{\ildlist{a_1}{\dots}{a_n}} = \denotapply{f}{a_1}{\dots}{a_n}\\
   \denotapply{\ildhost{eval}}{e}{v} = \denot{v}{e}
 \end{gathered}\end{equation}
+% PAPER-REVIEW[PR-TECHNICAL-0008] pass=technical state=open
+% Issue (tension with the purity claim): read-source makes evaluation depend on file-system state, while the paper claims the language is purely functional and fully immutable, and lists IO as future work.
+% Evidence: "(read-source p) will read the file whose path is p, parse its contents and return the resulting value" (this paragraph); "purely-functional", "fully immutable" (title, intro.tex ¶2, conclusion); "ILD can be extended with ... side effects, IO" (§5.1).
+% Proposal: State the assumption that makes read-source pure, e.g. "read-source is a pure lookup in a fixed, immutable map from program names to programs; reading files is an implementation of that map, and we assume the source tree does not change during evaluation". Alternatively, name read-source explicitly as the only exception.
+% Reason: Without the assumption, a reviewer can point to read-source as a counterexample to the paper's main property.
+% END-PAPER-REVIEW[PR-TECHNICAL-0008]
 Furthermore, to allow programs to reference other programs, we provide
 a builtin function \ildhost{read-source} that retrieves a program by name.
 In real-life implementations, \(\ildapp{read-source}{p}\) will read
 the file whose path is \(p\), parse its contents and return the resulting value.
 \subsection{Improper constructs}
+% PAPER-REVIEW[PR-TECHNICAL-0006] pass=technical state=open
+% Issue (missing specification): Failure behaviour is defined only for evaluation cases, not for application cases, and it is unclear whether failures propagate.
+% Evidence: (a) Eq. (8) defines apply for a user function only when the number of arguments equals |P|; arity mismatch is not covered, and this section speaks only of "\ildsetVal-cases" and special forms. (b) Builtins with ill-typed arguments (car of a non-pair, + on strings, bool-to-k on a non-boolean) are unspecified. (c) Eq. (3) evaluates the arguments and applies the function even when an argument is a #fail value, so it is open whether e.g. (cons #fail⟨x⟩ 1) is a pair or a failure. Listing 4.6 returns make-fail as an ordinary value. (d) macroexpand whose head evaluates to a non-function (e.g. a special form) is not covered by eq. (7).
+% Proposal: Add one rule covering apply, e.g. "every application not covered above, including arity mismatches and ill-typed builtin arguments, yields #fail⟨...⟩". State explicitly whether failures are ordinary first-class values or short-circuit evaluation. Confirm against the implementation.
+% Reason: Completeness of the semantics is part of the paper's contribution; readers cannot otherwise predict the result of common errors.
+% END-PAPER-REVIEW[PR-TECHNICAL-0006]
 All \(\ildsetVal\)-cases that are not listed in the previous sections evaluate
 to a \(\ildfailbare\). This includes the empty list, non-list pairs and special forms
 applied to a wrong number of operands.

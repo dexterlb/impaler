@@ -3,9 +3,33 @@
 Even though programming languages such as Scheme and LISP dialects
 are considered functional, they are not \emph{purely} functional
 in the sense that programs in these languages
-usually consist of series of statements
-that operate on mutable data structures.~\cite{steele-gabriel-evolution,sicp}
+usually consist of a series of statements
+that operate on mutable data structures~\cite{steele-gabriel-evolution,sicp}.
 
+% PAPER-REVIEW[PR-STYLE-0005] pass=style state=open
+% Issue: The contribution sentence stacks a negation, a "while" clause and two "by" phrases, so the key mechanism comes last and is hard to parse.
+% Evidence: "ILD does not sacrifice expressiveness of metaprogramming while retaining immutability and static scoping by featuring macro expansion of ordinary functions by using a special form at the callsite."
+% Proposal: "ILD retains immutability and static scoping without giving up the expressiveness of macros: any ordinary function can be used as a macro by marking its call site with the macroexpand special form."
+% Reason: This is the paper's central contribution statement and should be readable in one pass.
+% END-PAPER-REVIEW[PR-STYLE-0005]
+% PAPER-REVIEW[PR-STRUCTURE-0002] pass=structure state=open
+% Issue: With related-work.tex no longer \input, the compiled paper never positions ILD against prior work. "Extensively researched" has no literature behind it here, and "fexprs" and the Kernel report first appear in Future work (§5.1) without a definition.
+% Evidence: main.tex inputs intro, ild-lang, bootstrapping, meat only; meat.tex §5.1 "languages that use \emph{fexprs}" is the first occurrence; related-work.tex holds the definition and the Kernel comparison. The journal sample (G23, advisory) expects the topic overview to be backed by literature.
+% Proposal: Rather than reinstating the whole section (the author note there suggests removing it), move 3-4 sentences into this paragraph: a one-line definition of fexprs, the Kernel distinction (related-work.tex: "ILD differs from Kernel in making macro expansion explicit at the callsite rather than as a property of the applied object"), and Kraken [fexpr-pe] as a purely functional fexpr-based Lisp. §5.1 can then refer back to them.
+% Reason: Terms must be introduced before use, and the contribution can only be judged against its closest relatives. Secondary anchor: meat.tex §5.1. Related: PR-TECHNICAL-0010.
+% END-PAPER-REVIEW[PR-STRUCTURE-0002]
+% PAPER-REVIEW[PR-STRUCTURE-0003] pass=structure state=open
+% Issue: "One such example is Lispkit Lisp" has an ambiguous referent: it can be read as an example of a language without macros, or of one that sacrifices static scoping for macros.
+% Evidence: The preceding sentence lists two alternative shortcomings joined by "or".
+% Proposal: Name the shortcoming, e.g. "For example, Lispkit Lisp~\cite{lispkit-lisp} is purely functional and statically scoped but has no macro facility." (Author to confirm that this is the intended characterisation.)
+% Reason: The only concrete prior system named in the introduction should be characterised unambiguously.
+% END-PAPER-REVIEW[PR-STRUCTURE-0003]
+% PAPER-REVIEW[PR-TECHNICAL-0010] pass=technical state=open
+% Issue (unsupported claims; novelty not established): "Languages with these features have been extensively researched" has no citation. "Most of them do not support the versatile metaprogramming features ... or sacrifice static scoping" is not supported, and two systems the paper itself cites are close counterexamples.
+% Evidence: [fexpr-pe] presents Kraken, "a small purely functional fexpr-based Lisp" in which fexprs replace macros (arXiv 2303.12254 abstract, accessed 2026-11-26). [kernel-report] combines first-class operatives (fexprs) with static scoping (related-work.tex, not compiled). Neither is mentioned in this paragraph.
+% Proposal: Cite representative pure and/or statically scoped Lisps, qualify "most", and say concretely what ILD adds relative to Kernel and Kraken (e.g. expansion triggered at the call site for any ordinary function, instead of operative/applicative tagging of the applied object). Then say why that matters (simplicity of the evaluator, functions reusable both as macros and as code generators, Listing 4.5).
+% Reason: The contribution can only be judged against its closest prior work. Related: PR-STRUCTURE-0002 (where to put it), PR-TECHNICAL-0007 (the static-scoping argument).
+% END-PAPER-REVIEW[PR-TECHNICAL-0010]
 To adhere more closely to the functional paradigm, we present a LISP-like
 purely-functional programming language, called ILD, whose programs are \emph{fully immutable} and
 \emph{statically-scoped} (the whole program is a single immutable expression rather

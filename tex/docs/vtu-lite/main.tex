@@ -18,6 +18,12 @@
 \input{macros/paper.tex}
 \input{notation.tex}
 
+% PAPER-REVIEW[PR-GUIDELINES-0003] pass=guidelines state=open
+% Issue: Listing captions are left-aligned inside a 0.8\textwidth box. If the editors treat listings as figures, the venue requires captions centred below.
+% Evidence: Rule G09, journal author guidelines (https://journals.uni-vt.bg/mcse/eng/req.aspx, accessed 2026-11-26): "The figures must be integrated in the text, with numbers and captions centered below them." The Grammar 2.1 caption is centred; "Listing 4.1: ..." to "Listing 4.7: ..." are flush left (PDF pp. 5-7).
+% Proposal: Centre the caption line in \lstcaption (e.g. \centering inside the minipage, or drop the minipage and use \centering). Alternatively keep the current style if listings are not considered figures (an editorial decision).
+% Reason: Conditional compliance with the figure-caption rule.
+% END-PAPER-REVIEW[PR-GUIDELINES-0003]
 \makeatletter
 \renewenvironment{listingbox}{%
   \par\addvspace{16pt}%
@@ -42,6 +48,12 @@
 
 \newcommand\lang{ILD }
 
+% PAPER-REVIEW[PR-GUIDELINES-0002] pass=guidelines state=open
+% Issue: The paragraph layout is block style (no indent, 6pt between paragraphs); the journal requires a 1 cm first-line indent and zero spacing before and after paragraphs.
+% Evidence: Rule G20, journal author guidelines (https://journals.uni-vt.bg/mcse/eng/req.aspx, accessed 2026-11-26): "Paragraph, Special: First Line, By: 1 cm; Paragraph, Above, After: 0". Here \parindent=0pt and \parskip=6pt (visible throughout the PDF).
+% Proposal: \setlength{\parindent}{1cm} and \setlength{\parskip}{0pt}, then re-check the spacing around listings, the grammar figure and lists (the enumitem parsep below also adds 6pt). The initial submission is a PDF, so this applies to the LaTeX layout, not only to the Word version.
+% Reason: Mandatory formatting for the submitted PDF.
+% END-PAPER-REVIEW[PR-GUIDELINES-0002]
 \setlength{\parindent}{0pt}
 \setlength{\parskip}{6pt plus 2pt minus 1pt}
 \setlength{\emergencystretch}{2em}
@@ -97,6 +109,12 @@
 
 \begin{document}
 
+% PAPER-REVIEW[PR-GUIDELINES-0001] pass=guidelines state=open
+% Issue: The title does not follow the journal sample's "Capitalize Each Word" rule and is internally inconsistent ("minimalistic" lowercase, "Statically-scoped"/"Purely-functional" with lowercase second parts).
+% Evidence: Rule G04, journal sample file (vtu2docx/template/sample-mcse-eng.docx): "Paper Title (... Font Size: 14; Font Style: Bold; Capitalize Each Word)". Size and weight are already satisfied.
+% Proposal: "A Minimalistic, Statically Scoped, Purely Functional LISP" (if PR-LANGUAGE-0001 is accepted), otherwise "A Minimalistic, Statically-Scoped, Purely-Functional LISP".
+% Reason: Mandatory title formatting from the venue's sample file.
+% END-PAPER-REVIEW[PR-GUIDELINES-0001]
 \begin{center}
   {\fontsize{14}{17}\selectfont\bfseries
     A minimalistic, Statically-scoped, Purely-functional LISP\par}
@@ -119,6 +137,12 @@
 \input{bootstrapping.tex}
 \input{meat.tex}
 
+% PAPER-REVIEW[PR-GUIDELINES-0004] pass=guidelines state=open
+% Issue: Two reference entries render incorrectly in ACM format. [7] Steele & Gabriel lacks the book it appears in. [4] Kohlbecker repeats "Ph.D. dissertation".
+% Evidence: Rule G14 (ACM reference format), journal author guidelines (https://journals.uni-vt.bg/mcse/eng/req.aspx, accessed 2026-11-26). In the PDF, [7] reads "The evolution of Lisp. Association for Computing Machinery, New York, NY, USA, 233–330." because "History of Programming Languages---II" is dropped: the refs.bib entry is @inbook with a booktitle, which the ACM style ignores. [4] reads "Ph. D. Dissertation. Indiana University, ... Ph.D. dissertation." because of note = {Ph.D. dissertation}.
+% Proposal: In ../../common/refs.bib (shared with other papers, so not edited by the review) change steele-gabriel-evolution to @incollection (or @inproceedings) keeping booktitle, and remove the note field from kohlbecker1986syntactic. Alphabetical ordering and numeric [n] citations are already satisfied.
+% Reason: Mandatory reference style; the [7] entry currently cannot be located from the information given.
+% END-PAPER-REVIEW[PR-GUIDELINES-0004]
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{refs}
 

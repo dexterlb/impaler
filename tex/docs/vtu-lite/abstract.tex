@@ -1,3 +1,15 @@
+% PAPER-REVIEW[PR-LANGUAGE-0001] pass=language state=open
+% Issue: Compounds formed with an -ly adverb are hyphenated throughout, which standard English usage does not do.
+% Evidence: "commonly-used" (here, predicative); "Statically-scoped, Purely-functional" (main.tex title); "statically-scoped", "purely-functional", "commonly-used" (intro.tex); "mutually-recursive" (ild-lang.tex §3.3.2, bootstrapping.tex §4.3); "Statically-scoped", "minimally-verbose", "purely-functional" (meat.tex).
+% Proposal: Drop the hyphen after -ly adverbs everywhere ("commonly used", "statically scoped", "purely functional", "mutually recursive", "minimally verbose"), including the title. Keep hyphens in compounds without -ly ("LISP-like", "callsite-triggered", "user-defined").
+% Reason: Chicago/APA/Oxford usage; the adverb already marks the relationship. Left as a proposal because it is a paper-wide convention and touches the title (see PR-GUIDELINES-0001).
+% END-PAPER-REVIEW[PR-LANGUAGE-0001]
+% PAPER-REVIEW[PR-STRUCTURE-0001] pass=structure state=open
+% Issue: The abstract does not mention the two properties in the title (statically scoped, purely functional) or the problem the introduction poses (macros without giving up static scoping and immutability). It ends on a promise ("nontrivial programs") that the body does not deliver.
+% Evidence: Title "A minimalistic, Statically-scoped, Purely-functional LISP"; intro.tex ¶2 states the contribution as keeping metaprogramming while keeping immutability and static scoping; §4 ends with letrec and shows no larger program.
+% Proposal: Restructure the abstract as problem, idea, result: (1) pure, statically scoped Lisps usually give up macros or static scoping; (2) ILD has three special forms, and any ordinary function becomes a macro when called through macroexpand; (3) the paper gives its semantics and bootstraps lambda, if, map and letrec from these primitives. The journal limit is 900 characters (G06); the current text is about 450.
+% Reason: Readers and editors use the abstract to decide relevance; it should match the title and the contribution. Evidence for "nontrivial programs" is handled in PR-TECHNICAL-0009.
+% END-PAPER-REVIEW[PR-STRUCTURE-0001]
 \begin{abstract}
 We define a minimal programming language called \lang that resembles LISP and Scheme with
 just three special forms (\ild{quote}, \ild{free-vars} and \ild{macroexpand}).

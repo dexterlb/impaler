@@ -1,4 +1,16 @@
 \section{Conclusion}
+% PAPER-REVIEW[PR-STYLE-0001] pass=style state=open
+% Issue: The feature list mixes evaluative, unqualified labels ("Extremely simple to implement", "Expressive") with descriptive ones, and the items are not grammatically parallel (adjective phrases vs. noun phrases). The paragraph below adds "minimally-verbose".
+% Evidence: Bullet items in this list; "resulting in minimally-verbose statically-scoped programs" in the next paragraph.
+% Proposal: Use parallel noun phrases that name concrete properties, e.g. "a core of three special forms and a small set of builtins; immutable programs and data; static scoping; macros as ordinary first-class functions, expanded at the call site". Replace "minimally-verbose" with a concrete statement (e.g. "programs that need no boilerplate beyond the ! marker").
+% Reason: Intensifiers and one-word labels read as promotion and give the reviewer nothing to check. Whether the claims are supported is handled in PR-TECHNICAL-0009.
+% END-PAPER-REVIEW[PR-STYLE-0001]
+% PAPER-REVIEW[PR-TECHNICAL-0009] pass=technical state=open
+% Issue (claims without supporting evidence; reproducibility): Several claims are not backed by anything in the paper, and the construct §4 builds up to is not shown.
+% Evidence: (a) abstract: "and to then build nontrivial programs"; the largest program shown is the even?/odd? example (Listing 4.7). (b) "Extremely simple to implement" (this list): no implementation is described or referenced. (The repository contains rs-interpreter, whose evaluator.rs is ~105 lines and whose whole src/ is ~1.6k lines, but the paper does not mention it.) (c) "Expressive": no criterion or comparison. (d) §4.3: "The implementation of letrec is merely technical and is omitted", yet the section "culminat[es] in letrec". The actual definition (ild-code/core/bootstrap/letrec.ild) is about 20 lines.
+% Proposal: Mention the reference implementation, give a measurable indicator (e.g. size of the evaluator core), and give its availability (anonymised for blind review). Include the letrec definition or a precise expansion rule. Either show one larger program or drop "nontrivial programs". Make "expressive" concrete (e.g. "every construct in §4 is defined in ILD itself").
+% Reason: A reviewer can only accept these conclusions if the paper supports them. Related: PR-STYLE-0001 (wording), PR-STRUCTURE-0001 (abstract).
+% END-PAPER-REVIEW[PR-TECHNICAL-0009]
 The language ILD, presented in this paper, combines the following features:
 \begin{itemize}
 \item Extremely simple to implement
@@ -14,6 +26,15 @@ the core language immutable and purely-functional. Macros being ordinary first-c
 functions called at runtime allows for a simple evaluator with no separate
 macro expansion phase.
 \subsection{Future work}
+% PAPER-REVIEW[PR-STRUCTURE-0002] pass=structure state=open (secondary anchor)
+% Issue: "fexprs" is used here for the first time in the compiled paper, without a definition. See the main comment in intro.tex.
+% END-PAPER-REVIEW[PR-STRUCTURE-0002]
+% PAPER-REVIEW[PR-TECHNICAL-0011] pass=technical state=open
+% Issue (citation support; unquantified claim): "This limitation has been studied in programming languages that use fexprs~\cite{kernel-report}". Whether the Kernel report studies the performance cost was not verified (not inspected). The claim that runtime expansion in ILD "incurs a significant performance cost" has no measurement.
+% Evidence: The arXiv abstract of [fexpr-pe] (2303.12254, accessed 2026-11-26) states that "naive execution of fexprs is much slower than macros" and reports large speedups from partial evaluation, so [fexpr-pe] supports both this sentence and the next.
+% Proposal: Cite [fexpr-pe] (and Shutt's thesis [fexpr-shutt] if it discusses cost) for this sentence; keep [kernel-report] only if it does discuss performance. Either give a measurement for ILD or say "is expected to incur".
+% Reason: Citations should support the exact claim they are attached to.
+% END-PAPER-REVIEW[PR-TECHNICAL-0011]
 Performing macro expansion at runtime incurs a significant performance cost.
 This limitation has been studied in programming languages that use \emph{fexprs}
 for runtime metaprogramming~\cite{kernel-report}. Research has demonstrated
@@ -23,5 +44,5 @@ callsite rather than using fexprs, we believe that these ideas can be adapted
 to ILD as well.
 
 In addition, ILD can be extended with more features that would make it useful
-as a general-purpose programming language, namely side effects and IO and more advanced
+as a general-purpose programming language, namely side effects, IO and more advanced
 data structures.

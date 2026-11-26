@@ -23,7 +23,13 @@ macro to result in a call to \ild{mk-lambda} given the current binding environme
 (mk-lambda (free-vars) (quote (x y))
   (quote (+ x y)))
 \end{ildcode}\end{listingbox}
-\lstcaption{Example expansion for \ild{!lambda} expression}\label{lambda-expansion-example}
+\lstcaption{Example expansion of a \ild{!lambda} expression}\label{lambda-expansion-example}
+% PAPER-REVIEW[PR-STRUCTURE-0004] pass=structure state=open
+% Issue: The explanation of the lambda macro is too compressed for readers to follow Listings 4.1-4.3, and it buries the paper's key trick. (a) Listing 4.1 shows the expansion with symbols (mk-lambda, free-vars, quote), but Listing 4.2 builds it from evaluated values (#mk-lambda, the free-vars and quote special forms). Only "embedding #mk-lambda in its head" hints at the difference, and the text never says why it matters (by eq. (2) these values evaluate to themselves, so the expansion does not depend on how the caller binds those names). (b) "The body then, when called, in turn expands to ..." mixes up the function and its body. (c) The self-application in Listing 4.3 (the macro is used to create the function that binds lambda to the macro itself) is described in one sentence.
+% Evidence: This paragraph and the one after Listing 4.2; Listing 4.3 comments "; body that may use the lambda macro" / "; body of 'lambda'".
+% Proposal: Show the actual expansion of (!lambda (x y) (+ x y)): a list whose heads are the values #mk-lambda, \ildsf{free-vars} and \ildsf{quote} (in the paper's notation) rather than the symbols. Otherwise, say that Listing 4.1 is schematic. Add one or two sentences on why values instead of symbols are spliced in. Walk through Listing 4.3 in two steps: (i) the inner !(eval ...) expands to a function of one parameter lambda; (ii) that function is applied to a second copy of the macro.
+% Reason: This is the first place a reader sees macroexpand at work, and the argument for static scoping depends on it (PR-TECHNICAL-0007).
+% END-PAPER-REVIEW[PR-STRUCTURE-0004]
 The outer call to \ild{mk-lambda} introduces a new \(\ildsetUserFunc\)-object
 carrying the current binding environment
 and a body. The body then, when called, in turn
@@ -39,8 +45,14 @@ expands to an expression embedding \ildhost{mk-lambda} in its head.
           '())))))
 \end{ildcode}\end{listingbox}
 \lstcaption{Implementation of the lambda macro}\label{lambda-macro-def}
+% PAPER-REVIEW[PR-LANGUAGE-0002] pass=language state=open
+% Issue: "we recall it twice" uses "recall" (= remember / bring back to mind), which does not fit the action shown in Listing 4.3.
+% Evidence: Listing 4.3 reads the file with read-source and evaluates it with eval, twice.
+% Proposal: If the intended meaning is loading the program, write "we load it twice (once to define ... and once to pass ...)"; if it is calling the function again, write "we use it twice".
+% Reason: Readers otherwise have to guess what operation is performed on the stored program.
+% END-PAPER-REVIEW[PR-LANGUAGE-0002]
 This definition can then be wrapped in another call to \ild{mk-lambda} in order to expose
-it under a \ild{lambda} name usable from the scoped body. Supposing that
+it under the name \ild{lambda}, usable from the scoped body. Supposing that
 this definition is stored as an ILD program called \pathcode{core/bootstrap/lambda-macro.ild},
 we recall it twice (once to define \ild{lambda} and once to pass itself as the
 value of \ild{lambda}):
@@ -57,12 +69,24 @@ value of \ild{lambda}):
 \end{ildcode}\end{listingbox}
 \lstcaption{Outermost usage of the lambda macro}\label{lambda-wrap}
 \subsection{Basic utilities}
+% PAPER-REVIEW[PR-STRUCTURE-0005] pass=structure state=open
+% Issue: From here on, listings show only the values of cadr, caar, Y, if and map ("body of 'X'"). The text never says how these values are bound to their names or in which order, although if and map refer to earlier names (lambda, Y, bool-to-k).
+% Evidence: Listings 4.4-4.6 give anonymous (!lambda ...) values; the only binding pattern shown is Listing 4.3, for lambda alone.
+% Proposal: Add one sentence (and optionally a short listing) saying that each definition is bound with the same pattern as Listing 4.3, i.e. nested applications of (!lambda (name) <rest of program>) to the value. Or show the skeleton of the bootstrap file with "..." for the listed values.
+% Reason: Without this, readers cannot see how the library forms one immutable expression, the property claimed in §1. Related: PR-STYLE-0004.
+% END-PAPER-REVIEW[PR-STRUCTURE-0005]
 We define helper utilities in a scope where the \ild{lambda} macro is present.
+% PAPER-REVIEW[PR-STYLE-0004] pass=style state=open
+% Issue: Listing comments use "body of 'X'" for the value bound to the name X, while §3.2 uses "body" for the body expression β of a function.
+% Evidence: "; body of 'cadr'", "; body of 'caar'" (Listing 4.4); "; body of 'if'" (Listing 4.5); "; body of 'map'" (Listing 4.6); "; body of 'lambda'" (Listing 4.3, where it labels the argument that becomes the value of lambda).
+% Proposal: Use "; definition of 'cadr'" or "; value bound to 'cadr'" consistently.
+% Reason: In Listing 4.3 especially, "body that may use the lambda macro" and "body of 'lambda'" sit on adjacent lines with different meanings of "body". Related: PR-STRUCTURE-0005.
+% END-PAPER-REVIEW[PR-STYLE-0004]
 \begin{listingbox}\begin{ildcode}
 (!lambda (p) (car (cdr p))) ; body of 'cadr'
 (!lambda (p) (car (car p))) ; body of 'caar'
 
-; 'Y' is special case of poly-fix
+; 'Y' is a special case of poly-fix
 (!lambda (f) (car (poly-fix f)))
 \end{ildcode}\end{listingbox}
 \lstcaption{Definitions of basic helper primitives}
@@ -105,6 +129,18 @@ recursive functions such as \ild{map} can be defined via \ild{Y}:
 \lstcaption{Definition of the \ild{map} function}\label{def-map}
 \subsection{Letrec}
 \label{letrec}
+% PAPER-REVIEW[PR-TECHNICAL-0001] pass=technical state=open
+% Issue (demonstrated error): The expansion in Listing 4.7 (lines 12-16) drops the (!lambda (n) ...) and (!lambda () ...) of each definition, so the printed expansion does not compute what the letrec means.
+% Evidence: By eqs. (12)-(13), applying #f_i first computes f_i = apply(Γ_i; #f_1..#f_n) and then applies f_i to the arguments, so each Γ_i must return the defined function. As printed, Γ_even's body (!if (= n 0) ...) refers to n, which is not bound in Γ's environment (eq. (1) gives #fail⟨unbound symbol⟩). Γ_main returns the value of (even? 42) rather than a function, so (main) cannot work. The source definitions (lines 2-6) do contain the inner lambdas.
+% Proposal: Lines 12-16 should read
+%   (!lambda (even? odd? main)
+%     (!lambda (n) (!if (= n 0) #t (odd? (- n 1)))))
+%   (!lambda (even? odd? main)
+%     (!lambda (n) (!if (= n 0) #f (even? (- n 1)))))
+%   (!lambda (even? odd? main) (!lambda () (even? 42)))))
+% i.e. Γ_i = (!lambda (<all names>) <definition_i>). Ideally, check the corrected listing against the interpreter.
+% Reason: This listing is the paper's only description of letrec, because its implementation is omitted.
+% END-PAPER-REVIEW[PR-TECHNICAL-0001]
 With these building blocks we can define a
 macro called \ild{letrec} that transforms a list of (possibly mutually-recursive)
 function definitions into a call to \(\ildsym{poly-fix}\):
