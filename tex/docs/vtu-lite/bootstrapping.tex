@@ -1,20 +1,17 @@
 \section{Bootstrapping basic constructs}
 \label{bootstrapping-basic}
-\begin{note}
-can this section be shortened further?
-\end{note}
-The base syntax of ILD is insufficient for writing nontrivial programs
-directly. However, its \(\ildsf{macroexpand}\) facility allows
-extending the syntax with arbitrary metaprogramming constructs, which can
-be built incrementally.
 In this section, we present a standard library
-of such constructs, culminating in \ild{letrec}.
-Keeping that complexity out of the core language makes it simple and portable
+of constructs that extend the base language of ILD. User programs that employ
+these constructs can be much less verbose than using the base language directly,
+and keeping them out of the base language makes it simple and makes user programs
+portable
 across implementations.
 \subsection{Lambda}
 \label{lambda-macro}
-First, we define a macro called \ild{lambda} that will let us introduce new
-user-defined functions (\cref{abstraction}). We want expansion of the \ild{lambda}
+The ILD base language offers the low-level function \(\ildsym{mk-lambda}\) to construct
+user function objects. We define a higher-level macro called \ild{lambda} that
+lets the user introduce new functions without manually quoting the body or explicitly
+passing the binding environment: we want expansion of the \ild{lambda}
 macro to result in a call to \ild{mk-lambda} given the current binding environment
 (\ild{free-vars}) and the quoted argument names and body (\cref{lambda-expansion-example}):
 \begin{listingbox}\begin{ildcode}

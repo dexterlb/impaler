@@ -1,7 +1,20 @@
 \section{Syntax of ILD}
 \label{syntax}
-We define ILD as a homoiconic language where parseable programs (\(\ildsetProg\))
-are a subset of the internal syntax (tangible values) \(\ildsetVal\).
+ILD source code is parsed as standard S-expressions (\(\ildsetProg\)). ILD expressions
+then evaluate to \emph{values}, \(\ildsetVal \supset \ildsetProg\). The grammar for
+these values is shown in \cref{syntax-grammar}.
+
+Throughout this paper, we use the \(\ildlist{a_1}{a_2}{\dots}{a_n}\)
+syntax to denote S-expression lists, i.e. the nested pairs
+\(\ildpair{a_1}{\ildpair{a_2}{\dots \ildpair{a_n}{()} \dots}}\)~\cite{sexp}.
+In addition, the parser of ILD is augmented with the following syntactic shorthands:
+\begin{itemize}
+  \item Quote: \ild{'<expr>} \(\Mapsto\) \ild{(quote <expr>)}
+  \item Macroexpand: \\
+    \ild{(!<expr1> ... <exprN>)} \(\Mapsto\) \\
+    \ild{(macroexpand <expr1> ... <exprN>)}
+\end{itemize}
+
 \begin{cfighere}{Grammar}{grammar}{Syntax of ILD}{BNF definition of the ILD syntax}\label{syntax-grammar}
 {\footnotesize
 \begin{tabular}{r@{\;}c@{\;}l@{\qquad}l}
@@ -24,17 +37,6 @@ are a subset of the internal syntax (tangible values) \(\ildsetVal\).
 \(\ildsetSymList\) & \(:=\) & \(() \mid \ildpair{\ildsetSym}{\ildsetSymList}\) & Symbol lists (parameters, argument lists) \\
 \end{tabular}}
 \end{cfighere}
-Source code is parsed as
-standard S-expressions. Throughout this paper, we use the \(\ildlist{a_1}{a_2}{\dots}{a_n}\)
-syntax to denote S-expression lists, i.e. the nested pairs
-\(\ildpair{a_1}{\ildpair{a_2}{\dots \ildpair{a_n}{()} \dots}}\)~\cite{sexp}.
-In addition, the parser of ILD is augmented with the following syntactic shorthands:
-\begin{itemize}
-  \item Quote: \ild{'<expr>} \(\Mapsto\) \ild{(quote <expr>)}
-  \item Macroexpand: \\
-    \ild{(!<expr1> ... <exprN>)} \(\Mapsto\) \\
-    \ild{(macroexpand <expr1> ... <exprN>)}
-\end{itemize}
 \section{Semantics of ILD}
 \label{semantics}
 We define the semantics of ILD expressions via the \(\denot{}{\cdot}\) notation:
