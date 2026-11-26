@@ -33,7 +33,7 @@ In addition, the parser of ILD is augmented with the following syntactic shortha
 \(\ildsetProg\) & \(:=\) & \(\ildsetSym \mid () \mid \ildpair{\ildsetProg}{\ildsetProg} \mid\) & Surface syntax (programs) \\
  & & \(\ildsetStr \mid \ildsetNum \mid \ildsetBool\) & \\
 \(\ildsetList\) & \(:=\) & \(() \mid \ildpair{\ildsetVal}{\ildsetList}\) & S-expression \emph{lists} \\
-\(\ildsetEnv\) & \(:=\) & \(() \mid \ildpair{\ildpair{\ildsetSym}{\ildsetVal}}{\ildsetEnv}\) & Binding environments\footnote{We assume keys are restricted to be unique (\cref{semantics}). Furthermore, performant implementations will use other representations of binding environments.} (K/V lists) \\
+\(\ildsetEnv\) & \(:=\) & \(() \mid \ildpair{\ildpair{\ildsetSym}{\ildsetVal}}{\ildsetEnv}\) & Binding environments (K/V lists) \\
 \(\ildsetSymList\) & \(:=\) & \(() \mid \ildpair{\ildsetSym}{\ildsetSymList}\) & Symbol lists (parameters, argument lists) \\
 \end{tabular}}
 \end{cfighere}
@@ -44,7 +44,7 @@ We define the semantics of ILD expressions via the \(\denot{}{\cdot}\) notation:
 \(e\)''.
 
 Symbols (\( s \in \ildsetSym \)) are looked up in the binding environment:
-\begin{equation}
+\begin{equation}\label{eq-lookup}
   \denot{e}{s} = \begin{cases}
       v & e = \ildlist{\dots}{\ildpair{s}{v}}{\dots} \\
       \ildfail{\text{unbound symbol}} & e \neq \ildlist{\dots}{\ildpair{s}{v}}{\dots} \\
@@ -137,7 +137,7 @@ and then evaluating the body in the resulting environment:
   \text{where } e' = \spacedlist{e}{\subst{p_1}{a_1}}{\subst{p_2}{a_2}}{\dots}{\subst{p_n}{a_n}}
 \end{gathered}\end{equation}
 Formally, parameter substitution in a binding environment \(e\subst{x}{v}\) is defined as:
-\begin{equation}
+\begin{equation}\label{eq-subst}
   e \subst{x}{v} =
   \begin{cases}
     \ildpair{\ildpair{x}{v}}{()} & e = () \\
@@ -145,6 +145,12 @@ Formally, parameter substitution in a binding environment \(e\subst{x}{v}\) is d
     \ildpair{\ildpair{y}{w}}{e' \subst{x}{v}} & e = \ildpair{\ildpair{y}{w}}{e'} \land y \neq x
   \end{cases}
 \end{equation}
+Note that binding environments are key/value association lists
+(\cref{syntax}). We assume keys are unique within a binding environment,
+and \cref{eq-subst} maintains this property.
+Performant implementations will use
+other representations of binding environments.
+
 Such functional objects are created via the \(\ildsym{mk-lambda}\) constructor (\cref{builtin-funcs})
 and then used for \ild{lambda}-expressions (\cref{lambda-macro}).
 \subsection{Builtin functions}
