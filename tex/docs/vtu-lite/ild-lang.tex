@@ -205,7 +205,7 @@ where \( f_1 \dots f_i \) are intermediate recursion results of the fixed point:
 It is practical to allow programs to call into the interpreter:
 \begin{equation}\begin{gathered}
   \denotapply{\ildhost{apply}}{f}{\ildlist{a_1}{\dots}{a_n}} = \denotapply{f}{a_1}{\dots}{a_n}\\
-  \denotapply{\ildhost{eval}}{e}{v} = \denot{v}{e}
+  \denotapply{\ildhost{eval}}{e}{v} = \denot{e}{v}
 \end{gathered}\end{equation}
 Furthermore, to allow programs to reference other programs, we provide
 a builtin function \ildhost{read-source} that retrieves a program by name.

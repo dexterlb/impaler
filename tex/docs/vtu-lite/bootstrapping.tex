@@ -104,7 +104,7 @@ recursive functions such as \ild{map} can be defined via \ild{Y}:
 \label{letrec}
 With these building blocks we can define a
 macro called \ild{letrec} that transforms a list of (possibly mutually-recursive)
-function definitions into a call to \(\ildsym{poly-fix}\):
+function definitions into a call to \(\ildsym{poly-fix}\). An example ussage of \ild{letrec} follows:
 \begin{listingbox}\begin{ildcode}
 (!letrec (
     (even? (!lambda (n)
@@ -113,15 +113,20 @@ function definitions into a call to \(\ildsym{poly-fix}\):
       (!if (= n 0) #f (even? (- n 1)))))
     (main (!lambda () (even? 42))))
   (main))
-; becomes
+\end{ildcode}\end{listingbox}
+\lstcaption{A \ild{letrec} example}
+The \ild{letrec} macro, when expanded, transforms the program above into the following
+application of \(\ildsym{poly-fix}\):
+\begin{listingbox}\begin{ildcode}
 (apply
   (!lambda (even? odd? main) (main))
   (poly-fix
     (!lambda (even? odd? main)
-      (!if (= n 0) #t (odd? (- n 1))))
+      (!lambda (n) (!if (= n 0) #t (odd? (- n 1)))))
     (!lambda (even? odd? main)
-      (!if (= n 0) #f (even? (- n 1))))
-    (!lambda (even? odd? main) (even? 42))))
+      (!lambda (n) (!if (= n 0) #f (even? (- n 1)))))
+    (!lambda (even? odd? main)
+      (!lambda () (even? 42)))))
 \end{ildcode}\end{listingbox}
-\lstcaption{A \ild{letrec} example and its expansion into a \ild{poly-fix} application}\label{letrec-expansion}
+\lstcaption{Expansion of \ild{letrec} into a \ild{poly-fix} application}\label{letrec-expansion}
 The implementation of \ild{letrec} is merely technical and is omitted.
