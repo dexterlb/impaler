@@ -1,0 +1,130 @@
+\section{Bootstrapping basic constructs}
+\label{bootstrapping-basic}
+\begin{note}
+can this section be shortened further?
+\end{note}
+The base syntax of ILD is insufficient for writing nontrivial programs
+directly. However, its \(\ildsf{macroexpand}\) facility allows
+extending the syntax with arbitrary metaprogramming constructs, which can
+be built incrementally.
+In this section, we present a standard library
+of such constructs, culminating in \ild{letrec}.
+Keeping that complexity out of the core language makes it simple and portable
+across implementations.
+\subsection{Lambda}
+\label{lambda-macro}
+First, we define a macro called \ild{lambda} that will let us introduce new
+user-defined functions (\cref{abstraction}). We want expansion of the \ild{lambda}
+macro to result in a call to \ild{mk-lambda} given the current binding environment
+(\ild{free-vars}) and the quoted argument names and body (\cref{lambda-expansion-example}):
+\begin{listingbox}\begin{ildcode}
+(!lambda (x y) (+ x y))
+; should become
+(mk-lambda (free-vars) (quote (x y))
+  (quote (+ x y)))
+\end{ildcode}\end{listingbox}
+\lstcaption{Example expansion for \ild{!lambda} expression}\label{lambda-expansion-example}
+The outer call to \ild{mk-lambda} introduces a new \(\ildsetUserFunc\)-object
+carrying the current binding environment
+and a body. The body then, when called, in turn
+expands to an expression embedding \ildhost{mk-lambda} in its head.
+\begin{listingbox}\begin{ildcode}
+(mk-lambda
+  (free-vars)
+  '(arg-names body)
+  '(cons mk-lambda
+    (cons (cons free-vars '())
+      (cons (cons quote (cons arg-names '()))
+        (cons (cons quote (cons body '()))
+          '())))))
+\end{ildcode}\end{listingbox}
+\lstcaption{Implementation of the lambda macro}\label{lambda-macro-def}
+This definition can then be wrapped in another call to \ild{mk-lambda} in order to expose
+it under a \ild{lambda} name usable from the scoped body. Supposing that
+this definition is stored as an ILD program called \pathcode{core/bootstrap/lambda-macro.ild},
+we recall it twice (once to define \ild{lambda} and once to pass itself as the
+value of \ild{lambda}):
+\begin{listingbox}\begin{ildcode}
+((!(eval (free-vars)
+    (read-source
+      "core/bootstrap/lambda-macro.ild"))
+ (lambda)
+  ...) ; body that may use the lambda macro
+  ; body of 'lambda'
+  (eval (free-vars)
+    (read-source
+      "core/bootstrap/lambda-macro.ild")))
+\end{ildcode}\end{listingbox}
+\lstcaption{Outermost usage of the lambda macro}\label{lambda-wrap}
+\subsection{Basic utilities}
+We define helper utilities in a scope where the \ild{lambda} macro is present.
+\begin{listingbox}\begin{ildcode}
+(!lambda (p) (car (cdr p))) ; body of 'cadr'
+(!lambda (p) (car (car p))) ; body of 'caar'
+
+; 'Y' is special case of poly-fix
+(!lambda (f) (car (poly-fix f)))
+\end{ildcode}\end{listingbox}
+\lstcaption{Definitions of basic helper primitives}
+Since \ild{lambda} is an ordinary function, it can also be called directly
+to obtain the expression it expands to, which is useful when writing macros
+that generate \ild{(!lambda <args> <body>)} expressions.
+We can now implement branching via the builtin function
+\ildhost{bool-to-k}.
+To avoid evaluating both branches, we delay the evaluation of
+each branch until the condition is known by wrapping it in a 0-argument
+function, and force the selected branch afterwards:
+\begin{listingbox}\begin{ildcode}
+; body of 'if'
+(!lambda (cond t f)
+  ; generate an expression that
+  (list     ; forces the result
+    (list   ; applies the selector,
+            ; obtaining a delayed value
+      (list bool-to-k cond) ; selector
+
+      ; delayed #t and #f branches
+      (lambda '() t)
+      (lambda '() f))))
+\end{ildcode}\end{listingbox}
+\lstcaption{Definition of the \ild{if} macro}\label{if}
+Since \ild{letrec} is not available at this point in the bootstrap process,
+recursive functions such as \ild{map} can be defined via \ild{Y}:
+\begin{listingbox}\begin{ildcode}
+; body of 'map'
+(Y (!lambda (map)
+  (!lambda (f l)
+    (!if (null? l)
+      l
+      (!if (pair? l)
+        (cons
+          (f (car l)) (map f (cdr l)))
+        (make-fail
+          (list 'not-a-list l)))))))
+\end{ildcode}\end{listingbox}
+\lstcaption{Definition of the \ild{map} function}\label{def-map}
+\subsection{Letrec}
+\label{letrec}
+With these building blocks we can define a
+macro called \ild{letrec} that transforms a list of (possibly mutually-recursive)
+function definitions into a call to \(\ildsym{poly-fix}\):
+\begin{listingbox}\begin{ildcode}
+(!letrec (
+    (even? (!lambda (n)
+      (!if (= n 0) #t (odd? (- n 1)))))
+    (odd? (!lambda (n)
+      (!if (= n 0) #f (even? (- n 1)))))
+    (main (!lambda () (even? 42))))
+  (main))
+; becomes
+(apply
+  (!lambda (even? odd? main) (main))
+  (poly-fix
+    (!lambda (even? odd? main)
+      (!if (= n 0) #t (odd? (- n 1))))
+    (!lambda (even? odd? main)
+      (!if (= n 0) #f (even? (- n 1))))
+    (!lambda (even? odd? main) (even? 42))))
+\end{ildcode}\end{listingbox}
+\lstcaption{A \ild{letrec} example and its expansion into a \ild{poly-fix} application}\label{letrec-expansion}
+The implementation of \ild{letrec} is merely technical and is omitted.

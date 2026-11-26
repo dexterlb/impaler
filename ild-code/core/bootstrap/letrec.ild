@@ -7,7 +7,6 @@
   (poly-fix (eval (free-vars) (read-source "core/bootstrap/poly-y.ild"))))
 
   (!let (
-    (expand-lambda (!lambda (args body) (cons macroexpand (cons lambda (cons args (cons body '()))))))
     (list (!lambda args args))
     (cadr (!lambda (p) (car (cdr p)))))
 
@@ -18,10 +17,10 @@
         (bind-operators
           (map
             (!lambda (def)
-              (expand-lambda names (cadr def)))
+              (lambda names (cadr def)))
             defs))
         (body-operator
-          (expand-lambda names body)))
+          (lambda names body)))
 
         (list
           apply

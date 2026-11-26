@@ -30,7 +30,7 @@
           "fontspec"
           "libertine"
           "geometry" "titling" "mathabx" "csquotes"
-          "standalone" "cleveref" "ebproof"
+          "standalone" "cleveref" "ebproof" "preview"
           "appendix"
           "svn-prov"
           "luatex85"
@@ -89,36 +89,52 @@
           pkgs.python311Packages.pygments
         ];
 
-        latexTools = latex_tools.lib.mkLatexTools { inherit nixpkgs pkgs texPkgs extraBuildDeps; };
-        fmiSpringSession2024 = (import ./fmi_spring_session_2024) { inherit pkgs latexTools; };
-        fmiSpringSession2026 = (import ./fmi_spring_session_2026) { inherit pkgs latexTools; };
-        module-sys = (import ./module-sys) { inherit pkgs latexTools; };
-        isesia = (import ./isesia) { inherit pkgs latexTools; };
-        thesis = (import ./thesis) { inherit pkgs latexTools; };
+        baseLatexTools = latex_tools.lib.mkLatexTools { inherit nixpkgs pkgs texPkgs extraBuildDeps; };
+        commonDir = ./common;
+        latexTools = baseLatexTools // {
+          buildLatex = params: (baseLatexTools.buildLatex params).overrideAttrs (_: {
+            TEXINPUTS = "${commonDir}:";
+            BIBINPUTS = "${commonDir}:";
+          });
+        };
+
+        docsDir = ./docs;
+        docsListing = builtins.readDir docsDir;
+        docNames = builtins.filter
+          (name:
+            docsListing.${name} == "directory"
+            && builtins.pathExists (docsDir + "/${name}/default.nix"))
+          (builtins.attrNames docsListing);
+        docs = builtins.listToAttrs (map
+          (name: {
+            inherit name;
+            value = import (docsDir + "/${name}") { inherit pkgs latexTools; };
+          })
+          docNames);
+        docsAttr = attr: builtins.foldl'
+          (acc: doc: acc // (doc.${attr} or { }))
+          { }
+          (builtins.attrValues docs);
       in
       {
-        packages
-          = fmiSpringSession2024.packages
-          // fmiSpringSession2026.packages
-          // isesia.packages
-          // thesis.packages
-          // module-sys.packages
-          // rec {
-            default = thesis.packages.thesis;
-          };
+        packages = docsAttr "packages" // {
+          default = docs.thesis.packages.thesis;
+        };
         devShell = pkgs.mkShell
           {
-            packages = latexTools.deps ++ [ pkgs.tex-fmt ];
+            packages = latexTools.deps ++ [ pkgs.tex-fmt pkgs.python3 pkgs.poppler-utils ];
             LOCALE_ARCHIVE = "${pkgs.glibcLocales}/lib/locale/locale-archive";
             shellHook = ''
               . ${latexTools.latexShellInit}
+              export TEXINPUTS="${commonDir}:''${TEXINPUTS-}"
+              export BIBINPUTS="${commonDir}:''${BIBINPUTS-}"
 
               echo "for any latex file, you can use:"
               echo " - 'latex_builder build foo.tex' to build dist/foo.pdf"
               echo " - 'latex_builder watch foo.tex' to build automatically on file change."
             '';
           };
-        apps = fmiSpringSession2024.apps // fmiSpringSession2026.apps // isesia.apps // {
+        apps = docsAttr "apps" // {
           fmt = {
             type = "app";
             program = "${pkgs.writeShellApplication {
@@ -131,6 +147,23 @@
                 exec tex-fmt --wraplen 80 "$@"
               '';
             }}/bin/fmt";
+          };
+          latex-builder = {
+            type = "app";
+            program = "${pkgs.writeShellApplication {
+              name = "latex-builder";
+              runtimeInputs = latexTools.deps ++ [
+                pkgs.coreutils
+                pkgs.bash
+              ];
+              text = ''
+                # shellcheck source=/dev/null
+                . ${latexTools.latexShellInit}
+                export TEXINPUTS="${commonDir}:''${TEXINPUTS-}"
+                export BIBINPUTS="${commonDir}:''${BIBINPUTS-}"
+                exec latex_builder "''${@}"
+              '';
+            }}/bin/latex-builder";
           };
         };
       }

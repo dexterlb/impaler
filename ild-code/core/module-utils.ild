@@ -3,9 +3,9 @@
   (exports fn)
   (imports
     (host (macroexpand quote))
-    ("core/prelude.ild" (lambda expand-lambda list))
+    ("core/prelude.ild" (lambda list))
   )
   (defs
     '(fn (!lambda (name arg-spec body)
       (list quote
-        (list name (expand-lambda arg-spec body)))))))
+        (list name (lambda arg-spec body)))))))

@@ -1,0 +1,132 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{amsmath}
+\usepackage{newtxtext}
+\usepackage{unicode-math}
+\setmathfont{LibertinusMath-Regular.otf}
+
+\usepackage[a4paper,margin=2cm,headheight=36pt,headsep=10pt]{geometry}
+\usepackage{caption}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{graphicx}
+\usepackage{fancyhdr}
+\usepackage[numbers,sort&compress]{natbib}
+\PassOptionsToPackage{hyphens}{url}
+\usepackage[hidelinks]{hyperref}
+
+\input{macros/paper.tex}
+\input{notation.tex}
+
+\makeatletter
+\renewenvironment{listingbox}{%
+  \par\addvspace{16pt}%
+  \begingroup\centering
+  \begin{minipage}{0.8\textwidth}%
+}{%
+  \end{minipage}\par\endgroup
+}
+\renewcommand{\lstcaption}[1]{%
+  \par\nobreak\vskip\smallskipamount
+  \refstepcounter{listing}%
+  {\centering\begin{minipage}{0.8\textwidth}%
+  \textbf{Listing \thelisting:} #1\par
+  \end{minipage}\par}%
+  \vskip\medskipamount
+  \@afterindentfalse\@afterheading
+}
+\makeatother
+
+\newif\ifblindreview
+\blindreviewtrue
+
+\newcommand\lang{ILD }
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\setlength{\emergencystretch}{2em}
+\setlist[itemize,enumerate]{topsep=2pt,partopsep=0pt,itemsep=1pt,parsep=6pt plus 2pt minus 1pt}
+
+\captionsetup[figure]{position=below,justification=centering,singlelinecheck=false}
+\captionsetup[table]{position=above,justification=raggedleft,singlelinecheck=false}
+
+\renewcommand{\bibfont}{\normalsize}
+
+\newcommand{\journalyear}{2026}
+\newfontfamily\headercyr[Script=Cyrillic,
+  BoldFont=LibertinusSerif-Bold.otf]{LibertinusSerif-Regular.otf}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\fancyhead[C]{%
+  \fontsize{10}{12}\selectfont\bfseries
+  \parbox{\headwidth}{\centering
+    {\headercyr
+      Списание „Математика, компютърни науки и образование”, Том xxx, кн. xxx, \journalyear\par}%
+    \vspace{1pt}\hrule height 0.4pt\vspace{2pt}%
+    Journal “Mathematics, Computer Science and Education”, Vol. xxx, No. xxx, \journalyear\par
+    \vspace{1pt}\hrule height 0.4pt}%
+}
+
+\renewenvironment{abstract}{%
+  \par
+  {\fontsize{10}{12}\selectfont\bfseries\itshape Abstract:}\hspace{0.5em}%
+  \fontsize{10}{12}\selectfont\itshape\ignorespaces
+}{\par\medskip}
+
+\newcommand{\keywords}[1]{%
+  \par
+  {\fontsize{10}{12}\selectfont\bfseries\itshape Keywords:}\hspace{0.5em}%
+  {\fontsize{10}{12}\selectfont\itshape #1}%
+  \par\medskip}
+
+\makeatletter
+\renewcommand\section{\@startsection{section}{1}{\z@}%
+  {-3.5ex \@plus -1ex \@minus -.2ex}%
+  {2.3ex \@plus.2ex}%
+  {\normalfont\bfseries}}
+\renewcommand\subsection{\@startsection{subsection}{2}{\z@}%
+  {-3.25ex\@plus -1ex \@minus -.2ex}%
+  {1.5ex \@plus .2ex}%
+  {\normalfont\bfseries}}
+\renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}%
+  {-3.25ex\@plus -1ex \@minus -.2ex}%
+  {1.5ex \@plus .2ex}%
+  {\normalfont\bfseries}}
+\makeatother
+
+\begin{document}
+
+\begin{center}
+  {\fontsize{14}{17}\selectfont\bfseries
+    A minimalistic, Statically-scoped, Purely-functional LISP\par}
+  \ifblindreview\else
+    \vspace{6pt}
+    {\normalsize Angel Angelov\par}
+    {\normalsize Faculty of Mathematics and Informatics, Sofia University
+      ``St. Kliment Ohridski'', Sofia, Bulgaria\par}
+    {\normalsize \texttt{angelpa1@uni-sofia.bg}\par}
+  \fi
+\end{center}
+\vspace{6pt}
+
+\input{abstract.tex}
+\keywords{functional programming, LISP, macros,
+  bootstrapping, static scoping}
+
+\input{intro.tex}
+\input{ild-lang.tex}
+\input{bootstrapping.tex}
+\input{meat.tex}
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{refs}
+
+\ifblindreview\else
+  \section*{About the Author}
+  Angel Angelov, Faculty of Mathematics and Informatics, Sofia University
+  ``St. Kliment Ohridski'', Sofia, Bulgaria.
+  E-mail: \texttt{angelpa1@uni-sofia.bg}.
+\fi
+
+\end{document}

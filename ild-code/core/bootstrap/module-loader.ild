@@ -9,8 +9,6 @@
   (!letrec (
     (list (!lambda args args))
 
-    (expand-lambda (!lambda (args body) (list macroexpand lambda args body)))
-
     (not (!lambda (b)
       (!if b
         #f
@@ -86,10 +84,16 @@
         (env (process-imports imports))
         (eval-def (!lambda (def)
           (eval env def)))
-        (def-items (map eval-def defs)))
+        (def-items (map eval-def defs))
+
+        (body (cons list
+          (map
+            (!lambda (sym)
+              (list cons (list quote sym) sym))
+            exports))))
 
         (eval env
-          (letrec def-items (cons list (map sym-item-pair exports)))))))
+          (letrec def-items body)))))
 
     (process-imports (!lambda (import-list)
       (concat (map process-import import-list))))
@@ -118,14 +122,6 @@
         (list (cons picker (kv-get picker items)))
         'not-implemented)))
 
-    (sym-item-pair (!lambda (sym)
-      (list cons (list quote sym) sym)))
-
-    (module-loader (!lambda (entrypoint-module-name entrypoint-func-name . entrypoint-func-args)
-      (apply
-        (kv-get entrypoint-func-name (load-module entrypoint-module-name))
-        entrypoint-func-args)))
-
     (concat (!lambda (l)
       (!if (null? l)
         l
@@ -139,4 +135,8 @@
   )
 
     ;finally, return the module loader
-    module-loader))
+    (!lambda (mod-name func-name . args)
+      (apply
+        (kv-get func-name
+          (load-module mod-name))
+        args))))
