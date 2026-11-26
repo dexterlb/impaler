@@ -13,11 +13,11 @@ This makes it difficult to
 write programs that are purely functional and \emph{statically-scoped}
 (e.g. where the whole program is a single immutable expression rather
 than a series of mutating statements), even though these are desirable
-properties of modern functional programs.% MTODO: what do I cite to back this claim?
+properties of modern functional programs~\cite{sicp,hudak-conception}.
 
 To this end we present a LISP-like,
 purely-functional programming language called ILD, featuring \emph{first-class macros}
-and allows for fully statically-scoped programs. This is achieved by
+and allowing for fully statically-scoped programs. This is achieved by
 triggering macro expansion of ordinary functions at the callsite via
 a special form. This approach performs macro expansion at runtime,
 in the local scope (\emph{binding environment}) at the callsite,

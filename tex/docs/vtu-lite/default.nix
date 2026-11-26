@@ -14,7 +14,7 @@ in rec {
       common = ../../common;
       inherit latexTools;
     };
-  } // pkgs.lib.optionalAttrs pkgs.stdenv.isLinux {
+  } // pkgs.lib.optionalAttrs pkgs.stdenv.hostPlatform.isLinux {
     vtu-lite-pdf-via-docx = pkgs.runCommand "vtu-lite-pdf-via-docx" {
       nativeBuildInputs = [ pkgs.libreoffice-fresh ];
     } ''
