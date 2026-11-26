@@ -104,7 +104,7 @@ recursive functions such as \ild{map} can be defined via \ild{Y}:
 \label{letrec}
 With these building blocks we can define a
 macro called \ild{letrec} that transforms a list of (possibly mutually-recursive)
-function definitions into a call to \(\ildsym{poly-fix}\). An example ussage of \ild{letrec} follows:
+function definitions into a call to \(\ildsym{poly-fix}\). An example usage of \ild{letrec} follows:
 \begin{listingbox}\begin{ildcode}
 (!letrec (
     (even? (!lambda (n)

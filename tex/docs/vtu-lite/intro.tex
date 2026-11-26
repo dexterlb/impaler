@@ -7,10 +7,10 @@ feature first-class functions, macros are second-class objects
 that are defined in a separate namespace from program values and functions
 and are executed during a \emph{macro expansion} pass performed
 before evaluating the program. Macro and function definitions in
-such languages are usually presented as series of statements that
+such languages are usually presented as a series of statements that
 mutate the respective global namespaces~\cite{steele-gabriel-evolution,sicp}.
 This makes it difficult to
-write programs that are purely functional and \emph{statically-scoped}
+write programs that are purely-functional and \emph{statically-scoped}
 (e.g. where the whole program is a single immutable expression rather
 than a series of mutating statements), even though these are desirable
 properties of modern functional programs~\cite{sicp,hudak-conception}.
