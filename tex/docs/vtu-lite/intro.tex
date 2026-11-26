@@ -1,23 +1,33 @@
 \section{Introduction}
 \label{introduction}
-Even though programming languages such as Scheme and LISP dialects
-are considered functional, they are not \emph{purely} functional
-in the sense that programs in these languages
-usually consist of series of statements
-that operate on mutable data structures.~\cite{steele-gabriel-evolution,sicp}
+Programming languages such as Scheme and dialects of LISP traditionally employ
+\emph{macros}
+to allow the user to extend their syntax. Although these languages
+feature first-class functions, macros are second-class objects
+that are defined in a separate namespace from program values and functions
+and are executed during a \emph{macro expansion} pass performed
+before evaluating the program. Macro and function definitions in
+such languages are usually presented as series of statements that
+mutate the respective global namespaces~\cite{steele-gabriel-evolution,sicp}.
+This makes it difficult to
+write programs that are purely functional and \emph{statically-scoped}
+(e.g. where the whole program is a single immutable expression rather
+than a series of mutating statements), even though these are desirable
+properties of modern functional programs.% MTODO: what do I cite to back this claim?
 
-To adhere more closely to the functional paradigm, we present a LISP-like
-purely-functional programming language, called ILD, whose programs are \emph{fully immutable} and
-\emph{statically-scoped} (the whole program is a single immutable expression rather
-than a series of mutating statements). Languages with these features have been
-extensively researched -- however, most of them
-do not support the versatile metaprogramming features that are facilitated by
-macros in classic LISP and Scheme, or sacrifice static scoping for programs
-that use macros. One such example is Lispkit Lisp~\cite{lispkit-lisp}.
-ILD does not sacrifice expressiveness of metaprogramming while retaining
-immutability and static scoping by featuring
-macro expansion of ordinary functions by using a special form at the callsite.
+To this end we present a LISP-like,
+purely-functional programming language called ILD, featuring \emph{first-class macros}
+and allows for fully statically-scoped programs. This is achieved by
+triggering macro expansion of ordinary functions at the callsite via
+a special form. This approach performs macro expansion at runtime,
+in the local scope (\emph{binding environment}) at the callsite,
+thus allowing macros to reside in the same namespaces as other values.
 
-In this paper, we present the syntax and semantics of ILD and then
+The approach presented in this paper achieves similar results to
+fexpr-based languages such as Kernel~\cite{kernel-report,fexpr-shutt}
+without deviating from the LISP/Scheme paradigm of function application
+and special forms.
+
+In the following sections we present the syntax and semantics of ILD and then
 bootstrap commonly-used functions and macros such as \ild{lambda},
 \ild{map} and \ild{letrec} in ILD itself.
