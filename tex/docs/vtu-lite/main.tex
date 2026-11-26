@@ -21,7 +21,7 @@
 \makeatletter
 \renewenvironment{listingbox}{%
   \par\hrule\@height\z@\nobreak\addvspace{16pt}%
-  \begingroup\centering
+  \begingroup\centering\noindent
   \begin{minipage}{0.8\textwidth}%
 }{%
   \end{minipage}\par\endgroup
@@ -29,7 +29,8 @@
 \renewcommand{\lstcaption}[1]{%
   \par\nobreak\vskip\smallskipamount
   \refstepcounter{listing}%
-  {\centering\begin{minipage}{0.8\textwidth}%
+  {\centering\noindent\begin{minipage}{0.8\textwidth}%
+  \centering%
   \textbf{Listing \thelisting:} #1\par
   \end{minipage}\par}%
   \vskip\medskipamount
@@ -42,10 +43,23 @@
 
 \newcommand\lang{ILD }
 
-\setlength{\parindent}{0pt}
-\setlength{\parskip}{6pt plus 2pt minus 1pt}
+\setlength{\parindent}{1cm}
+\setlength{\parskip}{0pt}
 \setlength{\emergencystretch}{2em}
-\setlist[itemize,enumerate]{topsep=2pt,partopsep=0pt,itemsep=1pt,parsep=6pt plus 2pt minus 1pt}
+\setlist[itemize,enumerate]{topsep=2pt,partopsep=0pt,itemsep=1pt,parsep=0pt}
+
+\counterwithin*{equation}{section}
+\counterwithin*{equation}{subsection}
+\renewcommand{\theequation}{%
+  \ifnum\value{subsection}>0
+    \thesubsection.\arabic{equation}%
+  \else
+    \thesection.\arabic{equation}%
+  \fi}
+
+\makeatletter
+\let\@afterindentfalse\@afterindenttrue
+\makeatother
 
 \captionsetup[figure]{position=below,justification=centering,singlelinecheck=false}
 \captionsetup[table]{position=above,justification=raggedleft,singlelinecheck=false}
@@ -99,7 +113,7 @@
 
 \begin{center}
   {\fontsize{14}{17}\selectfont\bfseries
-    A minimalistic, Statically-scoped, Purely-functional LISP\par}
+    A Minimalistic, Statically-Scoped, Purely-Functional LISP\par}
   \ifblindreview\else
     \vspace{6pt}
     {\normalsize Angel Angelov\par}

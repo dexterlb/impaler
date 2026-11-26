@@ -35,6 +35,10 @@ TEXT_WIDTH_PT = TEXT_WIDTH_TWIPS / 20.0
 LISTING_WIDTH_CM = 13.6
 LISTING_WIDTH_PT = LISTING_WIDTH_CM / 2.54 * 72.0
 PNG_DPI = 600
+IMAGE_SPACE_BEFORE_TWIPS = 120
+LISTING_TOP_PAD_PT = 14.0
+LISTING_BOTTOM_PAD_PT = 8.0
+LISTING_SIDE_PAD_PT = 18.0
 
 COLORS = {
     "cinterop": "1A7F37",
@@ -618,7 +622,7 @@ def merge_style(st: dict, **kw) -> dict:
 
 
 class Converter:
-    def __init__(self, src: Source, template: Path, drop_notes: bool, math_drop_pt: float = 1.5):
+    def __init__(self, src: Source, template: Path, drop_notes: bool, math_drop_pt: float = 0.5):
         self.src = src
         self.template = template
         self.drop_notes = drop_notes
@@ -636,7 +640,7 @@ class Converter:
         self.media_index = 0
         self.warnings = src.warnings
         self.title_prefix_done = False
-        self.counters = {"section": [0, 0, 0], "figure": 0, "table": 0, "listing": 0, "equation": 0}
+        self.counters = {"section": [0, 0, 0], "figure": 0, "table": 0, "listing": 0}
 
     # -- inline parsing ----------------------------------------------------
 
@@ -1106,6 +1110,7 @@ class Converter:
 
     def number_blocks(self) -> None:
         sec = [0, 0, 0]
+        eq = 0
         for b in self.blocks:
             t = b["type"]
             if t == "heading":
@@ -1115,6 +1120,8 @@ class Converter:
                     for k in range(level, 3):
                         sec[k] = 0
                     b["num"] = ".".join(str(x) for x in sec[:level])
+                    if level <= 2:
+                        eq = 0
                 else:
                     b["num"] = None
                 self.register_label(b.get("label"), "section", b.get("num") or "")
@@ -1135,8 +1142,9 @@ class Converter:
                     if env == "equation*":
                         b.update(type="equation", num=None)
                     else:
-                        self.counters["equation"] += 1
-                        b.update(type="equation", num=str(self.counters["equation"]))
+                        eq += 1
+                        prefix = f"{sec[0]}.{sec[1]}" if sec[1] else str(sec[0])
+                        b.update(type="equation", num=f"{prefix}.{eq}")
                         self.register_label(label, "equation", b["num"])
                     b["label"] = label
                 elif env in ("figure", "figure*"):
@@ -1556,9 +1564,13 @@ class Converter:
         if job.kind == "display":
             return "\\begin{preview}\\setbox0=\\hbox{$\\displaystyle %s$}\\box0\\end{preview}" % job.source
         if job.kind == "listing":
-            return ("\\begin{preview}\\begin{minipage}{%s cm}\\begin{%s}\n%s\n\\end{%s}"
-                    "\\end{minipage}\\end{preview}"
-                    % (LISTING_WIDTH_CM, job.env, job.source, job.env))
+            return ("\\begin{preview}\\setbox0=\\hbox{\\kern %(side)spt"
+                    "\\begin{minipage}{%(w).3f cm}\\begin{%(env)s}\n%(src)s\n\\end{%(env)s}\\end{minipage}"
+                    "\\kern %(side)spt}%%\n"
+                    "\\ht0=\\dimexpr\\ht0+%(top)spt\\relax\\dp0=\\dimexpr\\dp0+%(bottom)spt\\relax"
+                    "\\box0\\end{preview}"
+                    % {"side": LISTING_SIDE_PAD_PT, "w": LISTING_WIDTH_CM, "env": job.env,
+                       "src": job.source, "top": LISTING_TOP_PAD_PT, "bottom": LISTING_BOTTOM_PAD_PT})
         if job.kind == "table":
             return "\\begin{preview}%s\\end{preview}" % job.source
         if job.kind == "note":
@@ -1623,7 +1635,7 @@ class Converter:
 
     def cache_key(self, job: Job) -> str:
         payload = json.dumps({"kind": job.kind, "src": job.source, "env": job.env, "w": job.width_pt,
-                              "dpi": PNG_DPI,
+                              "dpi": PNG_DPI, "tex": self.job_tex(job),
                               "pre": hashlib.sha256(self.build_preamble().encode()).hexdigest()})
         return hashlib.sha256(payload.encode()).hexdigest()
 
@@ -1925,14 +1937,16 @@ class DocxWriter:
     @staticmethod
     def ppr(style: dict | None = None, first_line: int = 0, jc: str = "both", keep: bool = False,
             outline: int | None = None, tabs: str = "", left: int | None = None, hanging: int | None = None,
-            no_indent: bool = False) -> str:
+            no_indent: bool = False, before: int = 0, after: int = 0, snap: bool = True) -> str:
         style = style or {}
         parts = []
         if keep:
             parts.append("<w:keepNext/>")
         if tabs:
             parts.append(tabs)
-        parts.append('<w:spacing w:before="0" w:after="0" w:line="240" w:lineRule="auto"/>')
+        if not snap:
+            parts.append('<w:snapToGrid w:val="0"/>')
+        parts.append(f'<w:spacing w:before="{before}" w:after="{after}" w:line="240" w:lineRule="auto"/>')
         if no_indent:
             parts.append('<w:ind w:firstLine="0"/>')
         elif hanging:
@@ -1972,7 +1986,7 @@ class DocxWriter:
                 size = e.get("size")
                 style = {"size": size} if size else {}
                 runs = e["runs"]
-                self.body.append(self.paragraph(runs, style))
+                self.body.append(self.paragraph(runs, style, first_line=TWIPS_PER_CM))
             elif t == "heading":
                 level = e["level"]
                 style = {"bold": True}
@@ -1982,15 +1996,17 @@ class DocxWriter:
                         runs.append(("text", r[1], merge_style(r[2], bold=True)))
                     else:
                         runs.append(r)
-                self.body.append(self.paragraph(runs, style, keep=True, outline=level - 1))
+                self.body.append(self.paragraph(runs, style, keep=True, outline=level - 1,
+                                                first_line=TWIPS_PER_CM))
             elif t == "bullet":
                 level = e["level"]
                 left = 567 * (level + 1)
-                self.body.append(self.paragraph(e["runs"], {}, no_indent=False, left=left, hanging=283))
+                jc = "left" if any(r[0] == "br" for r in e["runs"]) else "both"
+                self.body.append(self.paragraph(e["runs"], {}, jc=jc, no_indent=False, left=left, hanging=283))
             elif t == "equation":
                 tabs = ('<w:tabs><w:tab w:val="center" w:pos="%d"/><w:tab w:val="right" w:pos="%d"/></w:tabs>'
                         % (TEXT_WIDTH_TWIPS // 2, TEXT_WIDTH_TWIPS))
-                ppr = self.ppr({}, first_line=0, tabs=tabs)
+                ppr = self.ppr({}, first_line=0, tabs=tabs, before=IMAGE_SPACE_BEFORE_TWIPS, snap=False)
                 xml = "<w:p>" + ppr + '<w:r><w:tab/></w:r>'
                 xml += self.drawing_run(e["jid"], max_width_pt=TEXT_WIDTH_PT - 45)
                 xml += '<w:r><w:tab/></w:r>'
@@ -2001,15 +2017,19 @@ class DocxWriter:
             elif t == "table":
                 caption_runs = list(e["caption"]) + list(e.get("fn", []))
                 self.body.append(self.paragraph(caption_runs, {}, first_line=0, jc="right", keep=True))
-                self.body.append(self.paragraph([("img", e["jid"])], {}, first_line=0, jc="center"))
+                self.body.append(self.paragraph([("img", e["jid"])], {}, first_line=0, jc="center",
+                                                before=IMAGE_SPACE_BEFORE_TWIPS, snap=False))
             elif t == "listing":
-                self.body.append(self.paragraph([("img", e["jid"])], {}, first_line=0, jc="center", keep=True))
+                self.body.append(self.paragraph([("img", e["jid"])], {}, first_line=0, jc="center", keep=True,
+                                                before=IMAGE_SPACE_BEFORE_TWIPS, snap=False))
                 if e["caption"]:
                     self.body.append(self.paragraph(e["caption"], {}, first_line=0, jc="center"))
             elif t == "note":
-                self.body.append(self.paragraph([("img", e["jid"])], {}, first_line=0, jc="center"))
+                self.body.append(self.paragraph([("img", e["jid"])], {}, first_line=0, jc="center",
+                                                before=IMAGE_SPACE_BEFORE_TWIPS, snap=False))
             elif t == "figure":
-                self.body.append(self.paragraph([("img", e["jid"])], {}, first_line=0, jc="center", keep=True))
+                self.body.append(self.paragraph([("img", e["jid"])], {}, first_line=0, jc="center", keep=True,
+                                                before=IMAGE_SPACE_BEFORE_TWIPS, snap=False))
                 if e["caption"]:
                     self.body.append(self.paragraph(e["caption"], {}, first_line=0, jc="center"))
             elif t == "reference":
@@ -2026,7 +2046,7 @@ class DocxWriter:
         if sect == -1:
             raise RuntimeError("template document has no sectPr")
         end = doc.find("</w:body>", sect)
-        sect_xml = doc[sect:end]
+        sect_xml = re.sub(r"<w:docGrid[^>]*/>", "", doc[sect:end])
         new_doc = doc[:start] + body + sect_xml + doc[end:]
 
         self.parts["word/document.xml"] = new_doc.encode("utf-8")
@@ -2128,8 +2148,8 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--cache", default=None, help="directory for cached rendered images")
     ap.add_argument("--no-blind", action="store_true", help="keep author names and the About the Author section")
     ap.add_argument("--drop-notes", action="store_true", help="omit editorial note boxes")
-    ap.add_argument("--math-drop-pt", type=float, default=1.5,
-                    help="extra downward shift for inline maths, in points (default: 1.5)")
+    ap.add_argument("--math-drop-pt", type=float, default=0.5,
+                    help="extra downward shift for inline maths, in points (default: 0.5)")
     ap.add_argument("--keep-temp", action="store_true")
     ap.add_argument("--dry-run", action="store_true", help="parse only, do not render images or write a docx")
     ap.add_argument("--quiet", action="store_true")
